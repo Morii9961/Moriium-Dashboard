@@ -40,7 +40,8 @@ function TimeBand({ items, now }: { items: HistoryItem[]; now: Date }) {
 }
 
 function CompareView({ a, b }: { a: number; b: number }) {
-  const { t, snapshotTime } = useI18n();
+  const { t, snapshotTime, list } = useI18n();
+  const lv = (label: string, value: string) => t('compare.labelValue', { label, value });
   const { data, loading } = useResource<CompareResult>(`/api/snapshots/compare?a=${a}&b=${b}`);
   if (!data) return <p className="settings-note">{loading ? t('compare.loading') : t('apiError.unknown')}</p>;
   const d = data.diff;
@@ -51,14 +52,14 @@ function CompareView({ a, b }: { a: number; b: number }) {
   if (d.stage)
     top.push({
       sign: '→',
-      text: `${t('compare.stage')}：${stageText(d.stage.from)} → ${stageText(d.stage.to)}`,
+      text: lv(t('compare.stage'), `${stageText(d.stage.from)} → ${stageText(d.stage.to)}`),
     });
   if (d.overallProgress)
     top.push({
       sign: '→',
-      text: `${t('compare.progress')}：${d.overallProgress.from ?? '—'} → ${d.overallProgress.to ?? '—'}`,
+      text: lv(t('compare.progress'), `${d.overallProgress.from ?? '—'} → ${d.overallProgress.to ?? '—'}`),
     });
-  if (d.summary) top.push({ sign: '→', text: `${t('compare.summary')}：${d.summary.to}`, zh: true });
+  if (d.summary) top.push({ sign: '→', text: lv(t('compare.summary'), d.summary.to), zh: true });
   if (top.length) blocks.push({ title: t('compare.overview'), rows: top });
 
   const ms: (typeof blocks)[number]['rows'] = [
@@ -66,17 +67,20 @@ function CompareView({ a, b }: { a: number; b: number }) {
     ...d.milestones.removed.map((m) => ({ sign: '-' as const, text: m.title, zh: true })),
     ...d.milestones.changed.map((c) => ({
       sign: '→' as const,
-      text: `${c.after.title}（${c.fields
-        .map((f) =>
-          f === 'status'
-            ? `${t('compare.field.status')} ${t(`status.${c.before.status}`)} → ${t(`status.${c.after.status}`)}`
-            : f === 'evidence_level'
-              ? `${t('compare.field.evidence_level')} ${c.before.evidence_level} → ${c.after.evidence_level}`
-              : f === 'human_acceptance'
-                ? `${t('compare.field.human_acceptance')} ${c.before.human_acceptance} → ${c.after.human_acceptance}`
-                : t(`compare.field.${f}`),
-        )
-        .join('；')}）`,
+      text: t('compare.withDetail', {
+        text: c.after.title,
+        detail: list(
+          c.fields.map((f) =>
+            f === 'status'
+              ? `${t('compare.field.status')} ${t(`status.${c.before.status}`)} → ${t(`status.${c.after.status}`)}`
+              : f === 'evidence_level'
+                ? `${t('compare.field.evidence_level')} ${c.before.evidence_level} → ${c.after.evidence_level}`
+                : f === 'human_acceptance'
+                  ? `${t('compare.field.human_acceptance')} ${c.before.human_acceptance} → ${c.after.human_acceptance}`
+                  : t(`compare.field.${f}`),
+          ),
+        ),
+      }),
       zh: true,
     })),
   ];
@@ -100,7 +104,10 @@ function CompareView({ a, b }: { a: number; b: number }) {
       title: t('compare.priority'),
       rows: d.nextActions.priorityChanged.map((p) => ({
         sign: '→' as const,
-        text: `${p.after.title}（${p.before.priority ?? '—'} → ${p.after.priority ?? '—'}）`,
+        text: t('compare.withDetail', {
+          text: p.after.title,
+          detail: `${p.before.priority ?? '—'} → ${p.after.priority ?? '—'}`,
+        }),
         zh: true,
       })),
     });
@@ -111,12 +118,15 @@ function CompareView({ a, b }: { a: number; b: number }) {
   if (d.source.branch)
     src.push({
       sign: '→',
-      text: `${t('compare.branch')}：${d.source.branch.from ?? '—'} → ${d.source.branch.to ?? '—'}`,
+      text: lv(t('compare.branch'), `${d.source.branch.from ?? '—'} → ${d.source.branch.to ?? '—'}`),
     });
   if (d.source.commitSha)
     src.push({
       sign: '→',
-      text: `${t('compare.commit')}：${d.source.commitSha.from?.slice(0, 7) ?? '—'} → ${d.source.commitSha.to?.slice(0, 7) ?? '—'}`,
+      text: lv(
+        t('compare.commit'),
+        `${d.source.commitSha.from?.slice(0, 7) ?? '—'} → ${d.source.commitSha.to?.slice(0, 7) ?? '—'}`,
+      ),
     });
   for (const b of d.source.basisAdded) src.push({ sign: '+', text: b, zh: true });
   for (const b of d.source.basisRemoved) src.push({ sign: '-', text: b, zh: true });

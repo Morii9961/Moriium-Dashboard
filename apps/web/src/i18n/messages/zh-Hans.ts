@@ -289,6 +289,9 @@ export const zhHans = {
   'compare.loading': '正在对比',
 
   'compare.overview': '阶段与摘要',
+
+  'compare.labelValue': '{label}：{value}',
+  'compare.withDetail': '{text}（{detail}）',
 } as const;
 
 export type MessageKey = keyof typeof zhHans;

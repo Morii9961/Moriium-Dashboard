@@ -293,4 +293,7 @@ export const en: Messages = {
   'compare.loading': 'Comparing',
 
   'compare.overview': 'Stage and summary',
+
+  'compare.labelValue': '{label}: {value}',
+  'compare.withDetail': '{text} ({detail})',
 };

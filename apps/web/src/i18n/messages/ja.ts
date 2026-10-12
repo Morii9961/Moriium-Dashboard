@@ -294,4 +294,7 @@ export const ja: Messages = {
   'compare.loading': '比較しています',
 
   'compare.overview': '段階と概要',
+
+  'compare.labelValue': '{label}：{value}',
+  'compare.withDetail': '{text}（{detail}）',
 };
