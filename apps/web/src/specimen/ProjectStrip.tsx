@@ -1,89 +1,104 @@
 /**
- * 项目进度长条（样张第三轮）。
+ * 项目进度长条（2026-10-12 定稿）。
  *
- * 一行只放最关键的：项目与阶段、路线图（做到哪里，站名写在每一行里）、进度百分比、还差什么、待确认几项。
- * 百分比的来源始终写在数字下面：快照给了 overall_progress 就是「Agent 估算」；没给就按已知里程碑的
- * 完成率计算（2026-10-12 Morii 定，见 progressFigure）。一个已知里程碑都没有时不画百分比。
+ * 一行只放最关键的：项目与阶段、路线图（站名写在每一行里）、进度百分比、还差什么、待确认几项。
+ * 百分比：快照有 overall_progress 就用它，前面加「≈」表示是 Agent 估算；没有就按已知里程碑的完成率
+ * 计算（progressFigure）。来源不再写在数字下面，但读屏和悬停提示会说清楚（启动提示词规则 1）。
  *
  * 细节在长条内部展开（不弹出浮层）：鼠标停留片刻、键盘聚焦，或点击长条时展开；点击后固定，Esc 收起。
+ * 地址栏的 #锚点 指向这一条时（例如从线路总图点过来）也会固定展开。
  */
-import { displayValue, type Snapshot, STAGE_LABELS } from '@moriium-dashboard/protocol';
-import { type MouseEvent, useId, useState } from 'react';
-import { freshness, MATURE_WORDING, progressFigure, summarizeProgress } from '../progress.ts';
+import { displayValue, type Snapshot } from '@moriium-dashboard/protocol';
+import { type MouseEvent, useEffect, useId, useState } from 'react';
+import { type I18n, useI18n } from '../i18n/i18n.tsx';
+import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
+import { freshness, progressFigure, summarizeProgress } from '../progress.ts';
 import {
   EvidenceTag,
   evidenceKindOf,
   LineMap,
   ProgressEstimate,
   SegBar,
-  STATUS_TEXT,
   StaleIcon,
   StatusGlyph,
 } from './parts.tsx';
 
+export type Origin = 'real' | 'self' | 'demo';
+
 export interface StripItem {
+  anchor: string;
   name: string;
   snapshot: Snapshot;
   utcMs: number;
   offsetMinutes: number;
-  attribution: string;
-  sourceLabel: string;
+  agent: 'claude' | 'codex' | 'other' | null;
+  agentInferred: boolean;
+  origin: Origin;
 }
 
 const MILESTONE_LIMIT = 7;
 const STATUS_ORDER = { blocked: 0, in_progress: 1, not_started: 2, unknown: 3, done: 4 } as const;
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2 } as const;
 
-function relativeAge(utcMs: number, now: Date): string {
-  const hours = Math.round((now.getTime() - utcMs) / 3_600_000);
-  if (hours < 1) return '刚刚';
-  if (hours < 48) return `${hours} 小时前`;
-  return `${Math.round(hours / 24)} 天前`;
-}
-
-/** 按快照原文的时区显示：10月11日 22:45。 */
-function localTime(utcMs: number, offsetMinutes: number): string {
-  const d = new Date(utcMs + offsetMinutes * 60_000);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getUTCMonth() + 1}月${d.getUTCDate()}日 ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+/** 进度数字和它的来源说明；长条和线路总图共用。 */
+export function figureOf(s: Snapshot, t: I18n['t']) {
+  const p = summarizeProgress(s);
+  const figure = progressFigure(s, p);
+  const source =
+    figure === null
+      ? t('progress.none')
+      : figure.basis === 'estimate'
+        ? t('progress.estimate')
+        : t(p.unknown > 0 ? 'progress.knownMilestones' : 'progress.milestones', {
+            done: p.done,
+            total: p.total - p.unknown,
+          });
+  const text = figure === null ? '—' : `${figure.basis === 'estimate' ? '≈' : ''}${figure.percent}%`;
+  return { p, figure, source, text, label: figure === null ? source : `${source} ${figure.percent}%` };
 }
 
 export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
+  const { t, relative, snapshotTime } = useI18n();
   const [pinned, setPinned] = useState(false);
   const id = useId();
   const s = item.snapshot;
-  const p = summarizeProgress(s);
+  const { p, figure, source } = figureOf(s, t);
   const fresh = freshness(item.utcMs, now, s.stage);
   const days = Math.floor((now.getTime() - item.utcMs) / 86_400_000);
   const waiting = p.decisions + p.awaitingAcceptance;
-  const matureWording = p.mature ? MATURE_WORDING[s.stage] : undefined;
-  const estimate = s.overall_progress;
-  const figure = progressFigure(s, p);
-  // 数字下面不再写来源（Morii 2026-10-12）。估算仍要和计算值分开（规则 1）：估算前面加「≈」，
-  // 读屏和悬停提示写全称；展开区的「估算」一行照旧。
-  const figureSource =
-    figure === null
-      ? '没有可计的里程碑'
-      : figure.basis === 'estimate'
-        ? 'Agent 估算'
-        : `按${p.unknown > 0 ? '已知' : ''}里程碑计算：${p.done}/${p.total - p.unknown}`;
+  const mature =
+    p.mature && (s.stage === 'launch_preparation' || s.stage === 'live' || s.stage === 'maintenance')
+      ? t(`mature.${s.stage}`)
+      : undefined;
 
-  const headline = matureWording
-    ? matureWording
-    : p.remaining > 0
-      ? `还差 ${p.remaining} 个里程碑`
+  useEffect(() => {
+    const sync = () => {
+      if (window.location.hash === `#${item.anchor}`) setPinned(true);
+    };
+    sync();
+    window.addEventListener('hashchange', sync);
+    return () => window.removeEventListener('hashchange', sync);
+  }, [item.anchor]);
+
+  const headline =
+    mature ??
+    (p.remaining > 0
+      ? t('gap.remaining', { n: p.remaining })
       : p.total === 0
-        ? '快照里没有里程碑'
+        ? t('gap.noMilestones')
         : p.unknown > 0
-          ? '已知的里程碑都已完成'
-          : '里程碑都已完成';
+          ? t('gap.allKnownDone')
+          : t('gap.allDone'));
   const subline = [
-    p.blocked > 0 ? `${p.blocked} 个受阻` : '',
-    p.blockers > 0 ? `${p.blockers} 个阻塞` : '',
-    p.unknown > 0 ? `${p.unknown} 个状态未知` : '',
+    p.blocked > 0 ? t('gap.blocked', { n: p.blocked }) : '',
+    p.blockers > 0 ? t('gap.blockers', { n: p.blockers }) : '',
+    p.unknown > 0 ? t('gap.unknown', { n: p.unknown }) : '',
   ]
     .filter(Boolean)
     .join(' · ');
+
+  const agentName = item.agent ? t(`agent.${item.agent}`) : t('agent.unknown');
+  const reporter = item.agent && item.agentInferred ? t('agent.inferred', { agent: agentName }) : agentName;
 
   const milestones = [...s.milestones].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
   const nextActions = [...s.next_actions].sort(
@@ -99,6 +114,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
 
   return (
     <article
+      id={item.anchor}
       className={`strip${pinned ? ' is-pinned' : ''}`}
       aria-labelledby={`${id}-name`}
       onClick={toggle}
@@ -115,15 +131,15 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
             {displayValue(item.name)}
           </h3>
           <p className="strip-meta">
-            <span>{STAGE_LABELS[s.stage]}</span>
+            <span>{t(`stage.${s.stage}` as MessageKey)}</span>
             <span aria-hidden="true">·</span>
             {fresh === 'stale' ? (
               <span className="is-stale">
                 <StaleIcon />
-                报告已 {days} 天
+                {t('strip.stale', { days })}
               </span>
             ) : (
-              <span>{relativeAge(item.utcMs, now)}</span>
+              <span>{relative(item.utcMs, now)}</span>
             )}
           </p>
         </div>
@@ -133,7 +149,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
         </div>
 
         <div className="strip-progress">
-          <p className="figure" title={figureSource}>
+          <p className="figure" title={source}>
             {figure?.basis === 'estimate' ? (
               <span className="figure-approx" aria-hidden="true">
                 ≈
@@ -147,19 +163,19 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
             ) : (
               '—'
             )}
-            <span className="sr-only">（{figureSource}）</span>
+            <span className="sr-only">（{source}）</span>
           </p>
           <SegBar milestones={s.milestones} />
         </div>
 
         <div className="strip-gap">
-          <p className={`strip-headline${matureWording ? ' is-mature' : ''}`}>{headline}</p>
+          <p className={`strip-headline${mature ? ' is-mature' : ''}`}>{headline}</p>
           {subline ? <p className="strip-subline">{subline}</p> : null}
         </div>
 
         <div className={`strip-waiting${waiting === 0 ? ' is-none' : ''}`}>
           <p className="figure figure-sm">{waiting > 0 ? waiting : '—'}</p>
-          <p className="figure-caption">待确认</p>
+          <p className="figure-caption">{t('strip.pending')}</p>
         </div>
 
         <button
@@ -167,7 +183,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
           className="strip-toggle"
           aria-expanded={pinned}
           aria-controls={id}
-          aria-label={`${pinned ? '收起' : '展开'} ${item.name} 的详情`}
+          aria-label={t(pinned ? 'strip.collapse' : 'strip.expand', { name: item.name })}
           onClick={() => setPinned((v) => !v)}
         >
           <svg className="icon" viewBox="0 0 16 16" aria-hidden="true">
@@ -184,38 +200,35 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
 
       <div className="strip-more" id={id}>
         <div className="strip-more-inner">
-          <section className="more-col" aria-label="下一步与摘要">
-            <h4 className="more-title">下一步</h4>
+          <section className="more-col" aria-label={t('more.sectionNext')}>
+            <h4 className="more-title">{t('more.next')}</h4>
             {nextActions.length > 0 ? (
               <ol className="more-next">
                 {nextActions.slice(0, 3).map((a) => (
                   <li key={a.id ?? a.title}>
-                    <span className={`prio prio-${a.priority ?? 'none'}`}>{a.priority ?? '？'}</span>
+                    <span className={`prio prio-${a.priority ?? 'none'}`}>{a.priority ?? '?'}</span>
                     <span lang="zh-Hans">{displayValue(a.title)}</span>
                   </li>
                 ))}
               </ol>
             ) : (
-              <p className="more-empty">快照里没有下一步</p>
+              <p className="more-empty">{t('more.noNext')}</p>
             )}
             <p className="more-summary" lang="zh-Hans">
               {displayValue(s.summary)}
             </p>
           </section>
 
-          <section className="more-col" aria-label="里程碑">
+          <section className="more-col" aria-label={t('more.milestones')}>
             <h4 className="more-title">
-              里程碑{' '}
-              <span>
-                {p.done}/{p.total} 完成
-              </span>
+              {t('more.milestones')} <span>{t('more.milestonesDone', { done: p.done, total: p.total })}</span>
             </h4>
             <ul className="more-milestones">
               {milestones.slice(0, MILESTONE_LIMIT).map((m) => (
                 <li key={m.id}>
                   <span className={`status status-${m.status}`}>
                     <StatusGlyph status={m.status} />
-                    <span className="sr-only">{STATUS_TEXT[m.status]}</span>
+                    <span className="sr-only">{t(`status.${m.status}`)}</span>
                   </span>
                   <span className="more-ms-title" lang="zh-Hans" title={m.title}>
                     {displayValue(m.title)}
@@ -225,15 +238,15 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
               ))}
             </ul>
             {milestones.length > MILESTONE_LIMIT ? (
-              <p className="more-empty">另有 {milestones.length - MILESTONE_LIMIT} 个已完成的里程碑</p>
+              <p className="more-empty">{t('more.moreDone', { n: milestones.length - MILESTONE_LIMIT })}</p>
             ) : null}
           </section>
 
-          <section className="more-col" aria-label="阻塞、待确认、来源">
+          <section className="more-col" aria-label={t('more.sectionSide')}>
             {s.blockers.length > 0 ? (
               <>
                 <h4 className="more-title">
-                  阻塞 <span>{s.blockers.length}</span>
+                  {t('more.blockers')} <span>{s.blockers.length}</span>
                 </h4>
                 <ul className="more-list" lang="zh-Hans">
                   {s.blockers.slice(0, 3).map((b) => (
@@ -242,30 +255,30 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
                 </ul>
               </>
             ) : null}
-            <h4 className="more-title">待确认</h4>
+            <h4 className="more-title">{t('more.pending')}</h4>
             <p className="more-text">
-              {p.decisions} 个决定 · {p.awaitingAcceptance} 次验收
+              {t('more.pendingDetail', { decisions: p.decisions, acceptances: p.awaitingAcceptance })}
             </p>
             <dl className="more-meta">
-              <dt>报告</dt>
-              <dd>{item.attribution.replace('报告来自 ', '').replace('报告来自：', '')}</dd>
-              <dt>来源</dt>
+              <dt>{t('more.reporter')}</dt>
+              <dd>{reporter}</dd>
+              <dt>{t('more.source')}</dt>
               <dd className="mono">
-                {s.source.branch ? displayValue(s.source.branch) : '分支未注明'}
+                {s.source.branch ? displayValue(s.source.branch) : t('more.branchUnknown')}
                 {s.source.commit_sha ? ` @ ${s.source.commit_sha.slice(0, 7)}` : ''}
               </dd>
-              <dt>快照</dt>
-              <dd>{localTime(item.utcMs, item.offsetMinutes)}</dd>
-              {estimate !== null ? (
+              <dt>{t('more.snapshot')}</dt>
+              <dd>{snapshotTime(item.utcMs, item.offsetMinutes)}</dd>
+              {s.overall_progress !== null ? (
                 <>
-                  <dt>估算</dt>
+                  <dt>{t('more.estimate')}</dt>
                   <dd>
-                    <ProgressEstimate value={estimate} />
+                    <ProgressEstimate value={s.overall_progress} />
                   </dd>
                 </>
               ) : null}
             </dl>
-            <p className="more-source">{item.sourceLabel}</p>
+            <p className="more-source">{t(`origin.${item.origin}`)}</p>
           </section>
         </div>
       </div>

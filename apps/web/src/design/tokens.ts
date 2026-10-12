@@ -1,16 +1,16 @@
 /**
- * 设计样张的颜色 token（P2.1，第四轮）。
+ * 设计 token 的唯一来源（P2.2 定稿，2026-10-12）。
  *
- * 已定（2026-10-12，Morii）：强调色「雾蓝 · 安静」；状态色沿用第一轮；浅色背景「雾」；深色背景「夜」
- * （深蓝灰，更深、低饱和、略带蓝）。P2.2 定稿时改为静态 CSS。
- * 全部在 OKLCH 里推导；对比度按 CONTRAST_PAIRS 实际计算（测试里也检查）。
+ * 颜色：强调色「雾蓝 · 安静」；状态色沿用第一轮；浅色背景「雾」，深色背景「夜」。全部在 OKLCH 里推导，
+ * 对比度按 CONTRAST_PAIRS 实际计算（测试里也检查）。
+ * 间距、圆角、字号、动效也在这里。运行 `pnpm tokens` 生成静态的 src/styles/tokens.css，
+ * 测试会检查生成的文件没有过期。决定见 docs/design-decisions.md。
  */
 
 export type Theme = 'light' | 'dark';
-export type Backdrop = 'mist' | 'night';
 
-export const BACKDROPS: Record<Theme, Backdrop[]> = { light: ['mist'], dark: ['night'] };
-export const BACKDROP_LABELS: Record<Backdrop, string> = { mist: '雾', night: '夜' };
+/** 两种主题背景的名字：浅色「雾」，深色「夜」。 */
+export const BACKDROP_NAME: Record<Theme, string> = { light: '雾', dark: '夜' };
 
 /** 画布、纸面、墨色、边框：随背景变化。 */
 export interface SurfaceTokens {
@@ -47,8 +47,8 @@ export interface StatusTokens {
 
 export type ColorTokens = SurfaceTokens & StatusTokens;
 
-export const SURFACES: Record<Backdrop, SurfaceTokens> = {
-  mist: {
+export const SURFACES: Record<Theme, SurfaceTokens> = {
+  light: {
     canvas: 'oklch(0.944 0.007 228)',
     surface: 'oklch(0.964 0.005 228)',
     raised: 'oklch(0.98 0.003 228)',
@@ -58,7 +58,7 @@ export const SURFACES: Record<Backdrop, SurfaceTokens> = {
     borderWeak: 'oklch(0.897 0.008 228)',
     border: 'oklch(0.835 0.01 228)',
   },
-  night: {
+  dark: {
     canvas: 'oklch(0.175 0.008 252)',
     surface: 'oklch(0.205 0.009 252)',
     raised: 'oklch(0.235 0.01 252)',
@@ -111,9 +111,37 @@ export const STATUS: Record<Theme, StatusTokens> = {
   },
 };
 
-export function tokensFor(theme: Theme, backdrop: Backdrop): ColorTokens {
-  return { ...SURFACES[backdrop], ...STATUS[theme] };
+export function tokensFor(theme: Theme): ColorTokens {
+  return { ...SURFACES[theme], ...STATUS[theme] };
 }
+
+/** 间距以 4 为基数（02 第 3 节）。 */
+export const SPACE = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 24, 6: 32, 7: 48, 8: 64, 9: 96 } as const;
+
+export const RADIUS = { sm: 6, md: 10, lg: 14, pill: 999 } as const;
+
+/**
+ * 字号（px）。正文 15，界面最小 12（站名 11.5 是路线图里的例外）。
+ * display 用 clamp 随视口变化，只给刊头这类一页一处的大标题。
+ */
+export const TYPE = {
+  xs: '12px',
+  sm: '13px',
+  md: '15px',
+  lg: '17px',
+  xl: '22px',
+  '2xl': '28px',
+  '3xl': '36px',
+  display: 'clamp(36px, 6.2vw, 76px)',
+} as const;
+
+/** 动效（02 第 14 节）：统一缓动；减少动画偏好下只保留透明度。 */
+export const MOTION = {
+  ease: 'cubic-bezier(0.16, 1, 0.3, 1)',
+  fast: '180ms',
+  base: '280ms',
+  slow: '520ms',
+} as const;
 
 /** 需要检查对比度的组合：[前景, 背景, 最低比值, 说明]。 */
 export const CONTRAST_PAIRS: [keyof ColorTokens, keyof ColorTokens, number, string][] = [

@@ -1,37 +1,26 @@
 /**
- * 样张里的小部件：路线图（阶段轴）、状态标记、证据标签、进度估算、里程碑格。
- * 规则来自规划 02 第 11 节。每个状态都有图形加文字，颜色不是唯一线索。
+ * 小部件：路线图（阶段轴）、状态标记、证据标签、进度估算、里程碑格。
+ * 规则来自规划 02 第 11 节。每个状态都有图形加文字，颜色不是唯一线索。文字都走三语框架。
  *
- * 阶段轴已定为「圆点」画法（2026-10-12）。这一轮把它画成一条路线：
- * 走过的路段是实线，没走到的是细线；当前站是雾蓝，站名写在下面。
+ * 阶段轴定为「圆点」画法（2026-10-12）：走过的路段是实线，没走到的是细线；当前站是雾蓝，站名写在下面。
  */
 import { type Milestone, STAGE_AXIS, type Stage } from '@moriium-dashboard/protocol';
-
-export const STATION: Record<(typeof STAGE_AXIS)[number], string> = {
-  planning: '规划',
-  development: '开发',
-  integration: '集成',
-  acceptance: '验收',
-  launch_preparation: '上线准备',
-  live: '已上线',
-  maintenance: '维护',
-};
+import { useI18n } from '../i18n/i18n.tsx';
+import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 
 /** 路线图。paused 时整条变弱并写「已暂停」；unknown 时画成虚线并写「阶段未知」。 */
 export function LineMap({ stage, size = 'card' }: { stage: Stage; size?: 'card' | 'compact' | 'row' }) {
+  const { t } = useI18n();
   const current = (STAGE_AXIS as readonly string[]).indexOf(stage);
   const off = current < 0;
-  const label =
-    stage === 'paused'
-      ? '已暂停'
-      : stage === 'unknown'
-        ? '阶段未知'
-        : STATION[STAGE_AXIS[current] ?? 'planning'];
+  const label = off
+    ? t(`stage.${stage}` as MessageKey)
+    : t(`station.${STAGE_AXIS[current] ?? 'planning'}` as MessageKey);
   return (
     <div
       className={`linemap linemap-${size}${stage === 'paused' ? ' linemap-paused' : ''}${stage === 'unknown' ? ' linemap-unknown' : ''}`}
       role="img"
-      aria-label={`阶段：${label}`}
+      aria-label={t('linemap.label', { stage: label })}
     >
       <ol className="linemap-stations" aria-hidden="true">
         {STAGE_AXIS.map((s, i) => {
@@ -39,7 +28,7 @@ export function LineMap({ stage, size = 'card' }: { stage: Stage; size?: 'card' 
           return (
             <li key={s} className={`station station-${state}`}>
               <span className="station-dot" />
-              <span className="station-name">{STATION[s]}</span>
+              <span className="station-name">{t(`station.${s}` as MessageKey)}</span>
             </li>
           );
         })}
@@ -133,19 +122,12 @@ export function StatusGlyph({ status }: { status: Milestone['status'] }) {
   }
 }
 
-export const STATUS_TEXT: Record<Milestone['status'], string> = {
-  done: '完成',
-  in_progress: '进行中',
-  blocked: '受阻',
-  not_started: '未开始',
-  unknown: '未知',
-};
-
 export function StatusMark({ status }: { status: Milestone['status'] }) {
+  const { t } = useI18n();
   return (
     <span className={`status status-${status}`}>
       <StatusGlyph status={status} />
-      {STATUS_TEXT[status]}
+      {t(`status.${status}`)}
     </span>
   );
 }
@@ -163,15 +145,6 @@ export function MilestoneGrid({ milestones }: { milestones: readonly Milestone[]
 
 export type EvidenceKind = 'self' | 'evidence' | 'test' | 'reported' | 'accepted' | 'rejected';
 
-export const EVIDENCE_TEXT: Record<EvidenceKind, string> = {
-  self: '自报',
-  evidence: '仓库证据',
-  test: '有测试记录',
-  reported: '据报告已验收',
-  accepted: '你已验收 · 10月9日',
-  rejected: '你已退回 · 10月9日',
-};
-
 export function evidenceKindOf(m: Milestone): EvidenceKind {
   if (m.evidence_level === 'morii_accepted' || m.human_acceptance === 'accepted') return 'reported';
   if (m.evidence_level === 'existing_test') return 'test';
@@ -180,7 +153,8 @@ export function evidenceKindOf(m: Milestone): EvidenceKind {
 }
 
 /** 证据与验收的层级（02 第 11.2 节）：自报虚线、有证据实线、你的验收浅色填充。 */
-export function EvidenceTag({ kind }: { kind: EvidenceKind }) {
+export function EvidenceTag({ kind, date = '' }: { kind: EvidenceKind; date?: string }) {
+  const { t } = useI18n();
   return (
     <span className={`tag tag-${kind}`}>
       {kind === 'reported' || kind === 'accepted' ? (
@@ -205,17 +179,18 @@ export function EvidenceTag({ kind }: { kind: EvidenceKind }) {
           />
         </svg>
       ) : null}
-      {EVIDENCE_TEXT[kind]}
+      {t(`evidence.${kind}`, { date })}
     </span>
   );
 }
 
 /** 有 overall_progress 时：一行小字加 120px 宽、2px 高的细条，标注「估算」（02 第 5.1 节）。 */
 export function ProgressEstimate({ value }: { value: number }) {
+  const { t } = useI18n();
   return (
     <span className="estimate">
-      <span>Agent 估算 {value}%</span>
-      <span className="estimate-bar" role="img" aria-label={`Agent 估算 ${value}%，不是验收比例`}>
+      <span>{t('estimate.text', { value })}</span>
+      <span className="estimate-bar" role="img" aria-label={t('estimate.label', { value })}>
         {/* React 通过 CSSOM 设置 style，严格 CSP（style-src 'self'）下允许；不会生成内联 style 属性。 */}
         <span className="estimate-fill" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
       </span>
