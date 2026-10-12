@@ -1,0 +1,16 @@
+{
+  "name": "@moriium-dashboard/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/main.ts",
+    "dev": "node --watch src/main.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.4",
+    "hono": "4.13.13"
+  }
+}

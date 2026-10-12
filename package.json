@@ -5,7 +5,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.33.0",
   "engines": {
-    "node": ">=24.11.0 <25"
+    "node": ">=24.15.0 <25"
   },
   "scripts": {
     "check": "biome check .",
@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "audit:public": "node scripts/audit-public.ts",
     "verify": "pnpm check && pnpm typecheck && pnpm test && pnpm audit:public",
+    "server": "pnpm --filter @moriium-dashboard/server start",
     "status:check": "node packages/protocol/src/cli/status-check.ts"
   },
   "devDependencies": {

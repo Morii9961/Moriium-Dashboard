@@ -3,5 +3,10 @@
     "path": "fixtures/protocol/warnings/private-info.json",
     "rule": "local-path",
     "reason": "协议样本：验证「本机路径会保存在私有数据里」的提醒（03 第 6.4 节）。路径是虚构的 demo 用户。"
+  },
+  {
+    "path": "apps/server/test/server.test.ts",
+    "rule": "local-path",
+    "reason": "服务端测试：验证数据目录的默认位置、仓库内与同步盘的拒绝规则。路径是虚构的 demo 用户，不对应任何真实机器。"
   }
 ]

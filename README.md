@@ -36,6 +36,14 @@ pnpm audit:public  # 公开树审计：数据库、导出包、密钥形态、IP
 
 服务端和脚本由 Node 直接运行 `.ts`，没有构建步骤，原因见 [ADR 0001](./docs/adr/0001-toolchain-and-native-typescript.md)。
 
+### 启动服务端
+
+```bash
+pnpm server
+```
+
+只监听 `http://127.0.0.1:5180`。第一次启动会在系统的应用数据目录（Windows 上是 `%LOCALAPPDATA%\moriium-dashboard`）建数据库并做一次备份；数据目录在仓库里或同步盘里时拒绝启动。可用的环境变量见 [`.env.example`](./.env.example)，设计见 [ADR 0003](./docs/adr/0003-server-storage-and-local-security.md)。目前只有 `GET /api/health`。
+
 ### 检查快照文件
 
 ```bash
