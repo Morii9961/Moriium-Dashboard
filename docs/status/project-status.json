@@ -2,30 +2,26 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-12T20:14:00+08:00",
+  "snapshot_at": "2026-10-12T20:43:00+08:00",
   "source": {
-    "branch": "claude/export",
-    "commit_sha": "29545c2768e349fb87da34359fc5867f5ec93c85",
+    "branch": "main",
+    "commit_sha": "f5702df266068f78fb2cff5aea3c9d9d6d556f2e",
     "basis": [
-      "docs/planning/04-import-and-history.md（导入、去重、历史、导出的规则）",
-      "docs/planning/06-mvp-and-roadmap.md（P3 工作包与交付标准）",
-      "docs/design-decisions.md（P3 导入与历史）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/11（P3.1 项目登记）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/12（P3.3 快照存储与导入接口）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/13（P3.2 导入对话框）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/14（P3.4 历史）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/15（P3.5 导出）",
-      "本机 pnpm verify：Biome 无错误、类型检查通过、Vitest 290/290、公开树审计通过",
-      "临时数据目录试跑：导入五个项目的真实快照和 Dashboard 自己的快照，从 Git 历史补导 4 份旧快照，导出包可被 Windows 解压并可再导入"
+      "docs/planning/06-mvp-and-roadmap.md（P1 到 P3 的交付标准）",
+      "docs/design-decisions.md（含 2026-10-12 Morii 交给开发方决定的几件事）",
+      "docs/handoff-2026-10-12-codex-p4.md（交接给 Codex）",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/15（PR #6 到 #15 已按顺序合并进 main）",
+      "本机 pnpm verify：Biome 无错误、类型检查通过、Vitest 290/290、公开树审计通过；CI 在 ubuntu 和 windows 上通过",
+      "Morii 本机正式数据目录：已导入六个项目的真实快照和 Dashboard 的 4 份历史快照"
     ],
     "tests_rerun": false
   },
   "reporter": {
     "agent": "claude",
-    "note": "开发会话（P2）"
+    "note": "开发会话（P1 到 P3），交接给 Codex"
   },
   "stage": "development",
-  "summary": "P3 的五个工作包都已提交 PR：项目登记、导入对话框、快照存储与导入接口、历史与对比、导出。端到端测试覆盖交付标准列出的情况，临时数据目录里已导入六个项目的真实快照。等 Morii 用真实文件试导一轮、合并 PR 后，P3 才算完成；下一步是 P4 项目与概览。",
+  "summary": "P1 到 P3 已完成并合并进 main：协议包与检查工具、设计基线与应用外壳、项目登记、导入、历史与导出。六个项目的真实快照已导入 Morii 本机。下一步是 P4 项目与概览，由 Codex 接手。",
   "overall_progress": null,
   "milestones": [
     {
@@ -39,22 +35,15 @@
     {
       "id": "p1-repo-protocol",
       "title": "P1 仓库与协议：Git 仓库、协议包、校验与样本测试",
-      "status": "in_progress",
+      "status": "done",
       "evidence_level": "repository",
-      "evidence_refs": [
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/1",
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/2",
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/3",
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/4",
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/5",
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/6"
-      ],
+      "evidence_refs": ["https://github.com/Morii9961/Moriium-Dashboard/pull/6"],
       "human_acceptance": "pending"
     },
     {
       "id": "p2-shell-design",
       "title": "P2 外壳与设计基线：设计样张、token、三语、应用外壳、服务端骨架",
-      "status": "in_progress",
+      "status": "done",
       "evidence_level": "repository",
       "evidence_refs": [
         "https://github.com/Morii9961/Moriium-Dashboard/pull/7",
@@ -68,7 +57,7 @@
     {
       "id": "p3-import-history",
       "title": "P3 导入与历史：手动导入、去重、历史对比、导出",
-      "status": "in_progress",
+      "status": "done",
       "evidence_level": "repository",
       "evidence_refs": [
         "https://github.com/Morii9961/Moriium-Dashboard/pull/11",
@@ -120,39 +109,15 @@
     },
     {
       "id": "p4-overview",
-      "title": "概览（P4.5）：需要你决定、项目、报告新鲜度、Agent 最近报告、最近交付",
+      "title": "概览（P4.5）：需要你决定、报告新鲜度、Agent 最近报告、最近交付",
       "priority": "P1",
       "result": "30 秒测试可以通过"
     }
   ],
   "needs_morii": [
     {
-      "id": "p3-trial-import",
-      "decision": "用真实文件试导一轮（pnpm build 后 pnpm server，打开 http://127.0.0.1:5180，点「导入」选五个项目的 project-status.json），指出看不懂的提示。"
-    },
-    {
-      "id": "merge-stack",
-      "decision": "PR 是一层叠一层开的，请按 #6 → #7 → … → #15 的顺序合并；每个都以 main 为目标。"
-    },
-    {
-      "id": "issue-translation",
-      "decision": "导入时的问题说明由协议包生成，目前只有中文，日文和英文界面里也显示中文。要不要翻译成日文和英文？"
-    },
-    {
-      "id": "p1-review",
-      "decision": "用 pnpm status:check 看过真实快照了吗？输出看得懂吗？"
-    },
-    {
-      "id": "protocol-interpretations",
-      "decision": "三处接收规则按我的理解实现，是否同意：summary 只有空白算错误；v1.0 文件里出现 reporter 或条目 id 时忽略并提醒；+08:00 和 Z 写法指向同一时刻时算同一时刻冲突？"
-    },
-    {
-      "id": "data-dir-location",
-      "decision": "本机数据目录默认用 %LOCALAPPDATA%\\moriium-dashboard（可用 MORIIUM_DASHBOARD_DATA 改），在仓库里或同步盘里时拒绝启动。P2.3、P3.1 试跑服务端时已经在这个位置建了空数据库（迁移到版本 2）和备份；P3 的导入测试都在临时目录里做，没有写进这里。这个默认位置可以吗？"
-    },
-    {
       "id": "enable-snapshots",
-      "decision": "什么时候把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md？检查工具已经可用。"
+      "decision": "建议现在就把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md。这一步改的是其他仓库，需要 Morii 自己做，或另行明确授权。"
     },
     {
       "id": "vps-access",
