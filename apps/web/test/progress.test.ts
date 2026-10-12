@@ -1,7 +1,7 @@
 import type { Snapshot } from '@moriium-dashboard/protocol';
 import { describe, expect, it } from 'vitest';
 import { contrast, toHex } from '../src/design/color.ts';
-import { ACCENT_TOKENS, COLOR_TOKENS, CONTRAST_PAIRS } from '../src/design/tokens.ts';
+import { BACKDROPS, CONTRAST_PAIRS, tokensFor } from '../src/design/tokens.ts';
 import { freshness, headlineNextAction, summarizeProgress } from '../src/progress.ts';
 
 const m = (id: string, status: Snapshot['milestones'][number]['status'], acceptance = 'pending') =>
@@ -105,17 +105,14 @@ describe('summarizeProgress (02 §5.4)', () => {
 });
 
 describe('candidate color tokens', () => {
-  it.each(['mist', 'slate'] as const)(
-    'meet every contrast requirement in both themes (%s accent)',
-    (accent) => {
-      for (const theme of ['light', 'dark'] as const) {
-        const t = { ...COLOR_TOKENS[theme], ...ACCENT_TOKENS[accent][theme] };
-        for (const [fg, bg, min, label] of CONTRAST_PAIRS) {
-          expect(contrast(t[fg], t[bg]), `${theme} ${label}`).toBeGreaterThanOrEqual(min);
-        }
+  it.each(['light', 'dark'] as const)('meet every contrast requirement on each %s backdrop', (theme) => {
+    for (const backdrop of BACKDROPS[theme]) {
+      const t = tokensFor(theme, backdrop);
+      for (const [fg, bg, min, label] of CONTRAST_PAIRS) {
+        expect(contrast(t[fg], t[bg]), `${theme}/${backdrop} ${label}`).toBeGreaterThanOrEqual(min);
       }
-    },
-  );
+    }
+  });
 
   it('converts OKLCH to sRGB correctly', () => {
     expect(toHex('oklch(1 0 0)')).toBe('#ffffff');

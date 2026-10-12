@@ -1,49 +1,32 @@
 /**
- * 设计样张（P2.1）：用真实快照并排比较字体、颜色、状态表达和阶段轴画法，供 Morii 逐项拍板。
- * 这里的字体和色值都是候选，拍板之前不算定稿。
+ * 设计样张第二轮（P2.1）。
+ *
+ * 2026-10-12 Morii 已定：字体方案 A、等宽 IBM Plex Mono、强调色「雾蓝 · 安静」、阶段轴圆点、
+ * 状态色沿用、日文敬体、中英文之间加空格。这一页只把还没定的三项做成可切换：
+ * 背景、中日文字体、项目卡片。
  */
-import {
-  type CheckResult,
-  checkSnapshot,
-  displayValue,
-  PRESET_PROJECTS,
-  type Snapshot,
-  STAGE_LABELS,
-} from '@moriium-dashboard/protocol';
-import { useEffect, useMemo, useState } from 'react';
+import { type CheckResult, checkSnapshot, PRESET_PROJECTS } from '@moriium-dashboard/protocol';
+import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import dashboardSnapshot from '../../../../docs/status/project-status.json?raw';
 import { contrast, toHex } from '../design/color.ts';
 import {
-  ACCENT_TOKENS,
-  type AccentOption,
-  COLOR_TOKENS,
+  BACKDROP_LABELS,
+  BACKDROPS,
+  type Backdrop,
   CONTRAST_PAIRS,
+  type ColorTokens,
   type Theme,
+  tokensFor,
 } from '../design/tokens.ts';
-import { freshness, headlineNextAction, summarizeProgress } from '../progress.ts';
 import { DEMO_REGISTRY, demoSnapshots } from './demo-snapshots.ts';
-import {
-  type AxisVariant,
-  EvidenceTag,
-  MilestoneGrid,
-  ProgressEstimate,
-  STATUS_TEXT,
-  StageAxis,
-  StatusMark,
-} from './parts.tsx';
+import { type CardItem, ProgressCard } from './ProgressCard.tsx';
+import { EvidenceTag, LineMap, MilestoneGrid, StatusMark } from './parts.tsx';
 
-type FontScheme = 'b' | 'a';
-type Mono = 'geist' | 'jetbrains';
-
-interface Loaded {
-  fileName: string;
-  snapshot: Snapshot;
-  utcMs: number;
-  attribution: string;
-  source: 'real' | 'own' | 'demo';
-}
+type ZhFont = 'misans' | 'noto';
+type JaFont = 'zen' | 'line' | 'plex';
 
 const REGISTRY = [...PRESET_PROJECTS, ...DEMO_REGISTRY];
+const SPECIMEN_ENDPOINT = '/__specimen/snapshots';
 
 /** 地址栏参数：截图时固定选项；?demo 时不读本机真实快照（公开截图只用演示数据）。 */
 const params = new URLSearchParams(window.location.search);
@@ -52,9 +35,25 @@ function param<T extends string>(name: string, allowed: readonly T[]): T | undef
   const v = params.get(name);
   return allowed.find((a) => a === v);
 }
-const SPECIMEN_ENDPOINT = '/__specimen/snapshots';
 
-async function load(fileName: string, bytes: Uint8Array, source: Loaded['source']): Promise<Loaded | string> {
+const ZH_LABELS: Record<ZhFont, string> = { misans: 'MiSans + 霞鹜文楷', noto: '思源（第一轮）' };
+const JA_LABELS: Record<JaFont, string> = {
+  zen: 'Zen 角ゴシック + しっぽり明朝',
+  line: 'LINE Seed JP + Klee One',
+  plex: 'IBM Plex Sans JP（第一轮）',
+};
+
+const DECIDED = [
+  '字体方案 A：IBM Plex Sans、Source Serif 4',
+  '等宽 IBM Plex Mono',
+  '强调色 雾蓝 · 安静',
+  '阶段轴 圆点',
+  '状态色 沿用',
+  '日文 敬体',
+  '中英文之间 加空格',
+];
+
+async function load(fileName: string, bytes: Uint8Array, sourceLabel: string): Promise<CardItem | string> {
   const result: CheckResult = await checkSnapshot(bytes, { registry: REGISTRY });
   if (result.kind !== 'accepted')
     return `${fileName}：${result.kind === 'rejected' ? '无法导入' : '需要选择'}`;
@@ -68,25 +67,24 @@ async function load(fileName: string, bytes: Uint8Array, source: Loaded['source'
           ? '其他 Agent'
           : null;
   return {
-    fileName,
+    name: REGISTRY.find((r) => r.id === result.snapshot.project_id)?.name ?? result.snapshot.project_name,
     snapshot: result.snapshot,
     utcMs: result.meta.snapshotAtUtcMs,
-    attribution: who
-      ? `报告来自 ${who}${a.source === 'branch' ? '（据分支前缀推断）' : ''}`
-      : '报告来自：未注明',
-    source,
+    offsetMinutes: result.meta.snapshotAtOffsetMinutes,
+    attribution: who ? `报告来自 ${who}${a.source === 'branch' ? '（据分支推断）' : ''}` : '报告来自：未注明',
+    sourceLabel,
   };
 }
 
 function useSnapshots() {
-  const [items, setItems] = useState<Loaded[]>([]);
+  const [items, setItems] = useState<CardItem[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
   const [realCount, setRealCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const enc = new TextEncoder();
-      const out: (Loaded | string)[] = [];
+      const out: (CardItem | string)[] = [];
       let real: { fileName: string; base64: string }[] = [];
       if (!DEMO_ONLY) {
         try {
@@ -98,12 +96,13 @@ function useSnapshots() {
       }
       for (const f of real) {
         const bytes = Uint8Array.from(atob(f.base64), (c) => c.charCodeAt(0));
-        out.push(await load(f.fileName, bytes, 'real'));
+        out.push(await load(f.fileName, bytes, '真实快照（本机）'));
       }
-      out.push(await load('morii.dashboard', enc.encode(dashboardSnapshot), 'own'));
-      for (const d of demoSnapshots(new Date())) out.push(await load(d.fileName, enc.encode(d.json), 'demo'));
+      out.push(await load('morii.dashboard', enc.encode(dashboardSnapshot), 'Dashboard 自己的快照'));
+      for (const d of demoSnapshots(new Date()))
+        out.push(await load(d.fileName, enc.encode(d.json), '演示数据'));
       if (cancelled) return;
-      setItems(out.filter((x): x is Loaded => typeof x !== 'string'));
+      setItems(out.filter((x): x is CardItem => typeof x !== 'string'));
       setProblems(out.filter((x): x is string => typeof x === 'string'));
       setRealCount(real.length);
     })();
@@ -114,15 +113,13 @@ function useSnapshots() {
   return { items, problems, realCount };
 }
 
-function applyTheme(theme: Theme, accent: AccentOption) {
-  const root = document.documentElement;
-  const tokens = { ...COLOR_TOKENS[theme], ...ACCENT_TOKENS[accent][theme] };
-  // 用 CSSOM 设置变量：严格 CSP 下允许。P2.2 定稿后改为静态 CSS。
+/** 把一套 token 写成 CSS 变量（--c-ink1、--c-border-weak……）。 */
+function cssVars(tokens: ColorTokens): CSSProperties {
+  const vars: Record<string, string> = {};
   for (const [role, value] of Object.entries(tokens)) {
-    root.style.setProperty(`--c-${role.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`, value);
+    vars[`--c-${role.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`] = value;
   }
-  root.dataset.theme = theme;
-  root.style.colorScheme = theme;
+  return vars as CSSProperties;
 }
 
 function Choice<T extends string>({
@@ -141,118 +138,80 @@ function Choice<T extends string>({
   return (
     <fieldset className="choice">
       <legend>{legend}</legend>
-      {options.map(([v, label]) => (
-        <label key={v} className="choice-option">
-          <input type="radio" name={name} value={v} checked={value === v} onChange={() => onChange(v)} />
-          <span>{label}</span>
-        </label>
-      ))}
+      <div className="choice-options">
+        {options.map(([v, label]) => (
+          <label key={v} className="choice-option">
+            <input type="radio" name={name} value={v} checked={value === v} onChange={() => onChange(v)} />
+            <span>{label}</span>
+          </label>
+        ))}
+      </div>
     </fieldset>
   );
 }
 
-function relativeAge(utcMs: number, now: Date): string {
-  const hours = Math.round((now.getTime() - utcMs) / 3_600_000);
-  if (hours < 1) return '刚刚';
-  if (hours < 48) return `${hours} 小时前`;
-  return `${Math.round(hours / 24)} 天前`;
-}
-
-function ProjectCard({ item, variant, now }: { item: Loaded; variant: AxisVariant; now: Date }) {
-  const s = item.snapshot;
-  const p = summarizeProgress(s);
-  const next = headlineNextAction(s);
-  const name = REGISTRY.find((r) => r.id === s.project_id)?.name ?? s.project_name;
-  const fresh = freshness(item.utcMs, now, s.stage);
-  const days = Math.floor((now.getTime() - item.utcMs) / 86_400_000);
-  const evidenceDone = s.milestones.filter(
-    (m) => m.status === 'done' && (m.evidence_level === 'repository' || m.evidence_level === 'existing_test'),
-  ).length;
-  const selfDone = s.milestones.filter(
-    (m) => m.status === 'done' && (m.evidence_level === 'self_report' || m.evidence_level === 'unknown'),
-  ).length;
-
+function BackdropSample({
+  theme,
+  backdrop,
+  sample,
+}: {
+  theme: Theme;
+  backdrop: Backdrop;
+  sample: CardItem | undefined;
+}) {
+  const tokens = tokensFor(theme, backdrop);
   return (
-    <article className="card">
-      <header className="card-head">
-        <h3 className="card-name">{displayValue(name)}</h3>
-        <span className="mono card-id">{s.project_id}</span>
-        <span className={`card-fresh fresh-${fresh}`}>
-          {fresh === 'stale' ? (
-            <>
-              <svg className="icon" viewBox="0 0 16 16" aria-hidden="true">
-                <circle cx="8" cy="8" r="6" fill="none" strokeWidth="1.5" />
-                <path d="M8 4.5V8l2.5 1.5" fill="none" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              报告已 {days} 天
-            </>
-          ) : fresh === 'not_counted' ? (
-            '已暂停 · 不计过期'
-          ) : (
-            `快照 ${relativeAge(item.utcMs, now)}`
-          )}
-        </span>
-      </header>
-
-      <div className="card-axis">
-        <StageAxis stage={s.stage} variant={variant} size="mini" />
-        <span className="card-meta">首份快照即为此阶段</span>
+    <figure className="backdrop">
+      {/* 颜色变量只作用在样板区域；说明文字用页面本身的颜色。 */}
+      <div className="backdrop-stage" style={cssVars(tokens)}>
+        <p className="backdrop-name">{BACKDROP_LABELS[backdrop]}</p>
+        {sample ? (
+          <div className="backdrop-card">
+            <p className="backdrop-card-title">{sample.name}</p>
+            <LineMap stage={sample.snapshot.stage} size="compact" />
+            <p className="backdrop-card-line">还差 3 个里程碑，其中 1 个受阻</p>
+          </div>
+        ) : null}
       </div>
-
-      {/* 只有按阶段改写的成熟说法（上线准备、已上线、维护中）才用「正常」色；阶段未知时不用。 */}
-      <p
-        className={`card-line${p.mature && ['launch_preparation', 'live', 'maintenance'].includes(s.stage) ? ' card-line-mature' : ''}`}
-      >
-        {p.line}
-      </p>
-
-      <div className="card-milestones">
-        <MilestoneGrid milestones={s.milestones} />
-        <span className="card-meta">
-          {p.done}/{p.total} 完成
-          {p.done > 0
-            ? ` · 有证据 ${evidenceDone} · 自报 ${selfDone} · 据报告已验收 ${p.reportedAccepted}`
-            : ''}
-        </span>
-        <span className="sr-only">
-          {(['done', 'in_progress', 'blocked', 'not_started', 'unknown'] as const)
-            .map((st) => `${STATUS_TEXT[st]} ${s.milestones.filter((m) => m.status === st).length}`)
-            .join('，')}
-        </span>
-        {s.overall_progress !== null ? <ProgressEstimate value={s.overall_progress} /> : null}
-      </div>
-
-      {next ? (
-        <p className="card-next">
-          <span className={`prio prio-${next.priority ?? 'unknown'}`}>{next.priority ?? '优先级未知'}</span>
-          <span lang="zh-Hans">{displayValue(next.title)}</span>
-        </p>
-      ) : null}
-
-      <footer className="card-foot">
-        <span>{item.attribution}</span>
+      <figcaption>
         <span>
-          需要你：{p.decisions} 个决定 · {p.awaitingAcceptance} 次验收
+          {theme === 'light' ? '浅色' : '深色'} · {BACKDROP_LABELS[backdrop]}
         </span>
-        <span className={`source source-${item.source}`}>
-          {item.source === 'real'
-            ? '真实快照（本机）'
-            : item.source === 'own'
-              ? 'Dashboard 自己的快照'
-              : '演示数据'}
+        <span className="mono">
+          画布 {toHex(tokens.canvas)} · 卡片 {toHex(tokens.surface)}
         </span>
-      </footer>
-    </article>
+      </figcaption>
+    </figure>
   );
 }
 
-const STAGES_FOR_AXIS_DEMO = [
-  'development',
-  'integration',
-  'launch_preparation',
-  'paused',
-  'unknown',
-] as const;
+function FontPanel({ zh, ja, label }: { zh?: ZhFont; ja?: JaFont; label: string }) {
+  return (
+    <figure className="fontpanel" data-zh={zh} data-ja={ja}>
+      <figcaption className="fontpanel-label">{label}</figcaption>
+      {zh ? (
+        <div lang="zh-Hans">
+          <p className="fontpanel-heading">Moriium 主站 · 需要你决定</p>
+          <p className="fontpanel-body">
+            快照是证词，不是事实本身。Dashboard 展示时始终带着谁说的、什么时候说的、依据是什么。还差 3
+            个里程碑，其中 1 个受阻；下一步是核实 ICP 接入条件。
+          </p>
+          <p className="fontpanel-small">报告来自 Codex · main @ fd48f88 · 快照 10月11日 22:45</p>
+        </div>
+      ) : null}
+      {ja ? (
+        <div lang="ja">
+          <p className="fontpanel-heading">判断が必要な項目 · Enouia Runtime</p>
+          <p className="fontpanel-body">
+            スナップショットは証言であり、事実そのものではありません。表示しているのは取り込んだ時刻で、稼働状況ではありません。W01–W05
+            の受け入れはまだ終わっていません。
+          </p>
+          <p className="fontpanel-small">報告から 16 日 · 自己申告 · 受け入れ済み</p>
+        </div>
+      ) : null}
+    </figure>
+  );
+}
 
 export function Specimen() {
   const [theme, setTheme] = useState<Theme>(
@@ -260,324 +219,231 @@ export function Specimen() {
       param('theme', ['light', 'dark'] as const) ??
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
   );
-  const [accent, setAccent] = useState<AccentOption>(param('accent', ['mist', 'slate'] as const) ?? 'mist');
-  const [font, setFont] = useState<FontScheme>(param('font', ['b', 'a'] as const) ?? 'b');
-  const [mono, setMono] = useState<Mono>(param('mono', ['geist', 'jetbrains'] as const) ?? 'geist');
-  const [variant, setVariant] = useState<AxisVariant>(
-    param('axis', ['dots', 'segments', 'steps'] as const) ?? 'dots',
+  const [lightBackdrop, setLightBackdrop] = useState<Backdrop>(
+    param('light', ['stone', 'mist'] as const) ?? 'stone',
   );
+  const [darkBackdrop, setDarkBackdrop] = useState<Backdrop>(
+    param('dark', ['ink', 'dusk'] as const) ?? 'ink',
+  );
+  const [zh, setZh] = useState<ZhFont>(param('zh', ['misans', 'noto'] as const) ?? 'misans');
+  const [ja, setJa] = useState<JaFont>(param('ja', ['zen', 'line', 'plex'] as const) ?? 'zen');
   const { items, problems, realCount } = useSnapshots();
   const now = useMemo(() => new Date(), []);
 
-  useEffect(() => applyTheme(theme, accent), [theme, accent]);
-  useEffect(() => {
-    document.documentElement.dataset.font = font;
-    document.documentElement.dataset.mono = mono;
-  }, [font, mono]);
+  const backdrop = theme === 'light' ? lightBackdrop : darkBackdrop;
+  const tokens = tokensFor(theme, backdrop);
 
-  const tokens = { ...COLOR_TOKENS[theme], ...ACCENT_TOKENS[accent][theme] };
+  useEffect(() => {
+    const root = document.documentElement;
+    // 用 CSSOM 设置变量：严格 CSP 下允许。P2.2 定稿后改为静态 CSS。
+    for (const [k, v] of Object.entries(cssVars(tokens))) root.style.setProperty(k, String(v));
+    root.dataset.theme = theme;
+    root.dataset.zh = zh;
+    root.dataset.ja = ja;
+    root.style.colorScheme = theme;
+  }, [tokens, theme, zh, ja]);
+
+  const sample = items.find((i) => i.snapshot.stage === 'integration') ?? items[0];
 
   return (
     <>
       <a className="skip" href="#main">
         跳到正文
       </a>
-      <header className="top">
-        <div className="top-title">
-          <h1>设计样张</h1>
-          <p className="muted">
-            P2.1 · 全部字体和色值都是候选，你逐项拍板后才定稿。快照内容按原文显示，标注{' '}
-            <code>lang="zh-Hans"</code>。
+
+      <header className="masthead">
+        <div className="masthead-inner">
+          <p className="eyebrow">Moriium Dashboard · 设计样张 · 第二轮</p>
+          <h1 className="title">项目做到哪里，一眼看清</h1>
+          <p className="lede">
+            按你上一轮的意见改了背景、中日文字体和项目卡片。已经定下的不再给选项；还没定的三项，在下面切换比较。
           </p>
-        </div>
-        <div className="controls">
-          <Choice
-            legend="主题"
-            name="theme"
-            value={theme}
-            onChange={setTheme}
-            options={[
-              ['light', '浅色'],
-              ['dark', '深色'],
-            ]}
-          />
-          <Choice
-            legend="强调色"
-            name="accent"
-            value={accent}
-            onChange={setAccent}
-            options={[
-              ['mist', '雾蓝 · 安静'],
-              ['slate', '雾蓝 · 更蓝'],
-            ]}
-          />
-          <Choice
-            legend="字体"
-            name="font"
-            value={font}
-            onChange={setFont}
-            options={[
-              ['b', '方案 B · 极简无衬线'],
-              ['a', '方案 A · 编辑路线'],
-            ]}
-          />
-          <Choice
-            legend="等宽字"
-            name="mono"
-            value={mono}
-            onChange={setMono}
-            options={[
-              ['geist', 'Geist Mono'],
-              ['jetbrains', 'JetBrains Mono'],
-            ]}
-          />
-          {font === 'a' ? (
-            <span className="muted">方案 A 固定用 IBM Plex Mono，等宽字选项只对方案 B 生效</span>
-          ) : null}
-          <Choice
-            legend="阶段轴"
-            name="axis"
-            value={variant}
-            onChange={setVariant}
-            options={[
-              ['dots', '圆点'],
-              ['segments', '分段条'],
-              ['steps', '文字步进'],
-            ]}
-          />
+          <ul className="decided" aria-label="已定">
+            {DECIDED.map((d) => (
+              <li key={d}>
+                <svg className="icon" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M3.5 8.5l3 3 6-7"
+                    fill="none"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {d}
+              </li>
+            ))}
+          </ul>
         </div>
       </header>
 
+      <section className="controls" aria-label="待你拍板的选项">
+        <Choice
+          legend="主题"
+          name="theme"
+          value={theme}
+          onChange={setTheme}
+          options={[
+            ['light', '浅色'],
+            ['dark', '深色'],
+          ]}
+        />
+        <Choice
+          legend="浅色背景"
+          name="light"
+          value={lightBackdrop}
+          onChange={setLightBackdrop}
+          options={BACKDROPS.light.map((b) => [b, BACKDROP_LABELS[b]])}
+        />
+        <Choice
+          legend="深色背景"
+          name="dark"
+          value={darkBackdrop}
+          onChange={setDarkBackdrop}
+          options={BACKDROPS.dark.map((b) => [b, BACKDROP_LABELS[b]])}
+        />
+        <Choice
+          legend="中文"
+          name="zh"
+          value={zh}
+          onChange={setZh}
+          options={(Object.keys(ZH_LABELS) as ZhFont[]).map((k) => [k, ZH_LABELS[k]])}
+        />
+        <Choice
+          legend="日文"
+          name="ja"
+          value={ja}
+          onChange={setJa}
+          options={(Object.keys(JA_LABELS) as JaFont[]).map((k) => [k, JA_LABELS[k]])}
+        />
+      </section>
+
       <main id="main">
-        <section aria-labelledby="s-projects">
-          <h2 id="s-projects">1 · 项目进度</h2>
-          <p className="muted">
-            {realCount > 0
-              ? `本机读入 ${realCount} 份真实快照（只在你的浏览器里显示，不进仓库），另附 Dashboard 自己的快照和演示数据。`
-              : '没有读入本机快照，显示 Dashboard 自己的快照和演示数据。设置 MORIIUM_SPECIMEN_SNAPSHOTS 后可以看真实项目。'}
-            「还差什么」完全由快照计算；成熟项目显示「功能成熟 · 等待上线」，不显示偏低的百分比。
-          </p>
-          {problems.length > 0 ? <p className="warn-text">没有显示：{problems.join('；')}</p> : null}
-          <div className="cards">
+        <section className="section" aria-labelledby="s-cards">
+          <div className="section-head">
+            <p className="section-tag">待你拍板 · 项目卡片</p>
+            <h2 id="s-cards">每张卡只回答四件事</h2>
+            <p className="section-note">
+              做到哪里、还差什么、下一步、等你几件。其余的放在详情里：鼠标停一下，或者用 Tab
+              走到「详情」；手机上点「详情」。
+              {realCount > 0
+                ? ` 这里有 ${realCount} 个项目来自你本机的真实快照，只在你的浏览器里显示。`
+                : ' 现在显示的是 Dashboard 自己的快照和演示数据。'}
+            </p>
+            {problems.length > 0 ? <p className="section-warn">没有显示：{problems.join('；')}</p> : null}
+          </div>
+          <div className="pcards">
             {items.map((item) => (
-              <ProjectCard
-                key={`${item.source}-${item.snapshot.project_id}`}
-                item={item}
-                variant={variant}
-                now={now}
-              />
+              <ProgressCard key={`${item.sourceLabel}-${item.snapshot.project_id}`} item={item} now={now} />
             ))}
           </div>
         </section>
 
-        <section aria-labelledby="s-axis">
-          <h2 id="s-axis">2 · 阶段轴的三种画法</h2>
-          <p className="muted">
-            阶段轴是全站唯一的「招牌时刻」，只有它可以用较大面积的强调色。上面的卡片跟着你在顶部选的画法变化。
-          </p>
-          <div className="axis-compare">
-            {(['dots', 'segments', 'steps'] as const).map((v) => (
-              <div key={v} className="axis-col">
-                <h3>{v === 'dots' ? '圆点' : v === 'segments' ? '分段条' : '文字步进'}</h3>
-                <div className="axis-full-demo">
-                  <StageAxis stage="integration" variant={v} size="full" />
-                </div>
-                <ul className="axis-list">
-                  {STAGES_FOR_AXIS_DEMO.map((st) => (
-                    <li key={st}>
-                      <span className="axis-list-label">{STAGE_LABELS[st]}</span>
-                      <StageAxis stage={st} variant={v} size="mini" />
-                    </li>
-                  ))}
-                </ul>
-              </div>
+        <section className="section" aria-labelledby="s-backdrop">
+          <div className="section-head">
+            <p className="section-tag">待你拍板 · 背景</p>
+            <h2 id="s-backdrop">浅色压低亮度，深色换掉蓝黑</h2>
+            <p className="section-note">
+              四个候选并排，不受上面主题切换的影响。浅色亮度从 0.984 降到 0.95
+              左右；「石」是带一点暖意的中性灰，不是米黄，「雾」偏冷。深色「墨」是带暖意的石墨，「夜雾」是更亮、更低饱和的蓝灰。
+            </p>
+          </div>
+          <div className="backdrops">
+            {(['stone', 'mist'] as const).map((b) => (
+              <BackdropSample key={b} theme="light" backdrop={b} sample={sample} />
+            ))}
+            {(['ink', 'dusk'] as const).map((b) => (
+              <BackdropSample key={b} theme="dark" backdrop={b} sample={sample} />
             ))}
           </div>
         </section>
 
-        <section aria-labelledby="s-status">
-          <h2 id="s-status">3 · 状态表达</h2>
-          <div className="status-grid">
-            <div>
-              <h3>里程碑状态</h3>
-              <ul className="plain">
-                {(['done', 'in_progress', 'blocked', 'not_started', 'unknown'] as const).map((st) => (
-                  <li key={st} className="status-row">
-                    <StatusMark status={st} />
-                    <MilestoneGrid
-                      milestones={[
-                        {
-                          id: st,
-                          title: st,
-                          status: st,
-                          evidence_level: 'unknown',
-                          evidence_refs: [],
-                          human_acceptance: 'unknown',
-                        },
-                      ]}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3>证据与验收（三层分开）</h3>
-              <ul className="plain tags">
-                {(['self', 'evidence', 'test', 'reported', 'accepted', 'rejected'] as const).map((k) => (
-                  <li key={k}>
-                    <EvidenceTag kind={k} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3>数据状态</h3>
-              <ul className="plain states">
-                <li>
-                  <span className="card-fresh fresh-stale">
-                    <svg className="icon" viewBox="0 0 16 16" aria-hidden="true">
-                      <circle cx="8" cy="8" r="6" fill="none" strokeWidth="1.5" />
-                      <path d="M8 4.5V8l2.5 1.5" fill="none" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    报告已 18 天
-                  </span>
-                  <span className="muted">过期：土黄，不变红，不弹窗</span>
-                </li>
-                <li>
-                  <span className="pill pill-paused">已暂停</span>
-                  <span className="muted">灰紫，不计过期</span>
-                </li>
-                <li>
-                  <span className="status status-unknown">未知</span>
-                  <span className="muted">照实显示，不当作 0</span>
-                </li>
-                <li>
-                  <span className="muted-strong">还没有快照</span>
-                  <span className="muted">不写 0%</span>
-                </li>
-                <li>
-                  <span className="pill pill-conflict">两处说法矛盾</span>
-                  <span className="muted">展开说明哪两处</span>
-                </li>
-              </ul>
-            </div>
+        <section className="section" aria-labelledby="s-fonts">
+          <div className="section-head">
+            <p className="section-tag">待你拍板 · 中日文字体</p>
+            <h2 id="s-fonts">标题有温度，正文要耐看</h2>
+            <p className="section-note">
+              拉丁字母仍是方案 A 的 IBM Plex Sans 与 Source Serif 4。中文正文换成
+              MiSans，标题用霞鹜文楷（楷体，和日文的 Klee One
+              同源）。日文给两组新候选，第一轮的写法放在最后作对照。快照内容一律按中文字形显示。
+            </p>
+          </div>
+          <div className="fontpanels">
+            <FontPanel zh="misans" label="中文 · MiSans + 霞鹜文楷" />
+            <FontPanel zh="noto" label="中文 · 思源（第一轮）" />
+            <FontPanel ja="zen" label="日文 · Zen 角ゴシック New + しっぽり明朝" />
+            <FontPanel ja="line" label="日文 · LINE Seed JP + Klee One" />
+            <FontPanel ja="plex" label="日文 · IBM Plex Sans JP（第一轮）" />
           </div>
         </section>
 
-        <section aria-labelledby="s-color">
-          <h2 id="s-color">
-            4 · 颜色 token（{theme === 'light' ? '浅色' : '深色'} ·{' '}
-            {accent === 'mist' ? '雾蓝 · 安静' : '雾蓝 · 更蓝'}）
-          </h2>
-          <p className="muted">
-            在 OKLCH 里推导，深色单独选。对比度是按下表的组合实际算出来的；状态色的色盲可区分度用 dataviz
-            的校验脚本检查过。
-          </p>
-          <div className="swatches">
-            {Object.entries(tokens).map(([role, value]) => (
-              <div key={role} className="swatch">
-                <span className="swatch-chip" style={{ background: value }} />
-                <span className="swatch-role">{role}</span>
-                <span className="mono swatch-value">{value}</span>
-                <span className="mono swatch-value">{toHex(value)}</span>
-              </div>
-            ))}
+        <section className="section" aria-labelledby="s-status">
+          <div className="section-head">
+            <p className="section-tag">已定 · 状态表达</p>
+            <h2 id="s-status">每个状态都有图形和文字</h2>
           </div>
-          <table className="table">
-            <caption className="sr-only">对比度检查</caption>
-            <thead>
-              <tr>
-                <th scope="col">用途</th>
-                <th scope="col">前景 / 背景</th>
-                <th scope="col" className="num">
-                  对比度
-                </th>
-                <th scope="col" className="num">
-                  要求
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {CONTRAST_PAIRS.map(([fg, bg, min, label]) => {
-                const r = contrast(tokens[fg], tokens[bg]);
-                return (
-                  <tr key={`${fg}-${bg}`}>
-                    <td>{label}</td>
-                    <td className="mono">
-                      {fg} / {bg}
-                    </td>
-                    <td className="num mono">{r.toFixed(2)}</td>
-                    <td className="num">
-                      {r >= min ? '✓ ' : '✕ '}≥ {min}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-
-        <section aria-labelledby="s-type">
-          <h2 id="s-type">5 · 字体（{font === 'b' ? '方案 B · 极简无衬线' : '方案 A · 编辑路线'}）</h2>
-          <div className="type-scale">
-            <p className="t-32 heading">Moriium Dashboard 工作台</p>
-            <p className="t-24 heading">需要你决定 · 3</p>
-            <p className="t-20 heading">项目进度与报告新鲜度</p>
-            <p className="t-16">还差：4 个里程碑未完成（其中 1 个受阻）· 1 个阻塞 · 等你 2 件</p>
-            <p className="t-14">
-              正文 14px：快照是证词，不是事实本身。Dashboard 展示时始终带着谁说的、什么时候说的、依据是什么。
-            </p>
-            <p className="t-12 muted">辅助 12px：这是导入时间，不是在线状态。</p>
-          </div>
-          <div className="trilingual">
-            <p lang="zh-Hans">
-              中文：项目「Enouia Runtime」处于集成中，桌面与 Memory 本地闭环已有合成证据；Windows
-              验收（W01–W05）还没完成。
-            </p>
-            <p lang="ja">
-              日本語：スナップショットは証言であり、事実そのものではありません。取り込んだ時刻です。稼働状況ではありません。
-            </p>
-            <p lang="en">
-              English: Import time, not online status. Self-reported, repository evidence, and your acceptance
-              stay separate.
-            </p>
-            <p lang="ja" className="muted">
-              日本語の画面でも、スナップショットの内容は{' '}
-              <span lang="zh-Hans">中文字形（漢字の形が違います）</span> で表示します。
-            </p>
-          </div>
-          <table className="table">
-            <caption className="sr-only">表格与等宽数字示例</caption>
-            <thead>
-              <tr>
-                <th scope="col">项目</th>
-                <th scope="col">提交</th>
-                <th scope="col">快照时间</th>
-                <th scope="col" className="num">
-                  里程碑
-                </th>
-                <th scope="col" className="num">
-                  待决定
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.slice(0, 6).map((it) => (
-                <tr key={`t-${it.source}-${it.snapshot.project_id}`}>
-                  <td>
-                    {REGISTRY.find((r) => r.id === it.snapshot.project_id)?.name ?? it.snapshot.project_name}
-                  </td>
-                  <td className="mono">{it.snapshot.source.commit_sha?.slice(0, 7) ?? '—'}</td>
-                  <td className="mono">{it.snapshot.snapshot_at.replace('T', ' ').slice(0, 16)}</td>
-                  <td className="num">
-                    {it.snapshot.milestones.filter((m) => m.status === 'done').length}/
-                    {it.snapshot.milestones.length}
-                  </td>
-                  <td className="num">{it.snapshot.needs_morii.length}</td>
-                </tr>
+          <div className="statusrow">
+            <ul className="plain" aria-label="里程碑状态">
+              {(['done', 'in_progress', 'blocked', 'not_started', 'unknown'] as const).map((st) => (
+                <li key={st} className="status-line">
+                  <MilestoneGrid
+                    milestones={[
+                      {
+                        id: st,
+                        title: st,
+                        status: st,
+                        evidence_level: 'unknown',
+                        evidence_refs: [],
+                        human_acceptance: 'unknown',
+                      },
+                    ]}
+                  />
+                  <StatusMark status={st} />
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+            <ul className="plain tags" aria-label="证据与验收">
+              {(['self', 'evidence', 'test', 'reported', 'accepted', 'rejected'] as const).map((k) => (
+                <li key={k}>
+                  <EvidenceTag kind={k} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <details className="contrast">
+            <summary>对比度检查（当前主题与背景，全部达标）</summary>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th scope="col">用途</th>
+                  <th scope="col">前景 / 背景</th>
+                  <th scope="col" className="num">
+                    对比度
+                  </th>
+                  <th scope="col" className="num">
+                    要求
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {CONTRAST_PAIRS.map(([fg, bg, min, label]) => {
+                  const r = contrast(tokens[fg], tokens[bg]);
+                  return (
+                    <tr key={`${fg}-${bg}`}>
+                      <td>{label}</td>
+                      <td className="mono">
+                        {fg} / {bg}
+                      </td>
+                      <td className="num mono">{r.toFixed(2)}</td>
+                      <td className="num">
+                        {r >= min ? '✓' : '✕'} ≥ {min}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </details>
         </section>
       </main>
     </>

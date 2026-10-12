@@ -11,6 +11,8 @@ export interface ProgressSummary {
   blocked: number;
   notStarted: number;
   unknown: number;
+  /** 未完成的里程碑：进行中、受阻、未开始（不含未知）。 */
+  remaining: number;
   /** 完成且等 Morii 验收的里程碑（快照转述为 pending）。 */
   awaitingAcceptance: number;
   /** 快照里说已验收的完成里程碑（据报告）。 */
@@ -26,7 +28,7 @@ export interface ProgressSummary {
 /** 用「 · 」连接；全角括号后面不加空格（与 02 第 5.4 节的写法一致）。 */
 const joinParts = (parts: string[]) => parts.filter(Boolean).join(' · ').replaceAll('） · ', '）· ');
 
-const MATURE_WORDING: Partial<Record<Snapshot['stage'], string>> = {
+export const MATURE_WORDING: Partial<Record<Snapshot['stage'], string>> = {
   launch_preparation: '功能成熟 · 等待上线',
   live: '已上线',
   maintenance: '维护中',
@@ -94,6 +96,7 @@ export function summarizeProgress(snapshot: Snapshot, coreMilestoneIds?: readonl
     blocked,
     notStarted,
     unknown,
+    remaining,
     awaitingAcceptance,
     reportedAccepted,
     blockers,
