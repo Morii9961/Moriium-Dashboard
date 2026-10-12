@@ -99,6 +99,20 @@ export function SettingsPage() {
 
       <ProjectRegistry />
 
+      <section className="settings-group" aria-labelledby="set-data">
+        <h2 id="set-data" className="settings-title">
+          {t('settings.data')}
+        </h2>
+        <div className="page-actions settings-actions">
+          <a className="btn" href="/api/export" download>
+            {t('export.all')}
+          </a>
+          <a className="btn" href="/api/export/snapshots" download>
+            {t('export.snapshots')}
+          </a>
+        </div>
+      </section>
+
       <section className="settings-group" aria-labelledby="set-service">
         <h2 id="set-service" className="settings-title">
           {t('settings.service')}
