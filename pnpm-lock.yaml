@@ -22,7 +22,7 @@ importers:
         version: 5.0.3(@types/node@24.19.2)(vite@8.3.4(@types/node@24.19.2))
 
   packages/protocol:
-    dependencies:
+    devDependencies:
       ajv:
         specifier: 8.20.0
         version: 8.20.0
