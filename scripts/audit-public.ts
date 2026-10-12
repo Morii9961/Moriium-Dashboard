@@ -61,9 +61,10 @@ const ALLOWED_IPV4 = [/^127\.0\.0\.1$/, /^0\.0\.0\.0$/, /^192\.0\.2\./, /^198\.5
 const IPV4 = /(?<![\d.])(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\d.])/g;
 
 const LOCAL_PATH_PATTERNS: { pattern: RegExp; detail: string }[] = [
-  { pattern: /(?<![A-Za-z0-9])[A-Za-z]:[\\/](?![\\/])/, detail: '盘符绝对路径' },
+  // 反斜杠可能被转义成两个（JSON、代码里的字符串）；只排除 `://` 这种 URL 写法。
+  { pattern: /(?<![A-Za-z0-9])[A-Za-z]:(?:\\|\/(?!\/))/, detail: '盘符绝对路径' },
   { pattern: /\/(Users|home)\/[^/\s]+/, detail: '用户目录路径' },
-  { pattern: /\\Users\\[^\\\s]+/, detail: '用户目录路径' },
+  { pattern: /\\{1,2}Users\\{1,2}[^\\\s]+/, detail: '用户目录路径' },
 ];
 
 const EMAIL = /[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g;

@@ -173,7 +173,7 @@ export function agentFromBranch(branch: string): 'claude' | 'codex' | null {
   return null;
 }
 
-const LOCAL_PATH = /(?<![A-Za-z0-9])[A-Za-z]:[\\/](?![\\/])|\/(?:Users|home)\/[^/\s]+|\\Users\\/;
+const LOCAL_PATH = /(?<![A-Za-z0-9])[A-Za-z]:(?:\\|\/(?!\/))|\/(?:Users|home)\/[^/\s]+|\\(?:Users)\\/;
 const IPV4 = /(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])/g;
 
 function findPrivateInfo(root: unknown): { kinds: string[]; paths: string[] } {

@@ -74,6 +74,9 @@ describe('local paths', () => {
     j('C', ':/', 'Users/x'),
     j('/Us', 'ers/', 'someone/x'),
     j('/ho', 'me/', 'someone'),
+    // JSON 和代码字符串里转义过的反斜杠
+    j('"C', ':\\\\', 'Users\\\\demo\\\\notes.md"'),
+    j("'D", ':\\\\', "work'"),
   ])('flags %s', (line) => {
     expect(rules('a.md', line)).toContain('local-path');
   });

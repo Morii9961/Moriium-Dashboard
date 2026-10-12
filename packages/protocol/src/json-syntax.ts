@@ -165,7 +165,8 @@ export function locateJsonSyntaxError(text: string): JsonSyntaxError | null {
   };
 
   const number = () => {
-    const match = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(text.slice(i));
+    NUMBER.lastIndex = i;
+    const match = NUMBER.exec(text);
     if (!match) throw new Fail('invalid_number', i);
     i += match[0].length;
   };
