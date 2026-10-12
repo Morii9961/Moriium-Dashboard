@@ -2,27 +2,33 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-12T08:55:00+08:00",
+  "snapshot_at": "2026-10-12T09:27:00+08:00",
   "source": {
-    "branch": "claude/workspace-tooling",
-    "commit_sha": "6372af68b4e9bf3f66b188ce7eb6d1bb48d3e4cc",
+    "branch": "claude/protocol-docs",
+    "commit_sha": "355856021c81bb620cb3c7042312f3cff7dac767",
     "basis": [
       "docs/planning/06-mvp-and-roadmap.md（P1 工作包与交付标准）",
       "docs/design-decisions.md",
       "docs/adr/0001-toolchain-and-native-typescript.md",
-      "https://github.com/Morii9961/Moriium-Dashboard（main@adfb890，P1.1 首次提交）",
-      ".github/workflows/ci.yml",
-      "scripts/audit-public.ts",
-      "本机 pnpm verify（2026-10-12 08:51）：Biome 通过、类型检查通过、Vitest 36/36、公开树审计通过"
+      "docs/adr/0002-protocol-package.md",
+      "docs/protocol/README.md",
+      "fixtures/protocol/cases.json",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/1（P1.2，CI 在 Ubuntu 与 Windows 上通过）",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/2（P1.3）",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/3（P1.4）",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/4（P1.5）",
+      "claude/protocol-docs 分支（P1.6）",
+      "本机 pnpm verify（2026-10-12 09:26）：Biome 通过、类型检查通过、Vitest 206/206、公开树审计通过",
+      "本机 pnpm status:check：Dashboard 与五个项目的真实快照（只读，不进仓库）全部可以导入，零提醒"
     ],
-    "tests_rerun": true
+    "tests_rerun": false
   },
   "reporter": {
     "agent": "claude",
     "note": "开发会话（P1）"
   },
   "stage": "development",
-  "summary": "进入开发。公开仓库已建立并推送首次提交；工作区、类型检查、测试、CI 和公开树审计已在分支上完成，等待 CI 与合并。协议包、样本和检查工具（P1.3 到 P1.6）还没开始。",
+  "summary": "P1 的六个工作包都已提交 PR：协议 Schema 正式发布，校验、接收规则、样本、status:check 检查工具和正式文档已完成，本机 206 项测试通过。等 Morii 用检查工具看真实快照并审阅合并；P2 还没开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -39,10 +45,12 @@
       "status": "in_progress",
       "evidence_level": "repository",
       "evidence_refs": [
-        "https://github.com/Morii9961/Moriium-Dashboard",
-        ".github/workflows/ci.yml",
-        "scripts/audit-public.ts",
-        "docs/adr/0001-toolchain-and-native-typescript.md"
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/1",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/2",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/3",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/4",
+        "docs/protocol/README.md",
+        "fixtures/protocol/cases.json"
       ],
       "human_acceptance": "pending"
     },
@@ -90,15 +98,9 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "protocol-package",
-      "title": "实现 packages/protocol（P1.3）与协议样本（P1.4），提供 status:check 检查工具（P1.5）",
-      "priority": "P0",
-      "result": "Schema v1.0 与 v1.1 发布，接收规则有自动化测试，Morii 能用检查工具看真实快照"
-    },
-    {
       "id": "design-specimen",
       "title": "制作设计样张页（P2.1），用成熟项目、持续研发项目和 Dashboard 自己的快照",
-      "priority": "P1",
+      "priority": "P0",
       "result": "Morii 用真实内容逐项确定字体、配色和阶段轴画法"
     },
     {
@@ -110,8 +112,16 @@
   ],
   "needs_morii": [
     {
+      "id": "p1-review",
+      "decision": "P1 停点：请用 pnpm status:check 看一两份真实快照，确认输出看得懂；PR #1 到 #5 是否合并？"
+    },
+    {
+      "id": "protocol-interpretations",
+      "decision": "三处接收规则按我的理解实现，是否同意：summary 只有空白算错误；v1.0 文件里出现 reporter 或条目 id 时忽略并提醒；+08:00 和 Z 写法指向同一时刻时算同一时刻冲突？"
+    },
+    {
       "id": "enable-snapshots",
-      "decision": "什么时候把「生成项目状态快照」的指令放进其他五个项目的 AGENTS.md？建议在 P1 结束、检查工具可用之后。"
+      "decision": "什么时候把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md？检查工具已经可用。"
     },
     {
       "id": "data-dir-location",

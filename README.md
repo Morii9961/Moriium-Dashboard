@@ -6,7 +6,7 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 ## 当前状态
 
-规划已于 2026-10-12 获批，正在进行 P1（仓库与协议）。目前只有工作区骨架和公开树审计，界面和服务端还没开始。
+规划已于 2026-10-12 获批，P1（仓库与协议）的工作包都已提交审阅：协议包、样本和检查工具可以用；界面和服务端还没开始。
 
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
@@ -16,9 +16,10 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 快照的格式。v1.0 与 v1.1 同时支持。
 
-- 协议说明：[`docs/planning/03-status-protocol-v1.md`](./docs/planning/03-status-protocol-v1.md)（P1.6 后移到 `docs/protocol/`）
-- JSON Schema 2020-12：[v1.0](./docs/planning/schema/project-status.v1.0.schema.json)、[v1.1](./docs/planning/schema/project-status.v1.1.schema.json)
-- 给 Agent 的指令模板：[`docs/planning/agent-snapshot-prompt.md`](./docs/planning/agent-snapshot-prompt.md)
+- 协议说明：[`docs/protocol/README.md`](./docs/protocol/README.md)
+- JSON Schema 2020-12：[v1.0](./docs/protocol/schema/project-status.v1.0.schema.json)、[v1.1](./docs/protocol/schema/project-status.v1.1.schema.json)
+- 给 Agent 的指令模板：[`docs/protocol/agent-snapshot-prompt.md`](./docs/protocol/agent-snapshot-prompt.md)
+- 协议样本：[`fixtures/protocol/`](./fixtures/protocol/README.md)
 
 ## 本地开发
 
@@ -35,6 +36,14 @@ pnpm audit:public  # 公开树审计：数据库、导出包、密钥形态、IP
 
 服务端和脚本由 Node 直接运行 `.ts`，没有构建步骤，原因见 [ADR 0001](./docs/adr/0001-toolchain-and-native-typescript.md)。
 
+### 检查快照文件
+
+```bash
+pnpm status:check path/to/project-status.json
+```
+
+输出和导入预览一致：能不能导入、错误和提醒（位置 · 问题 · 收到了什么 · 怎么改），无法导入时附一段可以直接粘贴回 Agent 会话的修复说明。只读取文件，不访问网络，不保存任何内容。可以一次检查多个文件；`pnpm status:check --help` 列出全部选项。退出码：0 可以导入，1 无法导入，2 需要先做选择（文件被代码块包着）。
+
 ## 数据与隐私
 
 数据库、备份、导出包和任何令牌都不进这个仓库。运行时数据放在环境变量 `MORIIUM_DASHBOARD_DATA` 指定的仓库外目录。仓库里的演示数据全部虚构。
@@ -45,8 +54,8 @@ pnpm audit:public  # 公开树审计：数据库、导出包、密钥形态、IP
 
 Moriium Dashboard is a single-user workspace. Agents working on Morii's projects write "project status snapshots" in a shared JSON format (the Project Status Protocol). The dashboard imports them and shows, for each project, where it stands, what is still missing, what comes next, and what needs Morii's decision. It also holds a daily focus list, basic tasks, and a log of finished work. Agent self-reports, repository or test evidence, and Morii's own acceptance are always shown separately, and no progress percentage is drawn without a trustworthy basis.
 
-**Status:** planning was approved on 2026-10-12; work on P1 (repository and protocol) is in progress. There is no runnable code yet.
+**Status:** planning was approved on 2026-10-12. P1 (repository and protocol) is in review: the protocol package, fixtures and the checker work; the UI and server have not started.
 
-**Protocol:** see [`docs/planning/03-status-protocol-v1.md`](./docs/planning/03-status-protocol-v1.md) (Chinese) and the JSON Schemas for [v1.0](./docs/planning/schema/project-status.v1.0.schema.json) and [v1.1](./docs/planning/schema/project-status.v1.1.schema.json).
+**Protocol:** see [`docs/protocol/README.md`](./docs/protocol/README.md) (Chinese) and the JSON Schemas for [v1.0](./docs/protocol/schema/project-status.v1.0.schema.json) and [v1.1](./docs/protocol/schema/project-status.v1.1.schema.json). Run `pnpm status:check <file>` to check a snapshot.
 
 **License:** code is MIT. Runtime data never enters this repository.

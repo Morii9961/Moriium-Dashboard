@@ -1,5 +1,6 @@
 # Agent 指令模板：生成项目状态快照
 
+> **定稿已发布（2026-10-12，P1.6）：[`docs/protocol/agent-snapshot-prompt.md`](../protocol/agent-snapshot-prompt.md)。本文保留为规划阶段的批准记录，不再更新。**
 > 状态：已获批（2026-10-12），按协议 v1.1 编写。P1.6 定稿后迁到 `docs/protocol/`，正文不变。
 > 用法：Morii 把下面「指令正文」放进各项目的 `AGENTS.md`（或在会话里直接粘贴）。之后在该项目的会话里输入「生成项目状态快照」，Agent 就按这份指令做。
 > Dashboard 的开发会话**不修改**其他项目的仓库；放不放、什么时候放，由 Morii 在那些仓库里决定。

@@ -1,0 +1,997 @@
+{
+  "$comment": "协议样本清单。每个样本的预期结果与 docs/planning/03、04 对应（doc 字段）。errors、warnings 是问题代码，按出现次数比较。全部内容虚构。",
+  "now": "2026-10-12T12:00:00+08:00",
+  "registry": [
+    {
+      "id": "demo.alpha",
+      "name": "Demo Alpha"
+    },
+    {
+      "id": "demo.beta",
+      "name": "Demo Beta"
+    }
+  ],
+  "cases": [
+    {
+      "file": "valid/v1.0-full.json",
+      "doc": "03 §3",
+      "title": "完整的 v1.0 快照",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "valid/v1.1-full.json",
+      "doc": "03 §10",
+      "title": "完整的 v1.1 快照，带 reporter 和条目 id",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "valid/v1.0-minimal.json",
+      "doc": "03 §3",
+      "title": "最小的 v1.0：空数组、null 进度、null 分支和提交",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "valid/v1.1-progress-estimate.json",
+      "doc": "03 §3.1",
+      "title": "有整体进度估算（显示为 Agent 估算）",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "valid/v1.0-done-self-report.json",
+      "doc": "03 §5 #5",
+      "title": "自报完成：不提醒，界面显示「自报完成」",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "valid/v1.1-mixed-item-ids.json",
+      "doc": "03 §10.2",
+      "title": "同一份快照里有 id 和没有 id 的条目混用",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "valid/v1.1-utc.json",
+      "doc": "03 §3.1",
+      "title": "snapshot_at 用 Z 表示 UTC，带毫秒",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "encoding/utf8-bom.json",
+      "doc": "03 §6.2",
+      "title": "UTF-8 带 BOM：去掉后接受",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "bom_stripped"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "encoding/crlf.json",
+      "doc": "03 §2",
+      "title": "CRLF 换行：接受",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "encoding/utf16le-bom.json",
+      "doc": "03 §6.1",
+      "title": "UTF-16 LE（PowerShell 5 的默认）",
+      "expect": {
+        "errors": [
+          "encoding_utf16"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "encoding/utf16be-bom.json",
+      "doc": "03 §6.1",
+      "title": "UTF-16 BE",
+      "expect": {
+        "errors": [
+          "encoding_utf16"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "encoding/utf16le-no-bom.json",
+      "doc": "03 §6.1",
+      "title": "不带 BOM 的 UTF-16",
+      "expect": {
+        "errors": [
+          "encoding_utf16"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "encoding/gbk.json",
+      "doc": "03 §6.1",
+      "title": "GBK 编码",
+      "expect": {
+        "errors": [
+          "encoding_not_utf8"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "syntax/trailing-comma.json",
+      "doc": "04 §7",
+      "title": "最后一项后面多了逗号",
+      "expect": {
+        "errors": [
+          "json_syntax"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "syntax/comments.json",
+      "doc": "03 §2",
+      "title": "JSON 里写了注释",
+      "expect": {
+        "errors": [
+          "json_syntax"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "syntax/empty.json",
+      "doc": "04 §3",
+      "title": "空文件",
+      "expect": {
+        "errors": [
+          "json_syntax"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "syntax/top-level-array.json",
+      "doc": "03 §6.1",
+      "title": "顶层是数组",
+      "expect": {
+        "errors": [
+          "json_not_object"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "syntax/code-fence.json",
+      "doc": "03 §6.3",
+      "title": "被 Markdown 代码块包着：先询问",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "needs_choice",
+        "choice": "code_fence"
+      }
+    },
+    {
+      "file": "syntax/code-fence.json",
+      "doc": "03 §6.3",
+      "title": "被 Markdown 代码块包着：选择提取后接受",
+      "options": {
+        "codeFence": "extract"
+      },
+      "expect": {
+        "kind": "accepted",
+        "errors": [],
+        "warnings": [
+          "code_fence_extracted"
+        ]
+      }
+    },
+    {
+      "file": "syntax/too-deep.json",
+      "doc": "ADR 0002",
+      "title": "嵌套过深",
+      "expect": {
+        "errors": [
+          "json_too_deep"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "version/missing.json",
+      "doc": "03 §6.1",
+      "title": "缺少 schema_version",
+      "expect": {
+        "errors": [
+          "version_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "version/number.json",
+      "doc": "03 §6.1",
+      "title": "schema_version 写成数字",
+      "expect": {
+        "errors": [
+          "version_not_string"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "version/malformed.json",
+      "doc": "03 §7",
+      "title": "schema_version 不是「主.次」",
+      "expect": {
+        "errors": [
+          "version_malformed"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "version/major-2.json",
+      "doc": "03 §7",
+      "title": "主版本不是 1",
+      "expect": {
+        "errors": [
+          "version_unsupported_major"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "version/newer-minor.json",
+      "doc": "03 §7",
+      "title": "更新的次版本：按 1.1 校验，未知字段忽略，未知枚举按 unknown",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "version_unknown_minor",
+          "unknown_field",
+          "unknown_enum_mapped"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "version/v11-field-in-v10.json",
+      "doc": "03 §7",
+      "title": "v1.0 文件里写了 v1.1 的 reporter 和条目 id：忽略并说明",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "newer_version_field",
+          "newer_version_field"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "structure/project-id-missing.json",
+      "doc": "03 §6.1",
+      "title": "缺少 project_id",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/project-id-format.json",
+      "doc": "03 §6.1",
+      "title": "project_id 格式不对",
+      "expect": {
+        "errors": [
+          "project_id_format"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/project-id-unregistered.json",
+      "doc": "04 §6",
+      "title": "project_id 没有登记",
+      "expect": {
+        "errors": [
+          "project_unregistered"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/snapshot-at-missing.json",
+      "doc": "03 §6.1",
+      "title": "缺少 snapshot_at",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/snapshot-at-no-timezone.json",
+      "doc": "04 §7",
+      "title": "snapshot_at 没有时区",
+      "expect": {
+        "errors": [
+          "snapshot_at_format"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/snapshot-at-space.json",
+      "doc": "03 §11",
+      "title": "snapshot_at 缺 T、缺秒、缺时区",
+      "expect": {
+        "errors": [
+          "snapshot_at_format"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/snapshot-at-impossible-date.json",
+      "doc": "03 §6.1",
+      "title": "snapshot_at 是不存在的日期",
+      "expect": {
+        "errors": [
+          "snapshot_at_invalid"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/snapshot-at-future.json",
+      "doc": "04 §7",
+      "title": "snapshot_at 比现在晚很多",
+      "expect": {
+        "errors": [
+          "snapshot_in_future"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/stage-missing.json",
+      "doc": "03 §6.1",
+      "title": "缺少 stage",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/stage-not-string.json",
+      "doc": "03 §6.1",
+      "title": "stage 不是字符串",
+      "expect": {
+        "errors": [
+          "type_mismatch"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/stage-unknown-value.json",
+      "doc": "03 §6.1",
+      "title": "v1.0 文件里 stage 是未知值",
+      "expect": {
+        "errors": [
+          "enum_invalid"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/summary-missing.json",
+      "doc": "03 §6.1",
+      "title": "缺少 summary",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/summary-empty.json",
+      "doc": "03 §6.1",
+      "title": "summary 是空字符串",
+      "expect": {
+        "errors": [
+          "empty_string"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/summary-blank.json",
+      "doc": "03 §6.1",
+      "title": "summary 只有空白",
+      "expect": {
+        "errors": [
+          "summary_blank"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/source-missing.json",
+      "doc": "03 §6.1",
+      "title": "缺少 source",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/source-not-object.json",
+      "doc": "03 §6.1",
+      "title": "source 不是对象",
+      "expect": {
+        "errors": [
+          "type_mismatch"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/basis-missing.json",
+      "doc": "03 §3.2",
+      "title": "source 里缺少 basis",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/tests-rerun-string.json",
+      "doc": "03 §6.1",
+      "title": "tests_rerun 是字符串",
+      "expect": {
+        "errors": [
+          "type_mismatch"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/commit-sha-format.json",
+      "doc": "03 §3.2",
+      "title": "commit_sha 用了大写",
+      "expect": {
+        "errors": [
+          "commit_sha_format"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/progress-string.json",
+      "doc": "04 §7",
+      "title": "overall_progress 是「60%」",
+      "expect": {
+        "errors": [
+          "type_mismatch"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/progress-float.json",
+      "doc": "03 §6.1",
+      "title": "overall_progress 不是整数",
+      "expect": {
+        "errors": [
+          "not_integer"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/progress-out-of-range.json",
+      "doc": "03 §6.1",
+      "title": "overall_progress 超过 100",
+      "expect": {
+        "errors": [
+          "out_of_range"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/milestones-object.json",
+      "doc": "03 §6.1",
+      "title": "milestones 是对象",
+      "expect": {
+        "errors": [
+          "type_mismatch"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/milestone-missing-id.json",
+      "doc": "03 §6.1",
+      "title": "里程碑缺少 id",
+      "expect": {
+        "errors": [
+          "required_missing"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/milestone-duplicate-id.json",
+      "doc": "04 §7",
+      "title": "两个里程碑 id 相同",
+      "expect": {
+        "errors": [
+          "duplicate_milestone_id"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/milestone-status-unknown.json",
+      "doc": "04 §7",
+      "title": "里程碑状态「finished」",
+      "expect": {
+        "errors": [
+          "enum_invalid"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/milestone-id-format.json",
+      "doc": "03 §3.3",
+      "title": "里程碑 id 含空格",
+      "expect": {
+        "errors": [
+          "id_format"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/priority-unknown.json",
+      "doc": "03 §6.1",
+      "title": "下一步优先级不是 P0/P1/P2",
+      "expect": {
+        "errors": [
+          "enum_invalid"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/item-duplicate-id.json",
+      "doc": "03 §5 #10",
+      "title": "v1.1 同一数组里两个条目 id 相同",
+      "expect": {
+        "errors": [
+          "duplicate_item_id"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/reporter-agent-unknown.json",
+      "doc": "03 §10.1",
+      "title": "reporter.agent 不是可用值",
+      "expect": {
+        "errors": [
+          "enum_invalid"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "structure/many-errors.json",
+      "doc": "04 §3",
+      "title": "多个错误一次全部列出",
+      "expect": {
+        "errors": [
+          "type_mismatch",
+          "enum_invalid",
+          "enum_invalid",
+          "snapshot_at_format"
+        ],
+        "warnings": [],
+        "kind": "rejected"
+      }
+    },
+    {
+      "file": "warnings/summary-too-long.json",
+      "doc": "03 §6.2",
+      "title": "summary 超过 160 字",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "summary_too_long"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/unknown-field-typo.json",
+      "doc": "03 §6.2",
+      "title": "多了一个拼错的字段 next_action",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "unknown_field"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/arrays-missing.json",
+      "doc": "03 §6.2",
+      "title": "缺少 blockers、next_actions、needs_morii",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "filled_empty_array"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/progress-missing.json",
+      "doc": "03 §6.2",
+      "title": "缺少 overall_progress",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "filled_null_progress"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/source-branch-missing.json",
+      "doc": "03 §6.2",
+      "title": "source 里缺少 branch",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "filled_null_source_field"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/project-name-missing.json",
+      "doc": "03 §6.2",
+      "title": "缺少 project_name",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "filled_project_name"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/project-name-mismatch.json",
+      "doc": "04 §6",
+      "title": "project_name 与登记名称不同",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "project_name_mismatch"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/evidence-acceptance-conflict.json",
+      "doc": "03 §5 #2",
+      "title": "morii_accepted 但 human_acceptance 不是 accepted",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "evidence_acceptance_conflict"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/accepted-without-evidence.json",
+      "doc": "03 §5 #3",
+      "title": "说已验收，但证据层级不是 morii_accepted",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "accepted_without_evidence"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/evidence-refs-missing.json",
+      "doc": "03 §5 #4",
+      "title": "声称有仓库证据但没写位置",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "evidence_refs_missing"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/tests-rerun-true.json",
+      "doc": "03 §5 #6",
+      "title": "tests_rerun 为 true",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "tests_rerun_claimed"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/paused-with-p0.json",
+      "doc": "03 §5 #7",
+      "title": "已暂停但下一步有 P0",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "paused_with_p0"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/progress-100-incomplete.json",
+      "doc": "03 §5 #8",
+      "title": "进度 100 但有未完成里程碑",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "progress_100_incomplete"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/basis-empty.json",
+      "doc": "03 §5 #9",
+      "title": "basis 是空的",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "basis_empty"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/reporter-branch-mismatch.json",
+      "doc": "03 §5 #11",
+      "title": "reporter 是 claude，分支是 codex/",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "reporter_branch_mismatch"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/blocker-impact-empty.json",
+      "doc": "03 §3.4",
+      "title": "阻塞的 impact 为空",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "blocker_impact_empty"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/next-action-result-empty.json",
+      "doc": "03 §3.5",
+      "title": "下一步的 result 为空",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "next_action_result_empty"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "warnings/private-info.json",
+      "doc": "03 §6.4",
+      "title": "含本机路径和 IP：提醒会保存在私有数据里",
+      "expect": {
+        "errors": [],
+        "warnings": [
+          "private_info_present"
+        ],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "project/demo-beta.json",
+      "doc": "04 §6",
+      "title": "属于 demo.beta 的快照",
+      "expect": {
+        "errors": [],
+        "warnings": [],
+        "kind": "accepted"
+      }
+    },
+    {
+      "file": "project/demo-beta.json",
+      "doc": "04 §6",
+      "title": "在 demo.alpha 的项目页导入 demo.beta 的快照",
+      "options": {
+        "expectedProjectId": "demo.alpha"
+      },
+      "expect": {
+        "kind": "rejected",
+        "errors": [
+          "project_mismatch"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "history": [
+    {
+      "doc": "04 §5",
+      "title": "较新：成为当前状态",
+      "existing": [
+        "history/t1-base.json"
+      ],
+      "candidate": "history/t2-newer.json",
+      "expect": {
+        "kind": "latest",
+        "replaces": "history/t1-base.json"
+      }
+    },
+    {
+      "doc": "04 §5",
+      "title": "较旧：只进历史",
+      "existing": [
+        "history/t1-base.json",
+        "history/t2-newer.json"
+      ],
+      "candidate": "history/t0-older.json",
+      "expect": {
+        "kind": "history",
+        "currentLatest": "history/t2-newer.json"
+      }
+    },
+    {
+      "doc": "04 §5",
+      "title": "完全重复（换了键顺序和缩进）：不再保存",
+      "existing": [
+        "history/t1-base.json",
+        "history/t2-newer.json"
+      ],
+      "candidate": "history/t1-base-reformatted.json",
+      "expect": {
+        "kind": "duplicate",
+        "of": "history/t1-base.json",
+        "deleted": false
+      }
+    },
+    {
+      "doc": "04 §5",
+      "title": "同一时刻、内容不同（时区写法不同也算同一时刻）：由 Morii 选择",
+      "existing": [
+        "history/t1-base.json",
+        "history/t2-newer.json"
+      ],
+      "candidate": "history/t1-same-instant-different.json",
+      "expect": {
+        "kind": "conflict",
+        "with": "history/t1-base.json"
+      }
+    },
+    {
+      "doc": "04 §5",
+      "title": "第一份快照：成为当前状态",
+      "existing": [],
+      "candidate": "history/t0-older.json",
+      "expect": {
+        "kind": "latest",
+        "replaces": null
+      }
+    }
+  ]
+}

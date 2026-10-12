@@ -10,8 +10,14 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import {
+  ENV_ASSIGNMENT,
+  QUOTED_ASSIGNMENT,
+  type SecretPattern,
+  TOKEN_PATTERNS,
+} from '../packages/protocol/src/secrets.ts';
 
-export type Rule = 'forbidden-file' | 'secret' | 'ip-literal' | 'local-path' | 'email';
+export type Rule = 'forbidden-file' | 'secret' | 'ip-literal' | 'local-path' | 'email' | 'invisible-char';
 
 export interface Finding {
   path: string;
@@ -36,22 +42,18 @@ const FORBIDDEN_FILES: { pattern: RegExp; detail: string }[] = [
   { pattern: /(^|\/)id_(rsa|ed25519|ecdsa|dsa)(\.pub)?$/, detail: 'SSH 密钥' },
 ];
 
-const SECRET_PATTERNS: { pattern: RegExp; detail: string }[] = [
-  { pattern: /\bgh[pousr]_[A-Za-z0-9]{36,}/, detail: 'GitHub 令牌形态' },
-  { pattern: /\bgithub_pat_[A-Za-z0-9_]{22,}/, detail: 'GitHub 细粒度令牌形态' },
-  { pattern: /\bsk-[A-Za-z0-9_-]{20,}/, detail: 'sk- 形式的 API key' },
-  { pattern: /\b(AKIA|ASIA)[0-9A-Z]{16}\b/, detail: 'AWS 访问密钥形态' },
-  { pattern: /-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----/, detail: '私钥' },
-  { pattern: /\bxox[abprs]-[A-Za-z0-9-]{10,}/, detail: 'Slack 令牌形态' },
-  {
-    pattern: /\b(password|passwd|secret|api[_-]?key|access[_-]?key|token)\s*[:=]\s*['"][^'"\s]{12,}['"]/i,
-    detail: '带引号的口令或密钥赋值',
-  },
-  {
-    pattern: /^\s*(export\s+)?[A-Z0-9_]*(PASSWORD|SECRET|TOKEN|API_KEY|ACCESS_KEY)[A-Z0-9_]*\s*=\s*\S{8,}/,
-    detail: '环境变量形式的口令或密钥',
-  },
-];
+// 令牌形态与快照导入共用一份（packages/protocol/src/secrets.ts）。
+// 代码里不用「password=xxx」那条：`apiKey = process.env.API_KEY` 会误报。
+const SECRET_PATTERNS: readonly SecretPattern[] = [...TOKEN_PATTERNS, QUOTED_ASSIGNMENT, ENV_ASSIGNMENT];
+
+const cp = String.fromCodePoint;
+/**
+ * 看不见的字符：C0/C1 控制字符（制表、换行、回车除外）、零宽字符、双向文本控制符、BOM。
+ * 双向控制符能让代码显示的顺序和实际执行的不一样（Trojan Source）。用码位构造，源码里不出现它们。
+ */
+const INVISIBLE = new RegExp(
+  `[${cp(0x00)}-${cp(0x08)}${cp(0x0b)}${cp(0x0c)}${cp(0x0e)}-${cp(0x1f)}${cp(0x7f)}-${cp(0x9f)}${cp(0x200b)}-${cp(0x200f)}${cp(0x202a)}-${cp(0x202e)}${cp(0x2066)}-${cp(0x2069)}${cp(0xfeff)}]`,
+);
 
 /** 本机回环、未指定地址，以及 RFC 5737 文档专用网段。 */
 const ALLOWED_IPV4 = [/^127\.0\.0\.1$/, /^0\.0\.0\.0$/, /^192\.0\.2\./, /^198\.51\.100\./, /^203\.0\.113\./];
@@ -59,9 +61,10 @@ const ALLOWED_IPV4 = [/^127\.0\.0\.1$/, /^0\.0\.0\.0$/, /^192\.0\.2\./, /^198\.5
 const IPV4 = /(?<![\d.])(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\d.])/g;
 
 const LOCAL_PATH_PATTERNS: { pattern: RegExp; detail: string }[] = [
-  { pattern: /(?<![A-Za-z0-9])[A-Za-z]:[\\/](?![\\/])/, detail: '盘符绝对路径' },
+  // 反斜杠可能被转义成两个（JSON、代码里的字符串）；只排除 `://` 这种 URL 写法。
+  { pattern: /(?<![A-Za-z0-9])[A-Za-z]:(?:\\|\/(?!\/))/, detail: '盘符绝对路径' },
   { pattern: /\/(Users|home)\/[^/\s]+/, detail: '用户目录路径' },
-  { pattern: /\\Users\\[^\\\s]+/, detail: '用户目录路径' },
+  { pattern: /\\{1,2}Users\\{1,2}[^\\\s]+/, detail: '用户目录路径' },
 ];
 
 const EMAIL = /[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g;
@@ -105,8 +108,11 @@ export function auditFile(path: string, bytes: Uint8Array): Finding[] {
   lines.forEach((content, index) => {
     const line = index + 1;
 
-    for (const { pattern, detail } of SECRET_PATTERNS) {
-      if (pattern.test(content)) findings.push({ path, line, rule: 'secret', detail });
+    const secret = SECRET_PATTERNS.find(({ pattern }) => pattern.test(content));
+    if (secret) findings.push({ path, line, rule: 'secret', detail: secret.label });
+
+    if (INVISIBLE.test(content)) {
+      findings.push({ path, line, rule: 'invisible-char', detail: '不可见字符或双向文本控制符' });
     }
 
     for (const match of content.matchAll(IPV4)) {

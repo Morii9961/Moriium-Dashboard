@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "audit:public": "node scripts/audit-public.ts",
-    "verify": "pnpm check && pnpm typecheck && pnpm test && pnpm audit:public"
+    "verify": "pnpm check && pnpm typecheck && pnpm test && pnpm audit:public",
+    "status:check": "node packages/protocol/src/cli/status-check.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
