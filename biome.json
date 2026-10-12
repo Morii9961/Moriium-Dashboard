@@ -12,7 +12,8 @@
       "!docs/planning/schema",
       "!docs/protocol/schema",
       "!packages/protocol/src/generated",
-      "!fixtures/protocol"
+      "!fixtures/protocol",
+      "!apps/web/src/styles/tokens.css"
     ]
   },
   "formatter": {

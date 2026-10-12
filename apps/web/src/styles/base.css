@@ -1,0 +1,130 @@
+/*
+ * 全站基础样式：字体栈、重置、焦点、读屏辅助。颜色和尺寸只用 tokens.css 里的变量。
+ *
+ * 字体栈按 lang 选：拉丁字母一律先用方案 A，汉字和假名再落到对应语言的字体。
+ * 自定义属性在声明它的元素上求值，所以每个带 lang 的元素都重新声明字体栈；
+ * 快照原文一律标 lang="zh-Hans"，日文界面里也按中文字形显示（02 第 15 节）。
+ */
+
+:root,
+[lang="zh-Hans"],
+[lang="en"] {
+  --font-ui: "IBM Plex Sans Variable", "MiSans VF", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-heading: "Source Serif 4 Variable", "LXGW WenKai Screen", "Songti SC", serif;
+  --font-data: "IBM Plex Mono", "MiSans VF", ui-monospace, monospace;
+}
+[lang="ja"] {
+  --font-ui: "IBM Plex Sans Variable", "Murecho Variable", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-heading: "Source Serif 4 Variable", "Klee One", "Hiragino Mincho ProN", serif;
+  --font-data: "IBM Plex Mono", "Murecho Variable", ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--c-canvas);
+  color: var(--c-ink1);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.65;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+[lang] {
+  font-family: var(--font-ui);
+}
+
+p,
+ul,
+ol,
+figure,
+h1,
+h2,
+h3,
+h4,
+dl,
+dd {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-synthesis: none;
+  letter-spacing: -0.005em;
+}
+
+code,
+.mono {
+  font-family: var(--font-data);
+  font-size: 0.9em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+  color: var(--c-accent-text);
+}
+.skip:focus {
+  left: var(--space-4);
+  top: var(--space-3);
+  background: var(--c-raised);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  z-index: 50;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  stroke: currentColor;
+  fill: currentColor;
+}
+.icon path[fill="none"],
+.icon circle[fill="none"] {
+  fill: none;
+}
+
+/* 主题切换的圆形揭开（theme.ts）：只替换新旧两张快照之间的默认交叉淡入。 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}

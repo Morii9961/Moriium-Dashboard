@@ -16,6 +16,7 @@
     "@fontsource/ibm-plex-mono": "5.3.0",
     "@fontsource/klee-one": "5.3.1",
     "@moriium-dashboard/protocol": "workspace:*",
+    "intl-messageformat": "12.1.2",
     "lxgw-wenkai-screen-webfont": "1.7.0",
     "misans": "5.0.0",
     "react": "19.3.0",

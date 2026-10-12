@@ -1,7 +1,7 @@
 import type { Snapshot } from '@moriium-dashboard/protocol';
 import { describe, expect, it } from 'vitest';
 import { contrast, toHex } from '../src/design/color.ts';
-import { BACKDROPS, CONTRAST_PAIRS, tokensFor } from '../src/design/tokens.ts';
+import { CONTRAST_PAIRS, tokensFor } from '../src/design/tokens.ts';
 import { freshness, headlineNextAction, progressFigure, summarizeProgress } from '../src/progress.ts';
 
 const m = (id: string, status: Snapshot['milestones'][number]['status'], acceptance = 'pending') =>
@@ -105,11 +105,11 @@ describe('summarizeProgress (02 §5.4)', () => {
 });
 
 describe('candidate color tokens', () => {
-  it.each(['light', 'dark'] as const)('meet every contrast requirement on each %s backdrop', (theme) => {
-    for (const backdrop of BACKDROPS[theme]) {
-      const t = tokensFor(theme, backdrop);
+  it.each(['light', 'dark'] as const)('meet every contrast requirement in the %s theme', (theme) => {
+    {
+      const t = tokensFor(theme);
       for (const [fg, bg, min, label] of CONTRAST_PAIRS) {
-        expect(contrast(t[fg], t[bg]), `${theme}/${backdrop} ${label}`).toBeGreaterThanOrEqual(min);
+        expect(contrast(t[fg], t[bg]), `${theme} ${label}`).toBeGreaterThanOrEqual(min);
       }
     }
   });
