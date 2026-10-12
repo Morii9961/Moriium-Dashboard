@@ -118,7 +118,7 @@ apps/web/src/
 
 - **转义序列**：工具调用里写的 `\uXXXX` 可能被解码成真正的不可见字符（公开树审计有规则会拦）。需要这类字符时用 `String.fromCodePoint(...)` 拼出来。shell 的 heredoc 里写 JS 时反斜杠也容易被吃掉，正则和路径里的反斜杠改用编辑文件的方式写。
 - **改了 package.json 后**运行 `pnpm install`，把 `pnpm-lock.yaml` 一起提交，否则 CI 的 `--frozen-lockfile` 会失败。
-- **测试里不要写字面的本机路径**（如 `C:\Users\…`），公开树审计会拦；需要时用 `join` 拼出来。
+- **测试和文档里不要写字面的本机路径**（盘符开头或用户目录开头的路径），公开树审计会拦；测试里需要时用 `join` 拼出来。
 - **严格 CSP**：不能用内联 `<script>` 和 HTML 里的 `style="…"`；React 的 `style={{…}}` 是通过 CSSOM 设置的，可以用。Vite 构建已设 `assetsInlineLimit: 0`，避免小字体被内联成 `data:`。
 - **项目 ID 里有点**（`moriium.main`），服务端的单页回退只按静态文件扩展名判断 404。
 - **Windows 上测试清理**：打开着的 SQLite 文件删不掉，`rmSync` 已带 `maxRetries`；测试里记得 `db.close()`。
