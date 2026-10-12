@@ -6,7 +6,7 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 ## 当前状态
 
-规划已于 2026-10-12 获批，正在进行 P1（仓库与协议）。还没有可运行的代码，本地开发说明会在 P1.2 补上。
+规划已于 2026-10-12 获批，正在进行 P1（仓库与协议）。目前只有工作区骨架和公开树审计，界面和服务端还没开始。
 
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
@@ -19,6 +19,21 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 - 协议说明：[`docs/planning/03-status-protocol-v1.md`](./docs/planning/03-status-protocol-v1.md)（P1.6 后移到 `docs/protocol/`）
 - JSON Schema 2020-12：[v1.0](./docs/planning/schema/project-status.v1.0.schema.json)、[v1.1](./docs/planning/schema/project-status.v1.1.schema.json)
 - 给 Agent 的指令模板：[`docs/planning/agent-snapshot-prompt.md`](./docs/planning/agent-snapshot-prompt.md)
+
+## 本地开发
+
+需要 Node.js 24 和 pnpm 10（版本以 `.node-version` 与 `package.json` 的 `packageManager` 为准）。
+
+```bash
+pnpm install
+pnpm verify        # 依次运行下面四项，和 CI 一致
+pnpm check         # Biome 格式与检查；pnpm format 自动修复
+pnpm typecheck     # TypeScript 类型检查
+pnpm test          # Vitest
+pnpm audit:public  # 公开树审计：数据库、导出包、密钥形态、IP、本机路径、邮箱
+```
+
+服务端和脚本由 Node 直接运行 `.ts`，没有构建步骤，原因见 [ADR 0001](./docs/adr/0001-toolchain-and-native-typescript.md)。
 
 ## 数据与隐私
 
