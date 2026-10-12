@@ -38,13 +38,10 @@ importers:
       '@fontsource-variable/ibm-plex-sans':
         specifier: 5.3.0
         version: 5.3.0
-      '@fontsource-variable/noto-sans-jp':
+      '@fontsource-variable/m-plus-2':
         specifier: 5.3.1
         version: 5.3.1
-      '@fontsource-variable/noto-sans-sc':
-        specifier: 5.3.1
-        version: 5.3.1
-      '@fontsource-variable/noto-serif-sc':
+      '@fontsource-variable/murecho':
         specifier: 5.3.1
         version: 5.3.1
       '@fontsource-variable/source-serif-4':
@@ -53,19 +50,7 @@ importers:
       '@fontsource/ibm-plex-mono':
         specifier: 5.3.0
         version: 5.3.0
-      '@fontsource/ibm-plex-sans-jp':
-        specifier: 5.3.1
-        version: 5.3.1
       '@fontsource/klee-one':
-        specifier: 5.3.1
-        version: 5.3.1
-      '@fontsource/line-seed-jp':
-        specifier: 5.3.2
-        version: 5.3.2
-      '@fontsource/shippori-mincho':
-        specifier: 5.3.0
-        version: 5.3.0
-      '@fontsource/zen-kaku-gothic-new':
         specifier: 5.3.1
         version: 5.3.1
       '@moriium-dashboard/protocol':
@@ -165,14 +150,11 @@ packages:
   '@fontsource-variable/ibm-plex-sans@5.3.0':
     resolution: {integrity: sha512-agG8tXFEo0hD9+J7npa4vbbWult52eMLVaQ6WQRlhs/iCAojrMAoejru85W9HTVXHfyUj96KM7gp/KGAS87XaQ==}
 
-  '@fontsource-variable/noto-sans-jp@5.3.1':
-    resolution: {integrity: sha512-/anGvJFc5y36f8DJ+3TSh2+KAvaRLA9PaLUMvneeY5s4j8m+8X4F3lE/sjTuG9YI5BX4sykvCk4TuJMG7ecMRQ==}
+  '@fontsource-variable/m-plus-2@5.3.1':
+    resolution: {integrity: sha512-s2/uCVw5RYvbTBKYBD/d9yYfb/7apajRwf+DG3qKIzsZUmA8kYssGpA0M7yk8UKdvFI6b4PxlPxGq5g8a6Xeyg==}
 
-  '@fontsource-variable/noto-sans-sc@5.3.1':
-    resolution: {integrity: sha512-UB96JJ17HyD5ehEU7Em0hDdh7fvTMB4B4Hzmq5c4QaNwwSLqTrdM2S+coySeBqCkXwh0DxqXT0b0wMrmzorFpQ==}
-
-  '@fontsource-variable/noto-serif-sc@5.3.1':
-    resolution: {integrity: sha512-aIHcBaL13QctVaJFeT6wqfgO9Rq/cNtD5g2ob4ze59fYPYwacGthnIrHBe83kDpMEB/k6VGtGc6fS99RImcoSQ==}
+  '@fontsource-variable/murecho@5.3.1':
+    resolution: {integrity: sha512-wjIOewtCBmJrniMLnc5f+IFPSkZWukwaGyeRTUabl5VF4lkevkWkRurvUstaxSG8FxHHFGHaz2oTwD0R9dUceg==}
 
   '@fontsource-variable/source-serif-4@5.3.1':
     resolution: {integrity: sha512-4Rtay22SC4lMvw11r/+9kxANB6P3M0X8s1NudBC2v0J1KU2y3DcMoNcT3lBoZ/CqLirzf+StlO6UlJilyrvaUg==}
@@ -180,20 +162,8 @@ packages:
   '@fontsource/ibm-plex-mono@5.3.0':
     resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
 
-  '@fontsource/ibm-plex-sans-jp@5.3.1':
-    resolution: {integrity: sha512-lFejXBGcWN/htaffKJryghb/zd2WKwFKyJWJRTcRP57/HUAGEdjNHI0UtIUN8pv4A5F9hPBxZ0dY8oILd88xIA==}
-
   '@fontsource/klee-one@5.3.1':
     resolution: {integrity: sha512-TWW1hZylfNSpsKAIxKlCUY02gSiRhulJgfVIOlpDMZhBbssXvKBnbUREFkZuB0Hefe2xiso07JWKDxOENKwu1w==}
-
-  '@fontsource/line-seed-jp@5.3.2':
-    resolution: {integrity: sha512-ng/gMt1yI9EAU0TlBcDtBuQAy8fB0FAvjxW3JY9NnYSN3CJgqkciMcEAldt/N0yUC4C4Oai4oeLzU9PYqyeghQ==}
-
-  '@fontsource/shippori-mincho@5.3.0':
-    resolution: {integrity: sha512-S41kRxQuubAaYss+LeXu0IOc02RQwsPaJbR1cWZx4VV15hXaYZViH3WAve9HpDVFqKYd/BVk86Bg7lp9ytV3KQ==}
-
-  '@fontsource/zen-kaku-gothic-new@5.3.1':
-    resolution: {integrity: sha512-L69mE6bkzeVK3UdTenxOmCIWvTwMxohJRNm1dAj+W+UiCULQ91b7M77ENVw+pjGmFL6zKPFYFeH3g8x2ugAJNw==}
 
   '@hono/node-server@2.1.4':
     resolution: {integrity: sha512-2g1qeHl4BduwDn6L8nkAvDrPUWPMlkQ//a5NhP/zIyaXKMjZNRV+cG9Csu+BiJFf6+68pqzjf4Hi5sJGKHuS1g==}
@@ -832,25 +802,15 @@ snapshots:
 
   '@fontsource-variable/ibm-plex-sans@5.3.0': {}
 
-  '@fontsource-variable/noto-sans-jp@5.3.1': {}
+  '@fontsource-variable/m-plus-2@5.3.1': {}
 
-  '@fontsource-variable/noto-sans-sc@5.3.1': {}
-
-  '@fontsource-variable/noto-serif-sc@5.3.1': {}
+  '@fontsource-variable/murecho@5.3.1': {}
 
   '@fontsource-variable/source-serif-4@5.3.1': {}
 
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
-  '@fontsource/ibm-plex-sans-jp@5.3.1': {}
-
   '@fontsource/klee-one@5.3.1': {}
-
-  '@fontsource/line-seed-jp@5.3.2': {}
-
-  '@fontsource/shippori-mincho@5.3.0': {}
-
-  '@fontsource/zen-kaku-gothic-new@5.3.1': {}
 
   '@hono/node-server@2.1.4(hono@4.13.13)':
     dependencies:

@@ -1,18 +1,18 @@
 /**
- * 设计样张第二轮的候选 token（P2.1）。
+ * 设计样张第三轮的候选 token（P2.1）。
  *
- * 已定（2026-10-12，Morii）：强调色「雾蓝 · 安静」；状态色沿用第一轮那套。
- * 待定：背景。第一轮的浅色太刺眼、深色太像模板，这一轮每种主题给两个候选：
- *   浅色「石」：中性灰带极轻的暖意，亮度降到 0.95，不是米黄；浅色「雾」：偏冷的雾灰纸面。
- *   深色「墨」：带暖意的砚台石墨；深色「夜雾」：比第一轮更亮、更低饱和的蓝灰。
+ * 已定（2026-10-12，Morii）：强调色「雾蓝 · 安静」；状态色沿用第一轮；浅色背景「雾」。
+ * 待定：深色背景。Morii 要更深、更低饱和、适当偏蓝。两个候选：
+ *   「夜」：深蓝灰，彩度只有常见「蓝黑」模板的一半左右；
+ *   「黛」：更深的墨蓝，带一点青。
  * 全部在 OKLCH 里推导；对比度按 CONTRAST_PAIRS 实际计算（测试里也检查）。
  */
 
 export type Theme = 'light' | 'dark';
-export type Backdrop = 'stone' | 'mist' | 'ink' | 'dusk';
+export type Backdrop = 'mist' | 'night' | 'dai';
 
-export const BACKDROPS: Record<Theme, Backdrop[]> = { light: ['stone', 'mist'], dark: ['ink', 'dusk'] };
-export const BACKDROP_LABELS: Record<Backdrop, string> = { stone: '石', mist: '雾', ink: '墨', dusk: '夜雾' };
+export const BACKDROPS: Record<Theme, Backdrop[]> = { light: ['mist'], dark: ['night', 'dai'] };
+export const BACKDROP_LABELS: Record<Backdrop, string> = { mist: '雾', night: '夜', dai: '黛' };
 
 /** 画布、纸面、墨色、边框：随背景候选变化。 */
 export interface SurfaceTokens {
@@ -50,16 +50,6 @@ export interface StatusTokens {
 export type ColorTokens = SurfaceTokens & StatusTokens;
 
 export const SURFACES: Record<Backdrop, SurfaceTokens> = {
-  stone: {
-    canvas: 'oklch(0.948 0.004 95)',
-    surface: 'oklch(0.968 0.003 95)',
-    raised: 'oklch(0.982 0.002 95)',
-    ink1: 'oklch(0.255 0.012 255)',
-    ink2: 'oklch(0.415 0.012 255)',
-    ink3: 'oklch(0.5 0.01 255)',
-    borderWeak: 'oklch(0.9 0.005 95)',
-    border: 'oklch(0.84 0.006 95)',
-  },
   mist: {
     canvas: 'oklch(0.944 0.007 228)',
     surface: 'oklch(0.964 0.005 228)',
@@ -70,25 +60,25 @@ export const SURFACES: Record<Backdrop, SurfaceTokens> = {
     borderWeak: 'oklch(0.897 0.008 228)',
     border: 'oklch(0.835 0.01 228)',
   },
-  ink: {
-    canvas: 'oklch(0.225 0.005 75)',
-    surface: 'oklch(0.256 0.006 75)',
-    raised: 'oklch(0.29 0.007 75)',
-    ink1: 'oklch(0.915 0.008 85)',
-    ink2: 'oklch(0.785 0.008 85)',
-    ink3: 'oklch(0.67 0.008 85)',
-    borderWeak: 'oklch(0.315 0.006 75)',
-    border: 'oklch(0.385 0.007 75)',
+  night: {
+    canvas: 'oklch(0.175 0.008 252)',
+    surface: 'oklch(0.205 0.009 252)',
+    raised: 'oklch(0.235 0.01 252)',
+    ink1: 'oklch(0.925 0.005 250)',
+    ink2: 'oklch(0.78 0.008 250)',
+    ink3: 'oklch(0.665 0.009 250)',
+    borderWeak: 'oklch(0.258 0.009 252)',
+    border: 'oklch(0.33 0.011 252)',
   },
-  dusk: {
-    canvas: 'oklch(0.245 0.012 240)',
-    surface: 'oklch(0.276 0.013 240)',
-    raised: 'oklch(0.31 0.014 240)',
-    ink1: 'oklch(0.925 0.006 240)',
-    ink2: 'oklch(0.795 0.008 240)',
-    ink3: 'oklch(0.685 0.009 240)',
-    borderWeak: 'oklch(0.335 0.012 240)',
-    border: 'oklch(0.405 0.013 240)',
+  dai: {
+    canvas: 'oklch(0.188 0.013 232)',
+    surface: 'oklch(0.218 0.014 232)',
+    raised: 'oklch(0.248 0.015 232)',
+    ink1: 'oklch(0.925 0.006 230)',
+    ink2: 'oklch(0.785 0.009 230)',
+    ink3: 'oklch(0.67 0.01 230)',
+    borderWeak: 'oklch(0.27 0.013 232)',
+    border: 'oklch(0.345 0.015 232)',
   },
 };
 
@@ -122,14 +112,14 @@ export const STATUS: Record<Theme, StatusTokens> = {
     paused: 'oklch(0.72 0.06 300)',
     pausedText: 'oklch(0.8 0.05 300)',
     unknown: 'oklch(0.62 0.01 255)',
-    goodSoft: 'oklch(0.32 0.035 160)',
-    warnSoft: 'oklch(0.33 0.04 80)',
-    seriousSoft: 'oklch(0.32 0.04 30)',
-    pausedSoft: 'oklch(0.32 0.03 300)',
+    goodSoft: 'oklch(0.29 0.035 160)',
+    warnSoft: 'oklch(0.3 0.04 80)',
+    seriousSoft: 'oklch(0.29 0.04 30)',
+    pausedSoft: 'oklch(0.29 0.03 300)',
     accent: 'oklch(0.75 0.075 240)',
     accentText: 'oklch(0.81 0.065 240)',
-    accentSoft: 'oklch(0.33 0.035 240)',
-    accentRing: 'oklch(0.47 0.05 240)',
+    accentSoft: 'oklch(0.3 0.035 240)',
+    accentRing: 'oklch(0.42 0.05 240)',
   },
 };
 

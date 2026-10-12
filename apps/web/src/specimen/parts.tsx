@@ -7,7 +7,7 @@
  */
 import { type Milestone, STAGE_AXIS, type Stage } from '@moriium-dashboard/protocol';
 
-const STATION: Record<(typeof STAGE_AXIS)[number], string> = {
+export const STATION: Record<(typeof STAGE_AXIS)[number], string> = {
   planning: '规划',
   development: '开发',
   integration: '集成',
@@ -18,7 +18,7 @@ const STATION: Record<(typeof STAGE_AXIS)[number], string> = {
 };
 
 /** 路线图。paused 时整条变弱并写「已暂停」；unknown 时画成虚线并写「阶段未知」。 */
-export function LineMap({ stage, size = 'card' }: { stage: Stage; size?: 'card' | 'compact' }) {
+export function LineMap({ stage, size = 'card' }: { stage: Stage; size?: 'card' | 'compact' | 'row' }) {
   const current = (STAGE_AXIS as readonly string[]).indexOf(stage);
   const off = current < 0;
   const label =
@@ -51,6 +51,33 @@ export function LineMap({ stage, size = 'card' }: { stage: Stage; size?: 'card' 
         </span>
       ) : null}
     </div>
+  );
+}
+
+/** 列表表头的站名：只写一次，和每一行的路线图对齐。 */
+export function StationLabels() {
+  return (
+    <ol className="linemap-stations station-labels" aria-hidden="true">
+      {STAGE_AXIS.map((s) => (
+        <li key={s} className="station">
+          <span className="station-name">{STATION[s]}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+const SEG_ORDER = { done: 0, in_progress: 1, blocked: 2, not_started: 3, unknown: 4 } as const;
+
+/** 里程碑分段条：一段一个里程碑，按完成、进行中、受阻、未开始、未知排列。文字说明在旁边。 */
+export function SegBar({ milestones }: { milestones: readonly Milestone[] }) {
+  const sorted = [...milestones].sort((a, b) => SEG_ORDER[a.status] - SEG_ORDER[b.status]);
+  return (
+    <span className="segbar" aria-hidden="true">
+      {sorted.map((m) => (
+        <span key={m.id} className={`seg seg-${m.status}`} />
+      ))}
+    </span>
   );
 }
 

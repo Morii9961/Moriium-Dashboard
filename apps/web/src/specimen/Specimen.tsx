@@ -1,9 +1,9 @@
 /**
- * 设计样张第二轮（P2.1）。
+ * 设计样张第三轮（P2.1）。
  *
- * 2026-10-12 Morii 已定：字体方案 A、等宽 IBM Plex Mono、强调色「雾蓝 · 安静」、阶段轴圆点、
- * 状态色沿用、日文敬体、中英文之间加空格。这一页只把还没定的三项做成可切换：
- * 背景、中日文字体、项目卡片。
+ * 已定（2026-10-12，Morii）：字体方案 A、IBM Plex Mono、强调色「雾蓝 · 安静」、阶段轴圆点、
+ * 状态色沿用、日文敬体、中英文之间加空格、浅色背景「雾」、中文 MiSans + 霞鹜文楷。
+ * 待定：深色背景、日文字体、项目长条。
  */
 import { type CheckResult, checkSnapshot, PRESET_PROJECTS } from '@moriium-dashboard/protocol';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
@@ -19,11 +19,10 @@ import {
   tokensFor,
 } from '../design/tokens.ts';
 import { DEMO_REGISTRY, demoSnapshots } from './demo-snapshots.ts';
-import { type CardItem, ProgressCard } from './ProgressCard.tsx';
-import { EvidenceTag, LineMap, MilestoneGrid, StatusMark } from './parts.tsx';
+import { ProjectStrip, type StripItem } from './ProjectStrip.tsx';
+import { EvidenceTag, LineMap, MilestoneGrid, StationLabels, StatusMark } from './parts.tsx';
 
-type ZhFont = 'misans' | 'noto';
-type JaFont = 'zen' | 'line' | 'plex';
+type JaFont = 'mplus' | 'murecho';
 
 const REGISTRY = [...PRESET_PROJECTS, ...DEMO_REGISTRY];
 const SPECIMEN_ENDPOINT = '/__specimen/snapshots';
@@ -36,24 +35,21 @@ function param<T extends string>(name: string, allowed: readonly T[]): T | undef
   return allowed.find((a) => a === v);
 }
 
-const ZH_LABELS: Record<ZhFont, string> = { misans: 'MiSans + 霞鹜文楷', noto: '思源（第一轮）' };
-const JA_LABELS: Record<JaFont, string> = {
-  zen: 'Zen 角ゴシック + しっぽり明朝',
-  line: 'LINE Seed JP + Klee One',
-  plex: 'IBM Plex Sans JP（第一轮）',
-};
+const JA_LABELS: Record<JaFont, string> = { mplus: 'M PLUS 2 + Klee One', murecho: 'Murecho + Klee One' };
 
 const DECIDED = [
-  '字体方案 A：IBM Plex Sans、Source Serif 4',
+  '字体方案 A',
   '等宽 IBM Plex Mono',
+  '中文 MiSans + 霞鹜文楷',
   '强调色 雾蓝 · 安静',
+  '浅色背景 雾',
   '阶段轴 圆点',
   '状态色 沿用',
   '日文 敬体',
   '中英文之间 加空格',
 ];
 
-async function load(fileName: string, bytes: Uint8Array, sourceLabel: string): Promise<CardItem | string> {
+async function load(fileName: string, bytes: Uint8Array, sourceLabel: string): Promise<StripItem | string> {
   const result: CheckResult = await checkSnapshot(bytes, { registry: REGISTRY });
   if (result.kind !== 'accepted')
     return `${fileName}：${result.kind === 'rejected' ? '无法导入' : '需要选择'}`;
@@ -77,14 +73,14 @@ async function load(fileName: string, bytes: Uint8Array, sourceLabel: string): P
 }
 
 function useSnapshots() {
-  const [items, setItems] = useState<CardItem[]>([]);
+  const [items, setItems] = useState<StripItem[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
   const [realCount, setRealCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const enc = new TextEncoder();
-      const out: (CardItem | string)[] = [];
+      const out: (StripItem | string)[] = [];
       let real: { fileName: string; base64: string }[] = [];
       if (!DEMO_ONLY) {
         try {
@@ -102,7 +98,7 @@ function useSnapshots() {
       for (const d of demoSnapshots(new Date()))
         out.push(await load(d.fileName, enc.encode(d.json), '演示数据'));
       if (cancelled) return;
-      setItems(out.filter((x): x is CardItem => typeof x !== 'string'));
+      setItems(out.filter((x): x is StripItem => typeof x !== 'string'));
       setProblems(out.filter((x): x is string => typeof x === 'string'));
       setRealCount(real.length);
     })();
@@ -154,10 +150,12 @@ function BackdropSample({
   theme,
   backdrop,
   sample,
+  decided,
 }: {
   theme: Theme;
   backdrop: Backdrop;
-  sample: CardItem | undefined;
+  sample: StripItem | undefined;
+  decided?: boolean;
 }) {
   const tokens = tokensFor(theme, backdrop);
   return (
@@ -176,6 +174,7 @@ function BackdropSample({
       <figcaption>
         <span>
           {theme === 'light' ? '浅色' : '深色'} · {BACKDROP_LABELS[backdrop]}
+          {decided ? '（已定）' : ''}
         </span>
         <span className="mono">
           画布 {toHex(tokens.canvas)} · 卡片 {toHex(tokens.surface)}
@@ -185,9 +184,9 @@ function BackdropSample({
   );
 }
 
-function FontPanel({ zh, ja, label }: { zh?: ZhFont; ja?: JaFont; label: string }) {
+function FontPanel({ zh, ja, label }: { zh?: boolean; ja?: JaFont; label: string }) {
   return (
-    <figure className="fontpanel" data-zh={zh} data-ja={ja}>
+    <figure className="fontpanel" data-ja={ja}>
       <figcaption className="fontpanel-label">{label}</figcaption>
       {zh ? (
         <div lang="zh-Hans">
@@ -219,18 +218,14 @@ export function Specimen() {
       param('theme', ['light', 'dark'] as const) ??
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
   );
-  const [lightBackdrop, setLightBackdrop] = useState<Backdrop>(
-    param('light', ['stone', 'mist'] as const) ?? 'stone',
-  );
   const [darkBackdrop, setDarkBackdrop] = useState<Backdrop>(
-    param('dark', ['ink', 'dusk'] as const) ?? 'ink',
+    param('dark', ['night', 'dai'] as const) ?? 'night',
   );
-  const [zh, setZh] = useState<ZhFont>(param('zh', ['misans', 'noto'] as const) ?? 'misans');
-  const [ja, setJa] = useState<JaFont>(param('ja', ['zen', 'line', 'plex'] as const) ?? 'zen');
+  const [ja, setJa] = useState<JaFont>(param('ja', ['mplus', 'murecho'] as const) ?? 'mplus');
   const { items, problems, realCount } = useSnapshots();
   const now = useMemo(() => new Date(), []);
 
-  const backdrop = theme === 'light' ? lightBackdrop : darkBackdrop;
+  const backdrop = theme === 'light' ? 'mist' : darkBackdrop;
   const tokens = tokensFor(theme, backdrop);
 
   useEffect(() => {
@@ -238,10 +233,9 @@ export function Specimen() {
     // 用 CSSOM 设置变量：严格 CSP 下允许。P2.2 定稿后改为静态 CSS。
     for (const [k, v] of Object.entries(cssVars(tokens))) root.style.setProperty(k, String(v));
     root.dataset.theme = theme;
-    root.dataset.zh = zh;
     root.dataset.ja = ja;
     root.style.colorScheme = theme;
-  }, [tokens, theme, zh, ja]);
+  }, [tokens, theme, ja]);
 
   const sample = items.find((i) => i.snapshot.stage === 'integration') ?? items[0];
 
@@ -253,10 +247,10 @@ export function Specimen() {
 
       <header className="masthead">
         <div className="masthead-inner">
-          <p className="eyebrow">Moriium Dashboard · 设计样张 · 第二轮</p>
+          <p className="eyebrow">Moriium Dashboard · 设计样张 · 第三轮</p>
           <h1 className="title">项目做到哪里，一眼看清</h1>
           <p className="lede">
-            按你上一轮的意见改了背景、中日文字体和项目卡片。已经定下的不再给选项；还没定的三项，在下面切换比较。
+            项目改成了长条：一行只放最关键的，细节在长条里展开。深色背景换成了更深、更低饱和的两种蓝灰；日文改用和中文同一气质的字体。
           </p>
           <ul className="decided" aria-label="已定">
             {DECIDED.map((d) => (
@@ -289,25 +283,11 @@ export function Specimen() {
           ]}
         />
         <Choice
-          legend="浅色背景"
-          name="light"
-          value={lightBackdrop}
-          onChange={setLightBackdrop}
-          options={BACKDROPS.light.map((b) => [b, BACKDROP_LABELS[b]])}
-        />
-        <Choice
           legend="深色背景"
           name="dark"
           value={darkBackdrop}
           onChange={setDarkBackdrop}
           options={BACKDROPS.dark.map((b) => [b, BACKDROP_LABELS[b]])}
-        />
-        <Choice
-          legend="中文"
-          name="zh"
-          value={zh}
-          onChange={setZh}
-          options={(Object.keys(ZH_LABELS) as ZhFont[]).map((k) => [k, ZH_LABELS[k]])}
         />
         <Choice
           legend="日文"
@@ -319,40 +299,47 @@ export function Specimen() {
       </section>
 
       <main id="main">
-        <section className="section" aria-labelledby="s-cards">
+        <section className="section section-wide" aria-labelledby="s-strips">
           <div className="section-head">
-            <p className="section-tag">待你拍板 · 项目卡片</p>
-            <h2 id="s-cards">每张卡只回答四件事</h2>
+            <p className="section-tag">待你拍板 · 项目长条</p>
+            <h2 id="s-strips">一行看完一个项目</h2>
             <p className="section-note">
-              做到哪里、还差什么、下一步、等你几件。其余的放在详情里：鼠标停一下，或者用 Tab
-              走到「详情」；手机上点「详情」。
+              进度数字只用真实数据：快照给了估算就显示「Agent
+              估算」的百分比，没给就显示里程碑完成数，不把空值画成百分比。鼠标停一下、用 Tab
+              聚焦，或点一下长条，细节会在长条里展开；点过之后固定，按 Esc 收起。
               {realCount > 0
-                ? ` 这里有 ${realCount} 个项目来自你本机的真实快照，只在你的浏览器里显示。`
+                ? ` 前 ${realCount} 个项目来自你本机的真实快照，只在你的浏览器里显示。`
                 : ' 现在显示的是 Dashboard 自己的快照和演示数据。'}
             </p>
             {problems.length > 0 ? <p className="section-warn">没有显示：{problems.join('；')}</p> : null}
           </div>
-          <div className="pcards">
+
+          <div className="strips">
+            <div className="strips-head" aria-hidden="true">
+              <span>项目</span>
+              <StationLabels />
+              <span>进度</span>
+              <span>还差</span>
+              <span className="num">等你</span>
+              <span />
+            </div>
             {items.map((item) => (
-              <ProgressCard key={`${item.sourceLabel}-${item.snapshot.project_id}`} item={item} now={now} />
+              <ProjectStrip key={`${item.sourceLabel}-${item.snapshot.project_id}`} item={item} now={now} />
             ))}
           </div>
         </section>
 
         <section className="section" aria-labelledby="s-backdrop">
           <div className="section-head">
-            <p className="section-tag">待你拍板 · 背景</p>
-            <h2 id="s-backdrop">浅色压低亮度，深色换掉蓝黑</h2>
+            <p className="section-tag">待你拍板 · 深色背景</p>
+            <h2 id="s-backdrop">更深、更低饱和、略带蓝</h2>
             <p className="section-note">
-              四个候选并排，不受上面主题切换的影响。浅色亮度从 0.984 降到 0.95
-              左右；「石」是带一点暖意的中性灰，不是米黄，「雾」偏冷。深色「墨」是带暖意的石墨，「夜雾」是更亮、更低饱和的蓝灰。
+              「夜」是深蓝灰，彩度只有常见「蓝黑」模板的一半左右；「黛」更深一点，带一点青，像墨蓝。浅色「雾」已定，放在旁边对照。
             </p>
           </div>
           <div className="backdrops">
-            {(['stone', 'mist'] as const).map((b) => (
-              <BackdropSample key={b} theme="light" backdrop={b} sample={sample} />
-            ))}
-            {(['ink', 'dusk'] as const).map((b) => (
+            <BackdropSample theme="light" backdrop="mist" sample={sample} decided />
+            {BACKDROPS.dark.map((b) => (
               <BackdropSample key={b} theme="dark" backdrop={b} sample={sample} />
             ))}
           </div>
@@ -360,20 +347,18 @@ export function Specimen() {
 
         <section className="section" aria-labelledby="s-fonts">
           <div className="section-head">
-            <p className="section-tag">待你拍板 · 中日文字体</p>
-            <h2 id="s-fonts">标题有温度，正文要耐看</h2>
+            <p className="section-tag">待你拍板 · 日文字体</p>
+            <h2 id="s-fonts">和中文同一种气质</h2>
             <p className="section-note">
-              拉丁字母仍是方案 A 的 IBM Plex Sans 与 Source Serif 4。中文正文换成
-              MiSans，标题用霞鹜文楷（楷体，和日文的 Klee One
-              同源）。日文给两组新候选，第一轮的写法放在最后作对照。快照内容一律按中文字形显示。
+              中文已定：正文 MiSans，标题霞鹜文楷。日文标题用 Klee
+              One，霞鹜文楷就是从它衍生的，两者笔意一致；正文选两款和 MiSans 一样干净、现代的无衬线。MiSans
+              本身没有假名，不能直接用于日文。
             </p>
           </div>
           <div className="fontpanels">
-            <FontPanel zh="misans" label="中文 · MiSans + 霞鹜文楷" />
-            <FontPanel zh="noto" label="中文 · 思源（第一轮）" />
-            <FontPanel ja="zen" label="日文 · Zen 角ゴシック New + しっぽり明朝" />
-            <FontPanel ja="line" label="日文 · LINE Seed JP + Klee One" />
-            <FontPanel ja="plex" label="日文 · IBM Plex Sans JP（第一轮）" />
+            <FontPanel zh label="中文 · MiSans + 霞鹜文楷（已定）" />
+            <FontPanel ja="mplus" label="日文 · M PLUS 2 + Klee One" />
+            <FontPanel ja="murecho" label="日文 · Murecho + Klee One" />
           </div>
         </section>
 
