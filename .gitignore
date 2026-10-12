@@ -49,3 +49,6 @@ desktop.ini
 .vscode/*
 !.vscode/extensions.json
 .claude/settings.local.json
+
+# 截图（可能含本机真实快照，不进仓库）
+screenshots/
