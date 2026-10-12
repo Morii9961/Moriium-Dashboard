@@ -65,7 +65,8 @@ export interface ShownIssue {
 
 export type PlacementView =
   | { kind: 'latest'; replaces: SnapshotBrief | null }
-  | { kind: 'history'; currentLatest: SnapshotBrief | null }
+  /** inBatch：比同一批里同一项目的另一份早（那份会成为最新）。 */
+  | { kind: 'history'; currentLatest: SnapshotBrief | null; inBatch: boolean }
   | { kind: 'duplicate'; of: SnapshotBrief | null; deleted: boolean; inBatch: boolean }
   | { kind: 'conflict'; with: SnapshotBrief | null; inBatch: boolean };
 
@@ -250,7 +251,11 @@ export async function previewImport(db: Database, files: ImportFile[], now: Date
         view = { kind: 'latest', replaces: brief(placement.replaces) };
         break;
       case 'history':
-        view = { kind: 'history', currentLatest: brief(placement.currentLatest) };
+        view = {
+          kind: 'history',
+          currentLatest: brief(placement.currentLatest),
+          inBatch: placement.currentLatest.startsWith('batch:'),
+        };
         break;
       case 'duplicate':
         view = {
@@ -299,6 +304,24 @@ export async function previewImport(db: Database, files: ImportFile[], now: Date
       placement: view,
       diff: current ? diffSnapshots(current.snapshot, snapshot) : null,
     };
+  }
+  // 同一批里同一项目有多份「成为最新」时，只有最晚的那份真正成为最新，其余只进历史；
+  // 最晚那份要替换的是库里现在的最新（不是同一批里的虚拟条目）。
+  const lastLatest = new Map<string, number>();
+  for (const [i, pv] of previews.entries()) {
+    if (pv?.status !== 'accepted' || pv.placement.kind !== 'latest') continue;
+    const prev = lastLatest.get(pv.projectId);
+    const prevPv = prev === undefined ? undefined : previews[prev];
+    if (!prevPv || (prevPv.status === 'accepted' && pv.utcMs > prevPv.utcMs)) lastLatest.set(pv.projectId, i);
+  }
+  for (const [i, pv] of previews.entries()) {
+    if (pv?.status !== 'accepted' || pv.placement.kind !== 'latest') continue;
+    if (lastLatest.get(pv.projectId) !== i) {
+      pv.placement = { kind: 'history', currentLatest: null, inBatch: true };
+    } else {
+      const cur = currentSnapshot(db, pv.projectId);
+      pv.placement = { kind: 'latest', replaces: cur ? (getBrief(db, cur.id) ?? null) : null };
+    }
   }
   return previews;
 }
@@ -383,6 +406,23 @@ export async function commitImport(
         placement: placement.kind === 'conflict' ? 'replaced' : placement.kind,
       };
     });
+  }
+
+  // 和预览一致：同一批里同一项目先后成为最新的几份，只有最晚的那份算「成为最新」。
+  const lastLatestIdx = new Map<string, number>();
+  const timeOf = (i: number) => {
+    const c = checked[i]?.result;
+    return c?.kind === 'accepted' ? c.meta.snapshotAtUtcMs : 0;
+  };
+  for (const [i, r] of results.entries()) {
+    if (r.outcome !== 'imported' || r.placement !== 'latest') continue;
+    const prev = lastLatestIdx.get(r.projectId);
+    if (prev === undefined || timeOf(i) > timeOf(prev)) lastLatestIdx.set(r.projectId, i);
+  }
+  for (const [i, r] of results.entries()) {
+    if (r.outcome === 'imported' && r.placement === 'latest' && lastLatestIdx.get(r.projectId) !== i) {
+      results[i] = { ...r, placement: 'history' };
+    }
   }
 
   const imported = results.filter((r) => r.outcome === 'imported').length;

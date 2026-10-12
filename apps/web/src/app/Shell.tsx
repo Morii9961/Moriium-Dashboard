@@ -27,6 +27,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { readThemePref, setThemePref, THEME_PREFS, type ThemePref } from '../theme/theme.ts';
+import { useImport } from './ImportDialog.tsx';
 import { Link, usePath } from './router.tsx';
 import { useService } from './service.tsx';
 
@@ -146,17 +147,20 @@ function LocaleSelect() {
 
 function SideActions({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
   const { t } = useI18n();
+  const { open: openImport } = useImport();
   return (
     <div className="side-actions">
-      <Link
-        to="/imports"
+      <button
+        type="button"
         className="side-action side-action-primary"
-        aria-current={path === '/imports' ? 'page' : undefined}
-        onClick={onNavigate}
+        onClick={() => {
+          onNavigate?.();
+          openImport();
+        }}
       >
         <DownloadSimple size={18} aria-hidden="true" />
         <span className="rail-label">{t('nav.import')}</span>
-      </Link>
+      </button>
       <Link
         to="/settings"
         className="side-action"
@@ -188,6 +192,7 @@ function ServiceBanner() {
 
 export function Shell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
+  const { open: openImport } = useImport();
   const path = usePath();
   const drawer = useRef<HTMLDialogElement>(null);
   const first = useRef(true);
@@ -232,9 +237,14 @@ export function Shell({ children }: { children: ReactNode }) {
         </button>
         <Brand />
         <div className="mobilebar-actions">
-          <Link to="/imports" className="icon-btn" aria-label={t('nav.import')}>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={t('nav.import')}
+            onClick={() => openImport()}
+          >
             <DownloadSimple size={20} aria-hidden="true" />
-          </Link>
+          </button>
           <Link to="/settings" className="icon-btn" aria-label={t('nav.settings')}>
             <GearSix size={20} aria-hidden="true" />
           </Link>

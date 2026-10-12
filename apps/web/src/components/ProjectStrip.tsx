@@ -33,7 +33,8 @@ export interface StripItem {
   offsetMinutes: number;
   agent: 'claude' | 'codex' | 'other' | null;
   agentInferred: boolean;
-  origin: Origin;
+  /** 设计基线页用来标出数据来源；应用里不传。 */
+  origin?: Origin;
 }
 
 const MILESTONE_LIMIT = 7;
@@ -57,9 +58,18 @@ export function figureOf(s: Snapshot, t: I18n['t']) {
   return { p, figure, source, text, label: figure === null ? source : `${source} ${figure.percent}%` };
 }
 
-export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
+export function ProjectStrip({
+  item,
+  now,
+  defaultPinned = false,
+}: {
+  item: StripItem;
+  now: Date;
+  /** 项目详情页里默认展开。 */
+  defaultPinned?: boolean;
+}) {
   const { t, relative, snapshotTime } = useI18n();
-  const [pinned, setPinned] = useState(false);
+  const [pinned, setPinned] = useState(defaultPinned);
   const id = useId();
   const s = item.snapshot;
   const { p, figure, source } = figureOf(s, t);
@@ -278,7 +288,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
                 </>
               ) : null}
             </dl>
-            <p className="more-source">{t(`origin.${item.origin}`)}</p>
+            {item.origin ? <p className="more-source">{t(`origin.${item.origin}`)}</p> : null}
           </section>
         </div>
       </div>

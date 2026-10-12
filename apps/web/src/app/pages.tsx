@@ -2,57 +2,15 @@
  * 页面。P2.3 先把骨架和空状态做对（02 第 12 节）；P3 起项目登记表从服务端读取，
  * 快照导入后概览和项目页显示真实状态。
  */
-import { ArrowRight } from '@phosphor-icons/react';
-import { type ChangeEvent, useMemo, useState } from 'react';
-import { CopyLine } from '../components/CopyLine.tsx';
+import { type ChangeEvent, useState } from 'react';
 import { Segmented } from '../components/Segmented.tsx';
-import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import { readThemePref, setThemePref, THEME_PREFS, type ThemePref } from '../theme/theme.ts';
-import { useResource } from './data.tsx';
 import { ProjectRegistry } from './registry.tsx';
 import { Link } from './router.tsx';
 import { useService } from './service.tsx';
-import type { Project } from './types.ts';
-import { EmptyState, PageHeader, SNAPSHOT_PHRASE, SnapshotSteps } from './ui.tsx';
-
-const projectPath = (id: string) => `/projects/${encodeURIComponent(id)}`;
-
-function useProjects() {
-  return useResource<{ projects: Project[] }>('/api/projects');
-}
-
-/** 还没读到登记表时的占位：读取中，或连不上服务时说明会自动重试。 */
-function RegistryPending({ failed }: { failed: boolean }) {
-  const { t } = useI18n();
-  return <p className="page-lede">{failed ? t('projects.loadFailed') : t('common.loading')}</p>;
-}
-
-export function OverviewPage() {
-  const { t, fullDate } = useI18n();
-  const now = useMemo(() => new Date(), []);
-  const { data, error } = useProjects();
-  const projects = data?.projects.filter((p) => p.attention !== 'archived') ?? [];
-  const lines: MapLine[] = projects.map((p) => ({
-    href: projectPath(p.id),
-    name: p.name,
-    stage: null,
-    progress: '',
-    progressLabel: '',
-    pending: 0,
-  }));
-  return (
-    <>
-      <PageHeader
-        meta={<time dateTime={now.toISOString().slice(0, 10)}>{fullDate(now)}</time>}
-        title={data ? t('overview.emptyTitle', { count: projects.length }) : t('nav.overview')}
-      />
-      {data ? <TransitMap lines={lines} /> : <RegistryPending failed={!!error} />}
-      <SnapshotSteps />
-    </>
-  );
-}
+import { EmptyState, PageHeader } from './ui.tsx';
 
 export function InboxPage() {
   const { t } = useI18n();
@@ -60,72 +18,6 @@ export function InboxPage() {
     <>
       <PageHeader title={t('nav.inbox')} />
       <EmptyState title={t('inbox.empty')} />
-    </>
-  );
-}
-
-export function ProjectsPage() {
-  const { t } = useI18n();
-  const { data, error } = useProjects();
-  return (
-    <>
-      <PageHeader
-        title={t('nav.projects')}
-        lede={data ? t('projects.registered', { count: data.projects.length }) : undefined}
-      />
-      {data ? (
-        <ul className="project-list">
-          {data.projects.map((p) => (
-            <li key={p.id}>
-              <Link to={projectPath(p.id)} className="project-row">
-                <span className="project-row-name">{p.name}</span>
-                <span className="project-row-id mono">{p.id}</span>
-                <span className="project-row-state">
-                  {p.attention === 'active' ? t('map.noSnapshot') : t(`attention.${p.attention}`)}
-                </span>
-                <ArrowRight className="project-row-go" size={18} aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <RegistryPending failed={!!error} />
-      )}
-    </>
-  );
-}
-
-export function ProjectPage({ id }: { id: string }) {
-  const { t } = useI18n();
-  const { data, error } = useProjects();
-  if (!data) {
-    return (
-      <>
-        <PageHeader meta={<span className="mono">{id}</span>} title={t('nav.projects')} />
-        <RegistryPending failed={!!error} />
-      </>
-    );
-  }
-  const project = data.projects.find((p) => p.id === id);
-  if (!project) {
-    return (
-      <>
-        <PageHeader title={t('project.unknown')} />
-        <EmptyState title={t('project.unknownBody', { id })}>
-          <Link to="/projects" className="btn">
-            {t('nav.projects')}
-          </Link>
-        </EmptyState>
-      </>
-    );
-  }
-  return (
-    <>
-      <PageHeader meta={<span className="mono">{project.id}</span>} title={project.name} />
-      <EmptyState title={t('project.empty')}>
-        <p className="empty-body">{t('project.emptyHint')}</p>
-        <CopyLine text={SNAPSHOT_PHRASE} lang="zh-Hans" />
-      </EmptyState>
     </>
   );
 }
@@ -156,17 +48,6 @@ export function PlannerPage() {
     <>
       <PageHeader title={t('nav.planner')} />
       <EmptyState title={t('planner.empty')} />
-    </>
-  );
-}
-
-export function ImportsPage() {
-  const { t } = useI18n();
-  return (
-    <>
-      <PageHeader title={t('imports.title')} />
-      <EmptyState title={t('imports.empty')} />
-      <SnapshotSteps importAction={false} />
     </>
   );
 }
