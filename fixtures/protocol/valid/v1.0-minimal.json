@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "project_id": "demo.alpha",
+  "project_name": "Demo Alpha",
+  "snapshot_at": "2026-10-11T20:00:00+08:00",
+  "source": {
+    "branch": null,
+    "commit_sha": null,
+    "basis": [
+      "docs/plan.md",
+      "PR #12"
+    ],
+    "tests_rerun": false
+  },
+  "stage": "integration",
+  "summary": "虚构的演示项目：主要功能已接上，正在联调。",
+  "overall_progress": null,
+  "milestones": [],
+  "blockers": [],
+  "next_actions": [],
+  "needs_morii": []
+}
