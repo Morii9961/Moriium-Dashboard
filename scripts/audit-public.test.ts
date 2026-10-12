@@ -93,6 +93,23 @@ describe('emails', () => {
   });
 });
 
+describe('invisible characters', () => {
+  const cp = String.fromCodePoint;
+  it.each([
+    ['bidi override', cp(0x202e)],
+    ['bidi isolate', cp(0x2066)],
+    ['zero-width space', cp(0x200b)],
+    ['escape character', cp(0x1b)],
+    ['NUL-free C1 control', cp(0x85)],
+  ])('flags %s', (_name, ch) => {
+    expect(rules('a.ts', `const a = 1;${ch}\n`)).toContain('invisible-char');
+  });
+
+  it('allows tabs, CRLF line endings and ordinary CJK text', () => {
+    expect(rules('a.md', '\tindent\r\n中文与 English，标点。\r\n')).toEqual([]);
+  });
+});
+
 describe('decodeText', () => {
   it('decodes UTF-16 with BOM so its content is still scanned', () => {
     const body = j('gh', 'p_', 'D'.repeat(36));
@@ -111,7 +128,7 @@ describe('reporting', () => {
     const secret = j('gh', 'p_', 'E'.repeat(36));
     const [line] = auditFile('a.txt', text(secret)).map(formatFinding);
     expect(line).not.toContain(secret);
-    expect(line).toBe('a.txt:1  secret  GitHub 令牌形态');
+    expect(line).toBe('a.txt:1  secret  GitHub 令牌');
   });
 
   it('applies allow entries by exact path or directory prefix and rule', () => {
