@@ -101,6 +101,11 @@ describe('summarizeProgress (02 §5.4)', () => {
     expect(freshness(Date.UTC(2026, 9, 10), now, 'development')).toBe('aging');
     expect(freshness(Date.UTC(2026, 9, 1), now, 'development')).toBe('stale');
     expect(freshness(Date.UTC(2026, 8, 1), now, 'paused')).toBe('not_counted');
+    // 按项目设置的阈值：30 天过期，15 天起算有些旧；项目暂停时不计算。
+    expect(freshness(Date.UTC(2026, 9, 10), now, 'live', { staleAfterDays: 30 })).toBe('fresh');
+    expect(freshness(Date.UTC(2026, 9, 1), now, 'live', { staleAfterDays: 20 })).toBe('aging');
+    expect(freshness(Date.UTC(2026, 8, 1), now, 'live', { staleAfterDays: 30 })).toBe('stale');
+    expect(freshness(Date.UTC(2026, 8, 1), now, 'live', { projectPaused: true })).toBe('not_counted');
   });
 });
 

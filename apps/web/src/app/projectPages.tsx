@@ -33,6 +33,8 @@ function stripItem(p: ProjectWithCurrent): StripItem | null {
     offsetMinutes: c.offsetMinutes,
     agent: c.reporter.agent,
     agentInferred: c.reporter.source === 'branch',
+    staleAfterDays: p.freshnessDays,
+    projectPaused: p.attention === 'paused',
   };
 }
 

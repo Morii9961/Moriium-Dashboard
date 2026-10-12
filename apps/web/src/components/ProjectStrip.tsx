@@ -33,6 +33,10 @@ export interface StripItem {
   offsetMinutes: number;
   agent: 'claude' | 'codex' | 'other' | null;
   agentInferred: boolean;
+  /** 登记表里这个项目的过期天数；不传时按 14 天。 */
+  staleAfterDays?: number;
+  /** 项目的关注状态是「已暂停」：不计算过期。 */
+  projectPaused?: boolean;
   /** 设计基线页用来标出数据来源；应用里不传。 */
   origin?: Origin;
 }
@@ -73,7 +77,10 @@ export function ProjectStrip({
   const id = useId();
   const s = item.snapshot;
   const { p, figure, source } = figureOf(s, t);
-  const fresh = freshness(item.utcMs, now, s.stage);
+  const fresh = freshness(item.utcMs, now, s.stage, {
+    ...(item.staleAfterDays !== undefined ? { staleAfterDays: item.staleAfterDays } : {}),
+    ...(item.projectPaused ? { projectPaused: true } : {}),
+  });
   const days = Math.floor((now.getTime() - item.utcMs) / 86_400_000);
   const waiting = p.decisions + p.awaitingAcceptance;
   const mature =
