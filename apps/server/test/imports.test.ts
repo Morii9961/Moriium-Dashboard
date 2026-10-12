@@ -10,6 +10,7 @@ import { createApp } from '../src/app.ts';
 import { REPO_ROOT } from '../src/config.ts';
 import { applyMigrations, type Database, loadMigrations, openDatabase } from '../src/db.ts';
 import { safeFileName } from '../src/imports.ts';
+import { readZip } from '../src/zip.ts';
 
 const FIXTURES = join(REPO_ROOT, 'fixtures', 'protocol');
 const fixture = (path: string) => readFileSync(join(FIXTURES, path));
@@ -345,5 +346,65 @@ describe('history', () => {
     expect(res.headers.get('content-type')).toBe('application/octet-stream');
     expect(res.headers.get('content-disposition')).toContain('attachment');
     expect(Buffer.from(await res.arrayBuffer()).equals(fixture('history/t1-base.json'))).toBe(true);
+  });
+});
+
+describe('export', () => {
+  const download = async (path: string) => {
+    const res = await app.request(path, { headers: { host } });
+    expect(res.headers.get('content-type')).toBe('application/zip');
+    expect(res.headers.get('content-disposition')).toMatch(
+      /attachment; filename="moriium-dashboard-.+\.zip"/,
+    );
+    return readZip(new Uint8Array(await res.arrayBuffer()));
+  };
+
+  it('exports everything: manifest, data, active raw files and an archive of trashed or replaced versions', async () => {
+    await commit([
+      file('history/t0-older.json'),
+      file('history/t1-base.json'),
+      file('history/t2-newer.json'),
+    ]);
+    await commit([file('history/t1-same-instant-different.json', { conflict: 'replace' })]);
+    const zip = await download('/api/export');
+    const names = zip.map((e) => e.name);
+    expect(names.slice(0, 2)).toEqual(['manifest.json', 'data.json']);
+    const manifest = JSON.parse(new TextDecoder().decode(zip[0]?.data)) as Record<string, unknown>;
+    expect(manifest).toMatchObject({ app: 'moriium-dashboard', exportFormat: 1, counts: { snapshots: 4 } });
+    expect(names.filter((n) => n.startsWith('snapshots/demo.beta/'))).toHaveLength(3);
+    expect(names.filter((n) => n.startsWith('snapshots-archive/'))).toHaveLength(1);
+    const t0 = zip.find((e) => e.name.startsWith('snapshots/demo.beta/2026-10-01T10-00-00+08-00_'));
+    expect(t0 && Buffer.from(t0.data).equals(fixture('history/t0-older.json'))).toBe(true);
+    // 不带任何路径：data.json 里只有文件名。
+    expect(new TextDecoder().decode(zip[1]?.data)).not.toMatch(/[A-Za-z]:\|\/Users\/|\/home\//);
+  });
+
+  it('exports raw snapshots that a fresh Dashboard imports again unchanged', async () => {
+    await commit([file('history/t0-older.json'), file('history/t2-newer.json')]);
+    const zip = await download('/api/export/snapshots');
+    expect(zip.map((e) => e.name.split('/')[0])).toEqual(['snapshots', 'snapshots']);
+
+    const fresh = openDatabase(join(dir, 'fresh.sqlite'));
+    applyMigrations(fresh, loadMigrations(join(REPO_ROOT, 'apps', 'server', 'migrations')));
+    fresh
+      .prepare(
+        "INSERT INTO projects (id, name, created_at, updated_at) VALUES ('demo.beta', 'Demo Beta', 'x', 'x')",
+      )
+      .run();
+    const other = createApp({
+      db: fresh,
+      config: { allowedHosts: [host], allowedOrigins: [origin], backupDir: join(dir, 'b2') },
+      startedAt: now,
+      version: '0.0.0',
+      now: () => now,
+    });
+    const res = await other.request('/api/imports', {
+      method: 'POST',
+      headers: { host, origin, 'x-moriium-dashboard': '1', 'content-type': 'application/json' },
+      body: JSON.stringify({ files: zip.map((e) => ({ name: e.name, base64: b64(e.data) })) }),
+    });
+    const body = (await res.json()) as { results: { outcome: string }[] };
+    expect(body.results.map((r) => r.outcome)).toEqual(['imported', 'imported']);
+    fresh.close();
   });
 });

@@ -292,6 +292,10 @@ export const zhHans = {
 
   'compare.labelValue': '{label}：{value}',
   'compare.withDetail': '{text}（{detail}）',
+
+  'settings.data': '数据',
+  'export.all': '导出全部数据',
+  'export.snapshots': '只导出快照原文',
 } as const;
 
 export type MessageKey = keyof typeof zhHans;

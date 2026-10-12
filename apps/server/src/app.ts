@@ -9,6 +9,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { listBackups } from './backup.ts';
 import type { ServerConfig } from './config.ts';
 import { currentSchemaVersion, type Database } from './db.ts';
+import { exportRoutes } from './routes/export.ts';
 import { historyRoutes } from './routes/history.ts';
 import { importRoutes } from './routes/imports.ts';
 import { projectRoutes } from './routes/projects.ts';
@@ -60,6 +61,7 @@ export function createApp(ctx: AppContext) {
   projectRoutes(app, ctx);
   importRoutes(app, ctx);
   historyRoutes(app, ctx);
+  exportRoutes(app, ctx);
 
   app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 

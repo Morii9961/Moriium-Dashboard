@@ -1411,3 +1411,6 @@
     grid-area: actions;
   }
 }
+.settings-actions {
+  margin: 0;
+}

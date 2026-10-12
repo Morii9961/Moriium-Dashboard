@@ -297,4 +297,8 @@ export const ja: Messages = {
 
   'compare.labelValue': '{label}：{value}',
   'compare.withDetail': '{text}（{detail}）',
+
+  'settings.data': 'データ',
+  'export.all': 'すべてのデータを書き出す',
+  'export.snapshots': 'スナップショットの原文だけ書き出す',
 };

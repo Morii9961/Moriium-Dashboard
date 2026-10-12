@@ -296,4 +296,8 @@ export const en: Messages = {
 
   'compare.labelValue': '{label}: {value}',
   'compare.withDetail': '{text} ({detail})',
+
+  'settings.data': 'Data',
+  'export.all': 'Export all data',
+  'export.snapshots': 'Export raw snapshots only',
 };
