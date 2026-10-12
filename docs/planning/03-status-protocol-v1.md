@@ -1,5 +1,6 @@
 # 03 · Project Status Protocol v1
 
+> **正式版已发布（2026-10-12，P1.6）：[`docs/protocol/README.md`](../protocol/README.md)。本文保留为规划阶段的批准记录，不再更新。**
 > 状态：已获批（2026-10-12，见 `docs/design-decisions.md`）。Schema：[v1.0](./schema/project-status.v1.0.schema.json)、[v1.1](./schema/project-status.v1.1.schema.json)。两份 Schema 在 P1 发布前仍是草案，P1 只修错误，不改字段和结构；要改结构需另行请 Morii 批准。
 > v1.0 的字段名和枚举照搬委托书，没有改动。v1.1 只新增可选字段（第 10 节的 E1、E2），v1.0 的文件继续有效。
 
