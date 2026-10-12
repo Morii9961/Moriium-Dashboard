@@ -4,6 +4,7 @@ import type { AppContext } from '../app.ts';
 import { audit } from '../audit.ts';
 import { transaction } from '../db.ts';
 import { createProject, getProject, listProjects, ProjectError, updateProject } from '../projects.ts';
+import { currentSnapshot, currentSnapshots, snapshotCounts } from '../snapshots.ts';
 import { readJsonObject } from './util.ts';
 
 const STATUS = {
@@ -17,11 +18,23 @@ const STATUS = {
 export function projectRoutes(app: Hono, ctx: AppContext) {
   const now = () => ctx.now?.() ?? new Date();
 
-  app.get('/api/projects', (c) => c.json({ projects: listProjects(ctx.db) }));
+  // 每个项目带上当前快照（没有时为 null）和有效快照份数。数据量很小，一次取回。
+  app.get('/api/projects', (c) => {
+    const current = currentSnapshots(ctx.db);
+    const counts = snapshotCounts(ctx.db);
+    return c.json({
+      projects: listProjects(ctx.db).map((p) => ({
+        ...p,
+        current: current.get(p.id) ?? null,
+        snapshotCount: counts.get(p.id) ?? 0,
+      })),
+    });
+  });
 
   app.get('/api/projects/:id', (c) => {
     const project = getProject(ctx.db, c.req.param('id'));
-    return project ? c.json({ project }) : c.json({ error: 'not_found' }, 404);
+    if (!project) return c.json({ error: 'not_found' }, 404);
+    return c.json({ project: { ...project, current: currentSnapshot(ctx.db, project.id) ?? null } });
   });
 
   app.post('/api/projects', async (c) => {
