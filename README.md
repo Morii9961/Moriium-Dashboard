@@ -6,7 +6,7 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 ## 当前状态
 
-规划已于 2026-10-12 获批，正在进行 P1（仓库与协议）。目前只有工作区骨架和公开树审计，界面和服务端还没开始。
+规划已于 2026-10-12 获批，P1（仓库与协议）的工作包都已提交审阅：协议包、样本和检查工具可以用；界面和服务端还没开始。
 
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
@@ -16,9 +16,10 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 快照的格式。v1.0 与 v1.1 同时支持。
 
-- 协议说明：[`docs/planning/03-status-protocol-v1.md`](./docs/planning/03-status-protocol-v1.md)（P1.6 后移到 `docs/protocol/`）
-- JSON Schema 2020-12：[v1.0](./docs/planning/schema/project-status.v1.0.schema.json)、[v1.1](./docs/planning/schema/project-status.v1.1.schema.json)
-- 给 Agent 的指令模板：[`docs/planning/agent-snapshot-prompt.md`](./docs/planning/agent-snapshot-prompt.md)
+- 协议说明：[`docs/protocol/README.md`](./docs/protocol/README.md)
+- JSON Schema 2020-12：[v1.0](./docs/protocol/schema/project-status.v1.0.schema.json)、[v1.1](./docs/protocol/schema/project-status.v1.1.schema.json)
+- 给 Agent 的指令模板：[`docs/protocol/agent-snapshot-prompt.md`](./docs/protocol/agent-snapshot-prompt.md)
+- 协议样本：[`fixtures/protocol/`](./fixtures/protocol/README.md)
 
 ## 本地开发
 
@@ -53,8 +54,8 @@ pnpm status:check path/to/project-status.json
 
 Moriium Dashboard is a single-user workspace. Agents working on Morii's projects write "project status snapshots" in a shared JSON format (the Project Status Protocol). The dashboard imports them and shows, for each project, where it stands, what is still missing, what comes next, and what needs Morii's decision. It also holds a daily focus list, basic tasks, and a log of finished work. Agent self-reports, repository or test evidence, and Morii's own acceptance are always shown separately, and no progress percentage is drawn without a trustworthy basis.
 
-**Status:** planning was approved on 2026-10-12; work on P1 (repository and protocol) is in progress. There is no runnable code yet.
+**Status:** planning was approved on 2026-10-12. P1 (repository and protocol) is in review: the protocol package, fixtures and the checker work; the UI and server have not started.
 
-**Protocol:** see [`docs/planning/03-status-protocol-v1.md`](./docs/planning/03-status-protocol-v1.md) (Chinese) and the JSON Schemas for [v1.0](./docs/planning/schema/project-status.v1.0.schema.json) and [v1.1](./docs/planning/schema/project-status.v1.1.schema.json).
+**Protocol:** see [`docs/protocol/README.md`](./docs/protocol/README.md) (Chinese) and the JSON Schemas for [v1.0](./docs/protocol/schema/project-status.v1.0.schema.json) and [v1.1](./docs/protocol/schema/project-status.v1.1.schema.json). Run `pnpm status:check <file>` to check a snapshot.
 
 **License:** code is MIT. Runtime data never enters this repository.
