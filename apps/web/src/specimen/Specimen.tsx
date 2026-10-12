@@ -6,6 +6,10 @@
 import { type CheckResult, checkSnapshot, PRESET_PROJECTS } from '@moriium-dashboard/protocol';
 import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
 import dashboardSnapshot from '../../../../docs/status/project-status.json?raw';
+import { figureOf, type Origin, ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
+import { EvidenceTag, MilestoneGrid, StatusMark } from '../components/parts.tsx';
+import { Segmented } from '../components/Segmented.tsx';
+import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
 import { contrast, toHex } from '../design/color.ts';
 import { BACKDROP_NAME, CONTRAST_PAIRS, type ColorTokens, type Theme, tokensFor } from '../design/tokens.ts';
 import { useI18n } from '../i18n/i18n.tsx';
@@ -13,9 +17,6 @@ import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { readThemePref, resolveTheme, setThemePref, THEME_PREFS, type ThemePref } from '../theme/theme.ts';
 import { DEMO_REGISTRY, demoSnapshots } from './demo-snapshots.ts';
-import { figureOf, type Origin, ProjectStrip, type StripItem } from './ProjectStrip.tsx';
-import { EvidenceTag, MilestoneGrid, StatusMark } from './parts.tsx';
-import { type MapLine, TransitMap } from './TransitMap.tsx';
 
 const REGISTRY = [...PRESET_PROJECTS, ...DEMO_REGISTRY];
 const SPECIMEN_ENDPOINT = '/__specimen/snapshots';
@@ -86,32 +87,6 @@ function useResolvedTheme(pref: ThemePref): Theme {
   return pref === 'system' ? system : pref;
 }
 
-function Segmented<T extends string>({
-  legend,
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  legend: string;
-  name: string;
-  value: T;
-  options: [T, string][];
-  onChange: (v: T, e: ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <fieldset className="seg-control">
-      <legend className="sr-only">{legend}</legend>
-      {options.map(([v, label]) => (
-        <label key={v} className="seg-option">
-          <input type="radio" name={name} value={v} checked={value === v} onChange={(e) => onChange(v, e)} />
-          <span>{label}</span>
-        </label>
-      ))}
-    </fieldset>
-  );
-}
-
 const SWATCH_GROUPS: [MessageKey, (keyof ColorTokens)[]][] = [
   ['color.surface', ['canvas', 'surface', 'raised', 'borderWeak', 'border', 'ink3', 'ink2', 'ink1']],
   ['color.status', ['good', 'warn', 'serious', 'paused', 'unknown']],
@@ -159,7 +134,7 @@ export function Specimen() {
   const lines: MapLine[] = mapItems.map((i) => {
     const f = figureOf(i.snapshot, t);
     return {
-      anchor: i.anchor,
+      href: `#${i.anchor}`,
       name: i.name,
       stage: i.snapshot.stage,
       progress: f.text,

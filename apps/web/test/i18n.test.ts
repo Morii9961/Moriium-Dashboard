@@ -51,7 +51,7 @@ describe('message catalogs', () => {
   it('writes Japanese sentences in the polite form', () => {
     for (const key of keys) {
       const m = CATALOGS.ja[key];
-      if (m.endsWith('。')) expect(m, key).toMatch(/(です|ます|ません|ください|でした|ました)。$/);
+      if (m.endsWith('。')) expect(m, key).toMatch(/(です|ます|ません|ください|でした|ました)か?。$/);
     }
   });
 

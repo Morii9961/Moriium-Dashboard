@@ -63,7 +63,13 @@ async function main() {
   const timer = setInterval(backupNow, BACKUP_CHECK_INTERVAL_MS);
   timer.unref();
 
-  const app = createApp({ db, config, startedAt: new Date(), version: VERSION });
+  const app = createApp({
+    db,
+    config,
+    startedAt: new Date(),
+    version: VERSION,
+    webDir: join(REPO_ROOT, 'apps', 'web', 'dist'),
+  });
   const server = serve({ fetch: app.fetch, hostname: config.hostname, port: config.port }, (info) => {
     console.log(`Moriium Dashboard 服务端：http://${config.hostname}:${info.port}`);
     console.log(`数据目录：${config.dataDir}`);

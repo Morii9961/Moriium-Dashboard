@@ -1,6 +1,9 @@
 /**
  * HTTP 应用。只负责路由和中间件，不碰进程、端口和定时任务（那些在 main.ts），方便测试。
  */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { listBackups } from './backup.ts';
 import type { ServerConfig } from './config.ts';
@@ -12,6 +15,8 @@ export interface AppContext {
   config: Pick<ServerConfig, 'allowedHosts' | 'allowedOrigins' | 'backupDir'>;
   startedAt: Date;
   version: string;
+  /** 前端构建产物目录（apps/web/dist）。不传时只提供 /api。 */
+  webDir?: string;
 }
 
 export function createApp(ctx: AppContext) {
@@ -40,6 +45,8 @@ export function createApp(ctx: AppContext) {
 
   app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 
+  if (ctx.webDir) mountWeb(app, ctx.webDir);
+
   // 细节只写进服务端日志，不返回给浏览器。
   app.onError((error, c) => {
     console.error(`${c.req.method} ${c.req.path} 出错：`, error);
@@ -47,4 +54,27 @@ export function createApp(ctx: AppContext) {
   });
 
   return app;
+}
+
+/**
+ * 托管前端：先按文件提供（带哈希的 /assets/* 长期缓存），找不到文件时回退到 index.html，
+ * 由前端路由处理（/projects/x 这类地址刷新也能打开）。带扩展名却找不到的路径返回 404，不回退。
+ */
+const STATIC_FILE = /\.(?:m?js|css|map|woff2?|png|jpe?g|gif|svg|ico|webp|json|txt|html|webmanifest)$/i;
+
+function mountWeb(app: Hono, webDir: string) {
+  app.use('/assets/*', async (c, next) => {
+    await next();
+    if (c.res.status === 200) c.res.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+  });
+  app.use('*', serveStatic({ root: webDir }));
+  app.get('*', async (c, next) => {
+    // 项目 ID 里有点（/projects/moriium.main），所以只按静态文件的扩展名判断。
+    if (STATIC_FILE.test(c.req.path)) return c.text('Not Found', 404);
+    if (!existsSync(join(webDir, 'index.html'))) {
+      return c.text('前端还没有构建：在仓库根目录运行 pnpm build，然后刷新这一页。', 503);
+    }
+    c.header('Cache-Control', 'no-cache');
+    return serveStatic({ root: webDir, path: 'index.html' })(c, next);
+  });
 }

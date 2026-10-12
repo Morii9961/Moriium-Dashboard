@@ -307,3 +307,55 @@ describe('HTTP app', () => {
     expect(existsSync(join(REPO_ROOT, 'apps', 'server', 'dashboard.sqlite'))).toBe(false);
   });
 });
+
+describe('serving the web app', () => {
+  let db: Database;
+  const host = '127.0.0.1:5180';
+  const make = (webDir: string) =>
+    createApp({
+      db,
+      config: { allowedHosts: [host], allowedOrigins: [`http://${host}`], backupDir: join(dir, 'backups') },
+      startedAt: new Date(),
+      version: '0.0.0',
+      webDir,
+    });
+  beforeEach(() => {
+    db = openDatabase(join(dir, 'web.sqlite'));
+    applyMigrations(db, loadMigrations(MIGRATIONS_DIR));
+  });
+  afterEach(() => db.close());
+
+  it('serves files, falls back to index.html for app routes, and 404s missing files', async () => {
+    const web = join(dir, 'dist');
+    mkdirSync(join(web, 'assets'), { recursive: true });
+    writeFileSync(join(web, 'index.html'), '<!doctype html><title>app</title>');
+    writeFileSync(join(web, 'assets', 'app-abc123.js'), 'console.log(1)');
+    const app = make(web);
+    const get = (path: string) => app.request(path, { headers: { host } });
+
+    const index = await get('/');
+    expect(index.status).toBe(200);
+    expect(await index.text()).toContain('<title>app</title>');
+    expect(index.headers.get('content-security-policy')).toBe(CONTENT_SECURITY_POLICY);
+
+    const deep = await get('/projects/moriium.main');
+    expect(deep.status).toBe(200);
+    expect(deep.headers.get('cache-control')).toBe('no-cache');
+    expect(await deep.text()).toContain('<title>app</title>');
+
+    const asset = await get('/assets/app-abc123.js');
+    expect(asset.status).toBe(200);
+    expect(asset.headers.get('cache-control')).toContain('immutable');
+
+    expect((await get('/assets/missing.js')).status).toBe(404);
+    expect((await get('/api/nope')).status).toBe(404);
+    expect((await get('/..%2f..%2fpackage.json')).status).toBe(404);
+    expect((await app.request('/', { headers: { host: 'evil.example' } })).status).toBe(421);
+  });
+
+  it('explains how to build when the web app is missing', async () => {
+    const res = await make(join(dir, 'no-dist')).request('/', { headers: { host } });
+    expect(res.status).toBe(503);
+    expect(await res.text()).toContain('pnpm build');
+  });
+});
