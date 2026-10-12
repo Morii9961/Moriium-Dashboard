@@ -2,33 +2,29 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-12T09:27:00+08:00",
+  "snapshot_at": "2026-10-12T13:12:00+08:00",
   "source": {
-    "branch": "claude/protocol-docs",
-    "commit_sha": "355856021c81bb620cb3c7042312f3cff7dac767",
+    "branch": "claude/design-specimen",
+    "commit_sha": "9170cd8646ce1ab2cee7fbc4ecb35330c57d3de3",
     "basis": [
-      "docs/planning/06-mvp-and-roadmap.md（P1 工作包与交付标准）",
+      "docs/planning/06-mvp-and-roadmap.md（P2 工作包与交付标准）",
       "docs/design-decisions.md",
-      "docs/adr/0001-toolchain-and-native-typescript.md",
-      "docs/adr/0002-protocol-package.md",
-      "docs/protocol/README.md",
-      "fixtures/protocol/cases.json",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/1（P1.2，CI 在 Ubuntu 与 Windows 上通过）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/2（P1.3）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/3（P1.4）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/4（P1.5）",
-      "claude/protocol-docs 分支（P1.6）",
-      "本机 pnpm verify（2026-10-12 09:26）：Biome 通过、类型检查通过、Vitest 206/206、公开树审计通过",
-      "本机 pnpm status:check：Dashboard 与五个项目的真实快照（只读，不进仓库）全部可以导入，零提醒"
+      "docs/adr/0003-server-storage-and-local-security.md",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/6（把已审阅的 P1.3–P1.6 合入 main）",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/7（P2.4 服务端骨架）",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/8（P2.1 设计样张）",
+      "apps/web/src/design/tokens.ts（候选颜色 token，未定稿）",
+      "本机 pnpm verify（2026-10-12 12:40）：Biome 无错误、类型检查通过、Vitest 242/242、公开树审计通过",
+      "本机服务端试跑：只监听 127.0.0.1，Host 与 Origin 检查、首次迁移与日备份、仓库内与同步盘数据目录拒绝启动"
     ],
     "tests_rerun": false
   },
   "reporter": {
     "agent": "claude",
-    "note": "开发会话（P1）"
+    "note": "开发会话（P2）"
   },
   "stage": "development",
-  "summary": "P1 的六个工作包都已提交 PR：协议 Schema 正式发布，校验、接收规则、样本、status:check 检查工具和正式文档已完成，本机 206 项测试通过。等 Morii 用检查工具看真实快照并审阅合并；P2 还没开始。",
+  "summary": "P2.4 服务端骨架和 P2.1 设计样张已提交 PR，样张用真实快照比较字体、颜色、状态表达和阶段轴，等 Morii 逐项拍板后定稿 token。P1.3 到 P1.6 已审阅，但要合并 #6 才进入 main。",
   "overall_progress": null,
   "milestones": [
     {
@@ -49,17 +45,21 @@
         "https://github.com/Morii9961/Moriium-Dashboard/pull/2",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/3",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/4",
-        "docs/protocol/README.md",
-        "fixtures/protocol/cases.json"
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/5",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/6"
       ],
       "human_acceptance": "pending"
     },
     {
       "id": "p2-shell-design",
       "title": "P2 外壳与设计基线：设计样张、token、三语、应用外壳、服务端骨架",
-      "status": "not_started",
-      "evidence_level": "self_report",
-      "evidence_refs": [],
+      "status": "in_progress",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/7",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/8",
+        "docs/adr/0003-server-storage-and-local-security.md"
+      ],
       "human_acceptance": "pending"
     },
     {
@@ -98,34 +98,38 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "design-specimen",
-      "title": "制作设计样张页（P2.1），用成熟项目、持续研发项目和 Dashboard 自己的快照",
+      "id": "design-tokens",
+      "title": "按 Morii 的拍板定稿颜色、字体、间距 token，字体本地打包，主题切换，三语框架与文案约定（P2.2）",
       "priority": "P0",
-      "result": "Morii 用真实内容逐项确定字体、配色和阶段轴画法"
+      "result": "正式 token 写进 design-decisions.md，样张的候选值退役"
     },
     {
-      "id": "server-skeleton",
-      "title": "服务端骨架（P2.4）：Hono、SQLite 与迁移、数据目录、Host 与 Origin 检查、CSP、每日备份",
+      "id": "app-shell",
+      "title": "应用外壳（P2.3）：响应式导航、路由、空状态、错误边界、「服务未连接」横幅，由服务端提供静态文件",
       "priority": "P1",
-      "result": "服务端能在空数据库上启动并生成备份"
+      "result": "外壳在两种宽度、两种主题、三种语言下通过检查"
     }
   ],
   "needs_morii": [
     {
+      "id": "specimen-decisions",
+      "decision": "设计样张（PR #8）逐项拍板：字体方案 A 或 B、等宽字、强调色、阶段轴画法、中性色与状态色、深色模式、日文敬体或常体、中文里中英文之间是否加空格。"
+    },
+    {
       "id": "p1-review",
-      "decision": "P1 停点：请用 pnpm status:check 看一两份真实快照，确认输出看得懂；PR #1 到 #5 是否合并？"
+      "decision": "请合并 #6，把已审阅的 P1.3 到 P1.6 带进 main（之前的 PR 是叠着的，合进了各自的上一层分支）；之后再合并 #7、#8。用 pnpm status:check 看过真实快照了吗？"
     },
     {
       "id": "protocol-interpretations",
       "decision": "三处接收规则按我的理解实现，是否同意：summary 只有空白算错误；v1.0 文件里出现 reporter 或条目 id 时忽略并提醒；+08:00 和 Z 写法指向同一时刻时算同一时刻冲突？"
     },
     {
-      "id": "enable-snapshots",
-      "decision": "什么时候把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md？检查工具已经可用。"
+      "id": "data-dir-location",
+      "decision": "本机数据目录先按建议用 %LOCALAPPDATA%\\moriium-dashboard（可用 MORIIUM_DASHBOARD_DATA 改），在仓库里或同步盘里时拒绝启动。这个默认位置可以吗？"
     },
     {
-      "id": "data-dir-location",
-      "decision": "本机数据目录放在哪里？建议用系统的应用数据目录（Windows 上是 %LOCALAPPDATA%\\moriium-dashboard），不放进 OneDrive 等同步目录；也可以用 MORIIUM_DASHBOARD_DATA 指定别处。P2.4 之前需要答案。"
+      "id": "enable-snapshots",
+      "decision": "什么时候把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md？检查工具已经可用。"
     },
     {
       "id": "vps-access",
