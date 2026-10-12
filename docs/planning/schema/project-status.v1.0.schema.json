@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:moriium-dashboard:project-status:1.0",
+  "title": "Project Status Protocol v1.0",
+  "description": "草案。一个项目在某一时刻的状态快照，由该项目的 Agent 生成，Morii 手动导入 Moriium Dashboard。本文件是给生产者用的严格版本；Dashboard 的接收规则见 docs/planning/03-status-protocol-v1.md 第 6 节。字段名与枚举沿用委托书，不做改动。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "project_name",
+    "snapshot_at",
+    "source",
+    "stage",
+    "summary",
+    "overall_progress",
+    "milestones",
+    "blockers",
+    "next_actions",
+    "needs_morii"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "协议版本，v1.0 固定为字符串 \"1.0\"。",
+      "type": "string",
+      "const": "1.0"
+    },
+    "project_id": {
+      "description": "项目固定 ID：小写字母、数字和连字符组成的段，用点分隔，至少两段。是否已登记由 Dashboard 的项目登记表判断，不写死在 Schema 里，新增项目不需要升级协议版本。",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$",
+      "examples": [
+        "moriium.main",
+        "moriium.gallery",
+        "mori.meta",
+        "enouia.memory",
+        "enouia.runtime",
+        "morii.dashboard"
+      ]
+    },
+    "project_name": {
+      "description": "项目显示名称。Dashboard 界面以登记表里的名称为准，这里的值保留在快照历史中。",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "snapshot_at": {
+      "description": "快照生成时间，RFC 3339 / ISO 8601，必须带时区（Z 或 ±hh:mm）。",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "source": {
+      "description": "快照依据。四个键都必须出现；branch 与 commit_sha 可以为 null。",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "commit_sha", "basis", "tests_rerun"],
+      "properties": {
+        "branch": {
+          "description": "生成快照时所在分支；不在 Git 仓库或无法确定时为 null。",
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "commit_sha": {
+          "description": "生成快照时的提交，7 到 64 位小写十六进制；没有提交时为 null。",
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{7,64}$"
+        },
+        "basis": {
+          "description": "判断依据的来源列表，例如仓库内文档路径、PR、命令名称。建议使用仓库相对路径，不写本机绝对路径。",
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "tests_rerun": {
+          "description": "本次生成快照时是否重新运行了测试。目前统一为 false。",
+          "type": "boolean"
+        }
+      }
+    },
+    "stage": {
+      "description": "项目当前所处阶段。",
+      "type": "string",
+      "enum": [
+        "planning",
+        "development",
+        "integration",
+        "acceptance",
+        "launch_preparation",
+        "live",
+        "maintenance",
+        "paused",
+        "unknown"
+      ]
+    },
+    "summary": {
+      "description": "中文摘要，最多 160 个字符（按 Unicode 码位计）。",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "overall_progress": {
+      "description": "整体进度 0 到 100 的整数；没有严格估算依据时为 null。键必须出现。",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "milestones": {
+      "description": "里程碑列表，可以为空数组。id 在同一份快照内必须唯一，并在不同快照之间保持稳定（唯一性由 Dashboard 的语义校验检查）。",
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/milestone" }
+    },
+    "blockers": {
+      "description": "阻塞事项，可以为空数组。",
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/blocker" }
+    },
+    "next_actions": {
+      "description": "下一步工作，可以为空数组。",
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/next_action" }
+    },
+    "needs_morii": {
+      "description": "需要 Morii 做的决定，可以为空数组。",
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/needs_morii_item" }
+    }
+  },
+  "$defs": {
+    "milestone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "status", "evidence_level", "evidence_refs", "human_acceptance"],
+      "properties": {
+        "id": {
+          "description": "里程碑稳定 ID，跨快照不改名。",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "status": {
+          "type": "string",
+          "enum": ["not_started", "in_progress", "blocked", "done", "unknown"]
+        },
+        "evidence_level": {
+          "type": "string",
+          "enum": ["self_report", "repository", "existing_test", "morii_accepted", "unknown"]
+        },
+        "evidence_refs": {
+          "description": "证据引用，可以为空数组。Dashboard 只把它们当文本显示，不自动访问。",
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "human_acceptance": {
+          "type": "string",
+          "enum": ["pending", "accepted", "rejected", "not_required", "unknown"]
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "impact"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "impact": { "type": "string", "maxLength": 2000 }
+      }
+    },
+    "next_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "priority", "result"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "priority": { "type": "string", "enum": ["P0", "P1", "P2"] },
+        "result": {
+          "description": "完成后应得到的结果。",
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "needs_morii_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {
+        "decision": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    }
+  }
+}

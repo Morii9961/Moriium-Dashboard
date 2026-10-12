@@ -1,0 +1,51 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+build/
+out/
+*.tsbuildinfo
+.vite/
+coverage/
+
+# 测试报告
+test-results/
+playwright-report/
+blob-report/
+junit*.xml
+
+# 数据：数据目录由 MORIIUM_DASHBOARD_DATA 指定，放在仓库外；以下是误放进来时的兜底
+data/
+.data/
+backups/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# 导出包
+exports/
+moriium-dashboard-export-*.zip
+
+# 环境变量（保留示例）
+.env
+.env.*
+!.env.example
+
+# 日志与系统文件
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器与本机 Agent 设置
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.claude/settings.local.json

@@ -1,0 +1,11 @@
+# 统一 LF：快照指纹和协议样本需要字节稳定
+* text=auto eol=lf
+
+# 编码样本（BOM、UTF-16 等）按原样保存，不做换行转换
+fixtures/protocol/encoding/** binary
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff2 binary
+*.ico binary
