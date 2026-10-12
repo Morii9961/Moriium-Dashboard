@@ -5,7 +5,7 @@
  * 在 Schema 校验之后运行，但不假设结构一定正确：每一步都先检查类型，
  * 这样结构错误和语义错误能在同一次检查里全部列出来。
  */
-import { FUTURE_TOLERANCE_MS, type RegisteredProject } from './constants.ts';
+import { FUTURE_TOLERANCE_MS, PROJECT_ID_PATTERN, type RegisteredProject } from './constants.ts';
 import { parseSnapshotAt } from './datetime.ts';
 import { isPlainObject } from './normalize.ts';
 import type { Issue, IssueParam, JsonPath } from './types.ts';
@@ -21,8 +21,6 @@ export interface SemanticInput {
   /** project_name 是由登记名称补上的，就不再比较。 */
   projectNameFilled: boolean;
 }
-
-const PROJECT_ID = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/;
 
 const objectsOf = (value: unknown): [Obj, number][] =>
   Array.isArray(value)
@@ -43,7 +41,8 @@ export function semanticChecks(input: SemanticInput): Issue[] {
     error('summary_blank', ['summary']);
 
   // 项目登记
-  const projectId = typeof c.project_id === 'string' && PROJECT_ID.test(c.project_id) ? c.project_id : null;
+  const projectId =
+    typeof c.project_id === 'string' && PROJECT_ID_PATTERN.test(c.project_id) ? c.project_id : null;
   const registered = projectId ? registry.find((p) => p.id === projectId) : undefined;
   if (projectId && !registered) {
     error('project_unregistered', ['project_id'], { id: projectId, registered: registry.map((p) => p.id) });

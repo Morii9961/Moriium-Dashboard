@@ -19,6 +19,7 @@ import {
 
 const VERSION = '0.0.0';
 const BACKUP_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const DEV_ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173'];
 
 async function main() {
   let config: ReturnType<typeof resolveConfig>;
@@ -36,6 +37,11 @@ async function main() {
       return;
     }
     throw error;
+  }
+
+  // --dev：允许本机前端开发服务器（5173）发写请求。只加本机地址，不放宽 Host 检查。
+  if (process.argv.includes('--dev')) {
+    config.allowedOrigins.push(...DEV_ORIGINS.filter((o) => !config.allowedOrigins.includes(o)));
   }
 
   for (const dir of [config.dataDir, config.backupDir, config.mediaDir]) mkdirSync(dir, { recursive: true });

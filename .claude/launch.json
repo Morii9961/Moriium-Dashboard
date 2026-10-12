@@ -11,7 +11,7 @@
     {
       "name": "server",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["apps/server/src/main.ts"],
+      "runtimeArgs": ["apps/server/src/main.ts", "--dev"],
       "port": 5180,
       "url": "http://127.0.0.1:5180"
     }

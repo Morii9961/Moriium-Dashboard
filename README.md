@@ -48,8 +48,8 @@ pnpm server   # 启动本机服务，同时托管构建好的前端
 ### 开发
 
 ```bash
-pnpm server   # 本机服务（5180）
-pnpm dev      # 前端开发服务器（5173），/api 自动转给本机服务
+pnpm server:dev   # 本机服务（5180），允许 5173 的前端写入，改代码自动重启
+pnpm dev          # 前端开发服务器（5173），/api 自动转给本机服务
 ```
 
 应用在 `http://127.0.0.1:5173`，设计基线页在 `http://127.0.0.1:5173/specimen.html`。设计基线页想用本机的真实快照，在 `apps/web/.env.local`（已被 `.gitignore` 排除）里写一行 `MORIIUM_SPECIMEN_SNAPSHOTS=`，后面跟文件路径，多个用分号分开。真实快照只在开发服务器上读取，不进仓库，也不进构建产物。地址后面加 `?demo` 只显示演示数据。改了 `apps/web/src/design/tokens.ts` 后运行 `pnpm tokens` 重新生成 CSS。

@@ -253,7 +253,11 @@ describe('HTTP app', () => {
     const res = await request('/api/health');
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toMatchObject({ status: 'ok', schemaVersion: 1, lastBackupAt: null });
+    expect(body).toMatchObject({
+      status: 'ok',
+      schemaVersion: loadMigrations(MIGRATIONS_DIR).length,
+      lastBackupAt: null,
+    });
     expect(JSON.stringify(body)).not.toMatch(/[\\/]/);
   });
 
@@ -357,5 +361,92 @@ describe('serving the web app', () => {
     const res = await make(join(dir, 'no-dist')).request('/', { headers: { host } });
     expect(res.status).toBe(503);
     expect(await res.text()).toContain('pnpm build');
+  });
+});
+
+describe('project registry API', () => {
+  let db: Database;
+  let app: ReturnType<typeof createApp>;
+  const origin = 'http://127.0.0.1:5180';
+  const host = '127.0.0.1:5180';
+  const now = new Date('2026-10-12T10:00:00Z');
+
+  beforeEach(() => {
+    db = openDatabase(join(dir, 'projects.sqlite'));
+    applyMigrations(db, loadMigrations(MIGRATIONS_DIR));
+    app = createApp({
+      db,
+      config: { allowedHosts: [host], allowedOrigins: [origin], backupDir: join(dir, 'backups') },
+      startedAt: now,
+      version: '0.0.0',
+      now: () => now,
+    });
+  });
+  afterEach(() => db.close());
+
+  const get = (path: string) => app.request(path, { headers: { host } });
+  const send = (method: string, path: string, body: unknown) =>
+    app.request(path, {
+      method,
+      headers: { host, origin, 'x-moriium-dashboard': '1', 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+  it('starts with the six preset projects in order', async () => {
+    const { projects } = (await (await get('/api/projects')).json()) as { projects: { id: string }[] };
+    expect(projects.map((p) => p.id)).toEqual([
+      'moriium.main',
+      'moriium.gallery',
+      'mori.meta',
+      'enouia.memory',
+      'enouia.runtime',
+      'morii.dashboard',
+    ]);
+  });
+
+  it('registers a project, rejects bad ids, names and duplicates, and logs the change', async () => {
+    const ok = await send('POST', '/api/projects', { id: 'demo.alpha', name: '  演示  项目 ' });
+    expect(ok.status).toBe(201);
+    expect(((await ok.json()) as { project: { name: string } }).project.name).toBe('演示 项目');
+
+    expect((await send('POST', '/api/projects', { id: 'Demo', name: 'x' })).status).toBe(400);
+    expect((await send('POST', '/api/projects', { id: 'demo.beta', name: '   ' })).status).toBe(400);
+    const zwsp = String.fromCodePoint(0x200b);
+    expect((await send('POST', '/api/projects', { id: 'demo.beta', name: `a${zwsp}b` })).status).toBe(400);
+    const dup = await send('POST', '/api/projects', { id: 'demo.alpha', name: 'again' });
+    expect(dup.status).toBe(409);
+    expect(await dup.json()).toEqual({ error: 'exists', field: 'id' });
+
+    const log = db.prepare("SELECT action, target FROM audit_log WHERE action = 'project.create'").all();
+    expect(log).toEqual([{ action: 'project.create', target: 'demo.alpha' }]);
+  });
+
+  it('updates attention, freshness and core milestones, and validates them', async () => {
+    const res = await send('PATCH', '/api/projects/mori.meta', {
+      attention: 'paused',
+      freshnessDays: 30,
+      coreMilestones: ['a', 'b', 'a'],
+    });
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { project: unknown }).project).toMatchObject({
+      attention: 'paused',
+      freshnessDays: 30,
+      coreMilestones: ['a', 'b'],
+    });
+    expect((await send('PATCH', '/api/projects/mori.meta', { attention: 'gone' })).status).toBe(400);
+    expect((await send('PATCH', '/api/projects/mori.meta', { freshnessDays: 0 })).status).toBe(400);
+    expect((await send('PATCH', '/api/projects/nope.nope', { name: 'x' })).status).toBe(404);
+  });
+
+  it('rejects writes without the write header and oversized bodies', async () => {
+    const noHeader = await app.request('/api/projects', {
+      method: 'POST',
+      headers: { host, origin, 'content-type': 'application/json' },
+      body: JSON.stringify({ id: 'demo.x', name: 'x' }),
+    });
+    expect(noHeader.status).toBe(403);
+    const big = await send('POST', '/api/projects', { id: 'demo.big', name: 'x'.repeat(70_000) });
+    expect(big.status).toBe(413);
+    expect((await send('POST', '/api/projects', [1, 2])).status).toBe(400);
   });
 });

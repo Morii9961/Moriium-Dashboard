@@ -746,3 +746,93 @@
     grid-area: go;
   }
 }
+
+/* ---------- 表单与项目登记 ---------- */
+
+.field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.field-label {
+  font-size: var(--text-xs);
+  color: var(--c-ink3);
+}
+.field input,
+.field select {
+  height: 38px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  font-size: 14px;
+}
+.field input[aria-invalid="true"] {
+  border-color: var(--c-serious);
+}
+.field-narrow input {
+  width: 96px;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.reg-list {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  border-top: 1px solid var(--c-border-weak);
+}
+.reg-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.9fr) minmax(160px, 1.4fr) minmax(120px, 1fr) auto auto;
+  align-items: end;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--c-border-weak);
+}
+.reg-id {
+  align-self: center;
+  font-size: var(--text-sm);
+  color: var(--c-ink2);
+  overflow-wrap: anywhere;
+}
+.reg-status {
+  grid-column: 1 / -1;
+  min-height: 0;
+  font-size: var(--text-xs);
+  color: var(--c-good-text);
+}
+.reg-status:empty {
+  display: none;
+}
+.reg-status.is-error {
+  color: var(--c-serious-text);
+}
+.reg-add {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px dashed var(--c-border);
+  border-radius: var(--radius-md);
+}
+.reg-add-title {
+  font-size: var(--text-lg);
+}
+.reg-add-fields {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(160px, 1.4fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+@media (max-width: 767px) {
+  .reg-row,
+  .reg-add-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .reg-id {
+    grid-column: 1 / -1;
+  }
+}

@@ -5,9 +5,11 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { listBackups } from './backup.ts';
 import type { ServerConfig } from './config.ts';
 import { currentSchemaVersion, type Database } from './db.ts';
+import { projectRoutes } from './routes/projects.ts';
 import { hostCheck, securityHeaders, writeGuard } from './security.ts';
 
 export interface AppContext {
@@ -17,6 +19,8 @@ export interface AppContext {
   version: string;
   /** 前端构建产物目录（apps/web/dist）。不传时只提供 /api。 */
   webDir?: string;
+  /** 测试里固定当前时间。 */
+  now?: () => Date;
 }
 
 export function createApp(ctx: AppContext) {
@@ -25,6 +29,14 @@ export function createApp(ctx: AppContext) {
   app.use('*', securityHeaders());
   app.use('*', hostCheck(ctx.config.allowedHosts));
   app.use('/api/*', writeGuard(ctx.config.allowedOrigins));
+  // 普通接口的请求体很小；导入接口另设上限（20 个文件 × 1 MiB，base64 之后约 28 MiB）。
+  app.use('/api/*', async (c, next) => {
+    if (c.req.path.startsWith('/api/imports')) return next();
+    return bodyLimit({ maxSize: 64 * 1024, onError: (c2) => c2.json({ error: 'body_too_large' }, 413) })(
+      c,
+      next,
+    );
+  });
 
   app.get('/api/health', (c) => {
     // 不返回任何路径：以后部署到 VPS 时这个接口也不该泄露服务器信息。
@@ -42,6 +54,8 @@ export function createApp(ctx: AppContext) {
       return c.json({ status: 'degraded', version: ctx.version }, 503);
     }
   });
+
+  projectRoutes(app, ctx);
 
   app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 
