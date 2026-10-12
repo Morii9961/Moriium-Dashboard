@@ -2,7 +2,7 @@ import type { Snapshot } from '@moriium-dashboard/protocol';
 import { describe, expect, it } from 'vitest';
 import { contrast, toHex } from '../src/design/color.ts';
 import { BACKDROPS, CONTRAST_PAIRS, tokensFor } from '../src/design/tokens.ts';
-import { freshness, headlineNextAction, summarizeProgress } from '../src/progress.ts';
+import { freshness, headlineNextAction, progressFigure, summarizeProgress } from '../src/progress.ts';
 
 const m = (id: string, status: Snapshot['milestones'][number]['status'], acceptance = 'pending') =>
   ({
@@ -44,7 +44,7 @@ describe('summarizeProgress (02 §5.4)', () => {
       needs_morii: [{ decision: 'q?' }],
     });
     expect(summarizeProgress(s).line).toBe(
-      '还差：3 个里程碑未完成（其中 1 个受阻）· 1 个阻塞 · 等你 2 件（1 个决定、1 次验收）· 另有 1 个状态未知',
+      '还差：3 个里程碑未完成（其中 1 个受阻）· 1 个阻塞 · 待确认 2 件（1 个决定、1 次验收）· 另有 1 个状态未知',
     );
   });
 
@@ -60,7 +60,7 @@ describe('summarizeProgress (02 §5.4)', () => {
 
   it('uses stage wording for live and maintenance, and keeps what is waiting', () => {
     expect(summarizeProgress(snap({ stage: 'live', milestones: [m('a', 'done')] })).line).toBe(
-      '已上线 · 等你 1 件（1 次验收）',
+      '已上线 · 待确认 1 件（1 次验收）',
     );
     expect(summarizeProgress(snap({ stage: 'maintenance' })).line).toBe('维护中');
   });
@@ -118,6 +118,27 @@ describe('candidate color tokens', () => {
     expect(toHex('oklch(1 0 0)')).toBe('#ffffff');
     expect(toHex('oklch(0 0 0)')).toBe('#000000');
     expect(toHex('oklch(0.6279 0.2577 29.23)')).toBe('#ff0000');
+  });
+});
+
+describe('progressFigure', () => {
+  it('prefers the Agent estimate when the snapshot has one', () => {
+    const s = snap({ overall_progress: 80, milestones: [m('a', 'done'), m('b', 'not_started')] });
+    expect(progressFigure(s, summarizeProgress(s))).toEqual({ percent: 80, basis: 'estimate' });
+  });
+
+  it('otherwise uses done / known milestones, rounded down', () => {
+    const s = snap({
+      milestones: [m('a', 'done'), m('b', 'done'), m('c', 'in_progress'), m('d', 'unknown')],
+    });
+    expect(progressFigure(s, summarizeProgress(s))).toEqual({ percent: 66, basis: 'milestones' });
+  });
+
+  it('returns null instead of 0% when no milestone status is known', () => {
+    const none = snap({});
+    expect(progressFigure(none, summarizeProgress(none))).toBeNull();
+    const unknownOnly = snap({ milestones: [m('a', 'unknown')] });
+    expect(progressFigure(unknownOnly, summarizeProgress(unknownOnly))).toBeNull();
   });
 });
 

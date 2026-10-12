@@ -60,7 +60,7 @@ export function summarizeProgress(snapshot: Snapshot, coreMilestoneIds?: readonl
   const waiting = decisions + awaitingAcceptance;
   const waitingText =
     waiting > 0
-      ? `等你 ${waiting} 件（${[
+      ? `待确认 ${waiting} 件（${[
           decisions > 0 ? `${decisions} 个决定` : '',
           awaitingAcceptance > 0 ? `${awaitingAcceptance} 次验收` : '',
         ]
@@ -104,6 +104,21 @@ export function summarizeProgress(snapshot: Snapshot, coreMilestoneIds?: readonl
     mature,
     line,
   };
+}
+
+/**
+ * 首页的进度数字（2026-10-12 Morii 定）：快照有 overall_progress 就用它（Agent 估算）；
+ * 没有就按里程碑算完成率，分母只算状态已知的里程碑（未知的不算完成也不算未完成，02 第 5.4 节）。
+ * 向下取整，没全部完成就不会显示 100%。一个已知里程碑都没有时返回 null，界面不画百分比。
+ */
+export function progressFigure(
+  snapshot: Snapshot,
+  p: ProgressSummary,
+): { percent: number; basis: 'estimate' | 'milestones' } | null {
+  if (snapshot.overall_progress !== null) return { percent: snapshot.overall_progress, basis: 'estimate' };
+  const known = p.total - p.unknown;
+  if (known === 0) return null;
+  return { percent: Math.floor((p.done / known) * 100), basis: 'milestones' };
 }
 
 /** 卡片上的下一步：第一条 P0，没有就第一条 P1（02 第 5.4 节）。 */

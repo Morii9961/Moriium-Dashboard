@@ -1,20 +1,18 @@
 /**
- * 设计样张第三轮的候选 token（P2.1）。
+ * 设计样张的颜色 token（P2.1，第四轮）。
  *
- * 已定（2026-10-12，Morii）：强调色「雾蓝 · 安静」；状态色沿用第一轮；浅色背景「雾」。
- * 待定：深色背景。Morii 要更深、更低饱和、适当偏蓝。两个候选：
- *   「夜」：深蓝灰，彩度只有常见「蓝黑」模板的一半左右；
- *   「黛」：更深的墨蓝，带一点青。
+ * 已定（2026-10-12，Morii）：强调色「雾蓝 · 安静」；状态色沿用第一轮；浅色背景「雾」；深色背景「夜」
+ * （深蓝灰，更深、低饱和、略带蓝）。P2.2 定稿时改为静态 CSS。
  * 全部在 OKLCH 里推导；对比度按 CONTRAST_PAIRS 实际计算（测试里也检查）。
  */
 
 export type Theme = 'light' | 'dark';
-export type Backdrop = 'mist' | 'night' | 'dai';
+export type Backdrop = 'mist' | 'night';
 
-export const BACKDROPS: Record<Theme, Backdrop[]> = { light: ['mist'], dark: ['night', 'dai'] };
-export const BACKDROP_LABELS: Record<Backdrop, string> = { mist: '雾', night: '夜', dai: '黛' };
+export const BACKDROPS: Record<Theme, Backdrop[]> = { light: ['mist'], dark: ['night'] };
+export const BACKDROP_LABELS: Record<Backdrop, string> = { mist: '雾', night: '夜' };
 
-/** 画布、纸面、墨色、边框：随背景候选变化。 */
+/** 画布、纸面、墨色、边框：随背景变化。 */
 export interface SurfaceTokens {
   canvas: string;
   surface: string;
@@ -69,16 +67,6 @@ export const SURFACES: Record<Backdrop, SurfaceTokens> = {
     ink3: 'oklch(0.665 0.009 250)',
     borderWeak: 'oklch(0.258 0.009 252)',
     border: 'oklch(0.33 0.011 252)',
-  },
-  dai: {
-    canvas: 'oklch(0.188 0.013 232)',
-    surface: 'oklch(0.218 0.014 232)',
-    raised: 'oklch(0.248 0.015 232)',
-    ink1: 'oklch(0.925 0.006 230)',
-    ink2: 'oklch(0.785 0.009 230)',
-    ink3: 'oklch(0.67 0.01 230)',
-    borderWeak: 'oklch(0.27 0.013 232)',
-    border: 'oklch(0.345 0.015 232)',
   },
 };
 

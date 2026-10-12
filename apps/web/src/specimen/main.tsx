@@ -7,7 +7,6 @@ import '@fontsource/ibm-plex-mono/500.css';
 import 'misans/lib/Normal/MiSansVF.min.css';
 import 'lxgw-wenkai-screen-webfont/lxgwwenkaigbscreen.css';
 // 日文候选：M PLUS 2 或 Murecho（正文）+ Klee One（标题，霞鹜文楷由它衍生）。
-import '@fontsource-variable/m-plus-2';
 import '@fontsource-variable/murecho';
 import '@fontsource/klee-one/400.css';
 import '@fontsource/klee-one/600.css';

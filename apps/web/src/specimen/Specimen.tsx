@@ -1,9 +1,10 @@
 /**
- * 设计样张第三轮（P2.1）。
+ * 设计样张第四轮（P2.1）。
  *
  * 已定（2026-10-12，Morii）：字体方案 A、IBM Plex Mono、强调色「雾蓝 · 安静」、阶段轴圆点、
- * 状态色沿用、日文敬体、中英文之间加空格、浅色背景「雾」、中文 MiSans + 霞鹜文楷。
- * 待定：深色背景、日文字体、项目长条。
+ * 状态色沿用、日文敬体、中英文之间加空格、浅色背景「雾」、深色背景「夜」、中文 MiSans + 霞鹜文楷、
+ * 日文 Murecho + Klee One、进度百分比的取法。
+ * 待定：项目长条的第四版。
  */
 import { type CheckResult, checkSnapshot, PRESET_PROJECTS } from '@moriium-dashboard/protocol';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
@@ -11,7 +12,6 @@ import dashboardSnapshot from '../../../../docs/status/project-status.json?raw';
 import { contrast, toHex } from '../design/color.ts';
 import {
   BACKDROP_LABELS,
-  BACKDROPS,
   type Backdrop,
   CONTRAST_PAIRS,
   type ColorTokens,
@@ -20,9 +20,7 @@ import {
 } from '../design/tokens.ts';
 import { DEMO_REGISTRY, demoSnapshots } from './demo-snapshots.ts';
 import { ProjectStrip, type StripItem } from './ProjectStrip.tsx';
-import { EvidenceTag, LineMap, MilestoneGrid, StationLabels, StatusMark } from './parts.tsx';
-
-type JaFont = 'mplus' | 'murecho';
+import { EvidenceTag, LineMap, MilestoneGrid, StatusMark } from './parts.tsx';
 
 const REGISTRY = [...PRESET_PROJECTS, ...DEMO_REGISTRY];
 const SPECIMEN_ENDPOINT = '/__specimen/snapshots';
@@ -35,18 +33,19 @@ function param<T extends string>(name: string, allowed: readonly T[]): T | undef
   return allowed.find((a) => a === v);
 }
 
-const JA_LABELS: Record<JaFont, string> = { mplus: 'M PLUS 2 + Klee One', murecho: 'Murecho + Klee One' };
-
 const DECIDED = [
   '字体方案 A',
   '等宽 IBM Plex Mono',
   '中文 MiSans + 霞鹜文楷',
   '强调色 雾蓝 · 安静',
   '浅色背景 雾',
+  '深色背景 夜',
   '阶段轴 圆点',
   '状态色 沿用',
+  '日文 Murecho + Klee One',
   '日文 敬体',
   '中英文之间 加空格',
+  '进度 百分比',
 ];
 
 async function load(fileName: string, bytes: Uint8Array, sourceLabel: string): Promise<StripItem | string> {
@@ -75,7 +74,6 @@ async function load(fileName: string, bytes: Uint8Array, sourceLabel: string): P
 function useSnapshots() {
   const [items, setItems] = useState<StripItem[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
-  const [realCount, setRealCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -100,13 +98,12 @@ function useSnapshots() {
       if (cancelled) return;
       setItems(out.filter((x): x is StripItem => typeof x !== 'string'));
       setProblems(out.filter((x): x is string => typeof x === 'string'));
-      setRealCount(real.length);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
-  return { items, problems, realCount };
+  return { items, problems };
 }
 
 /** 把一套 token 写成 CSS 变量（--c-ink1、--c-border-weak……）。 */
@@ -184,9 +181,9 @@ function BackdropSample({
   );
 }
 
-function FontPanel({ zh, ja, label }: { zh?: boolean; ja?: JaFont; label: string }) {
+function FontPanel({ zh, ja, label }: { zh?: boolean; ja?: boolean; label: string }) {
   return (
-    <figure className="fontpanel" data-ja={ja}>
+    <figure className="fontpanel">
       <figcaption className="fontpanel-label">{label}</figcaption>
       {zh ? (
         <div lang="zh-Hans">
@@ -218,14 +215,10 @@ export function Specimen() {
       param('theme', ['light', 'dark'] as const) ??
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
   );
-  const [darkBackdrop, setDarkBackdrop] = useState<Backdrop>(
-    param('dark', ['night', 'dai'] as const) ?? 'night',
-  );
-  const [ja, setJa] = useState<JaFont>(param('ja', ['mplus', 'murecho'] as const) ?? 'mplus');
-  const { items, problems, realCount } = useSnapshots();
+  const { items, problems } = useSnapshots();
   const now = useMemo(() => new Date(), []);
 
-  const backdrop = theme === 'light' ? 'mist' : darkBackdrop;
+  const backdrop: Backdrop = theme === 'light' ? 'mist' : 'night';
   const tokens = tokensFor(theme, backdrop);
 
   useEffect(() => {
@@ -233,9 +226,8 @@ export function Specimen() {
     // 用 CSSOM 设置变量：严格 CSP 下允许。P2.2 定稿后改为静态 CSS。
     for (const [k, v] of Object.entries(cssVars(tokens))) root.style.setProperty(k, String(v));
     root.dataset.theme = theme;
-    root.dataset.ja = ja;
     root.style.colorScheme = theme;
-  }, [tokens, theme, ja]);
+  }, [tokens, theme]);
 
   const sample = items.find((i) => i.snapshot.stage === 'integration') ?? items[0];
 
@@ -247,11 +239,8 @@ export function Specimen() {
 
       <header className="masthead">
         <div className="masthead-inner">
-          <p className="eyebrow">Moriium Dashboard · 设计样张 · 第三轮</p>
+          <p className="eyebrow">Moriium Dashboard · 设计样张 · 第四轮</p>
           <h1 className="title">项目做到哪里，一眼看清</h1>
-          <p className="lede">
-            项目改成了长条：一行只放最关键的，细节在长条里展开。深色背景换成了更深、更低饱和的两种蓝灰；日文改用和中文同一气质的字体。
-          </p>
           <ul className="decided" aria-label="已定">
             {DECIDED.map((d) => (
               <li key={d}>
@@ -271,7 +260,7 @@ export function Specimen() {
         </div>
       </header>
 
-      <section className="controls" aria-label="待你拍板的选项">
+      <section className="controls" aria-label="预览选项">
         <Choice
           legend="主题"
           name="theme"
@@ -282,20 +271,6 @@ export function Specimen() {
             ['dark', '深色'],
           ]}
         />
-        <Choice
-          legend="深色背景"
-          name="dark"
-          value={darkBackdrop}
-          onChange={setDarkBackdrop}
-          options={BACKDROPS.dark.map((b) => [b, BACKDROP_LABELS[b]])}
-        />
-        <Choice
-          legend="日文"
-          name="ja"
-          value={ja}
-          onChange={setJa}
-          options={(Object.keys(JA_LABELS) as JaFont[]).map((k) => [k, JA_LABELS[k]])}
-        />
       </section>
 
       <main id="main">
@@ -303,26 +278,10 @@ export function Specimen() {
           <div className="section-head">
             <p className="section-tag">待你拍板 · 项目长条</p>
             <h2 id="s-strips">一行看完一个项目</h2>
-            <p className="section-note">
-              进度数字只用真实数据：快照给了估算就显示「Agent
-              估算」的百分比，没给就显示里程碑完成数，不把空值画成百分比。鼠标停一下、用 Tab
-              聚焦，或点一下长条，细节会在长条里展开；点过之后固定，按 Esc 收起。
-              {realCount > 0
-                ? ` 前 ${realCount} 个项目来自你本机的真实快照，只在你的浏览器里显示。`
-                : ' 现在显示的是 Dashboard 自己的快照和演示数据。'}
-            </p>
             {problems.length > 0 ? <p className="section-warn">没有显示：{problems.join('；')}</p> : null}
           </div>
 
           <div className="strips">
-            <div className="strips-head" aria-hidden="true">
-              <span>项目</span>
-              <StationLabels />
-              <span>进度</span>
-              <span>还差</span>
-              <span className="num">等你</span>
-              <span />
-            </div>
             {items.map((item) => (
               <ProjectStrip key={`${item.sourceLabel}-${item.snapshot.project_id}`} item={item} now={now} />
             ))}
@@ -331,34 +290,23 @@ export function Specimen() {
 
         <section className="section" aria-labelledby="s-backdrop">
           <div className="section-head">
-            <p className="section-tag">待你拍板 · 深色背景</p>
-            <h2 id="s-backdrop">更深、更低饱和、略带蓝</h2>
-            <p className="section-note">
-              「夜」是深蓝灰，彩度只有常见「蓝黑」模板的一半左右；「黛」更深一点，带一点青，像墨蓝。浅色「雾」已定，放在旁边对照。
-            </p>
+            <p className="section-tag">已定 · 背景</p>
+            <h2 id="s-backdrop">浅色「雾」，深色「夜」</h2>
           </div>
           <div className="backdrops">
             <BackdropSample theme="light" backdrop="mist" sample={sample} decided />
-            {BACKDROPS.dark.map((b) => (
-              <BackdropSample key={b} theme="dark" backdrop={b} sample={sample} />
-            ))}
+            <BackdropSample theme="dark" backdrop="night" sample={sample} decided />
           </div>
         </section>
 
         <section className="section" aria-labelledby="s-fonts">
           <div className="section-head">
-            <p className="section-tag">待你拍板 · 日文字体</p>
-            <h2 id="s-fonts">和中文同一种气质</h2>
-            <p className="section-note">
-              中文已定：正文 MiSans，标题霞鹜文楷。日文标题用 Klee
-              One，霞鹜文楷就是从它衍生的，两者笔意一致；正文选两款和 MiSans 一样干净、现代的无衬线。MiSans
-              本身没有假名，不能直接用于日文。
-            </p>
+            <p className="section-tag">已定 · 字体</p>
+            <h2 id="s-fonts">中文与日文同一种气质</h2>
           </div>
           <div className="fontpanels">
-            <FontPanel zh label="中文 · MiSans + 霞鹜文楷（已定）" />
-            <FontPanel ja="mplus" label="日文 · M PLUS 2 + Klee One" />
-            <FontPanel ja="murecho" label="日文 · Murecho + Klee One" />
+            <FontPanel zh label="中文 · MiSans + 霞鹜文楷" />
+            <FontPanel ja label="日文 · Murecho + Klee One" />
           </div>
         </section>
 

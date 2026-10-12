@@ -1,15 +1,15 @@
 /**
  * 项目进度长条（样张第三轮）。
  *
- * 一行只放最关键的：项目与阶段、路线图（做到哪里）、进度数字、还差什么、等你几件。
- * 进度数字只用真实数据：快照给了 overall_progress 就显示「Agent 估算」的百分比；
- * 没给就显示里程碑完成数（例如 9/14），绝不把 null 画成百分比（启动提示词规则 1、02 第 5.4 节）。
+ * 一行只放最关键的：项目与阶段、路线图（做到哪里，站名写在每一行里）、进度百分比、还差什么、待确认几项。
+ * 百分比的来源始终写在数字下面：快照给了 overall_progress 就是「Agent 估算」；没给就按已知里程碑的
+ * 完成率计算（2026-10-12 Morii 定，见 progressFigure）。一个已知里程碑都没有时不画百分比。
  *
  * 细节在长条内部展开（不弹出浮层）：鼠标停留片刻、键盘聚焦，或点击长条时展开；点击后固定，Esc 收起。
  */
 import { displayValue, type Snapshot, STAGE_LABELS } from '@moriium-dashboard/protocol';
 import { type MouseEvent, useId, useState } from 'react';
-import { freshness, MATURE_WORDING, summarizeProgress } from '../progress.ts';
+import { freshness, MATURE_WORDING, progressFigure, summarizeProgress } from '../progress.ts';
 import {
   EvidenceTag,
   evidenceKindOf,
@@ -58,6 +58,14 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
   const waiting = p.decisions + p.awaitingAcceptance;
   const matureWording = p.mature ? MATURE_WORDING[s.stage] : undefined;
   const estimate = s.overall_progress;
+  const figure = progressFigure(s, p);
+  const known = p.total - p.unknown;
+  const figureCaption =
+    figure === null
+      ? '没有可计的里程碑'
+      : figure.basis === 'estimate'
+        ? `Agent 估算 · 里程碑 ${p.done}/${p.total}`
+        : `${p.unknown > 0 ? '已知里程碑' : '里程碑'} ${p.done}/${known}`;
 
   const headline = matureWording
     ? matureWording
@@ -125,22 +133,17 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
 
         <div className="strip-progress">
           <p className="figure">
-            {estimate !== null ? (
+            {figure !== null ? (
               <>
-                {estimate}
+                {figure.percent}
                 <span className="figure-unit">%</span>
               </>
             ) : (
-              <>
-                {p.done}
-                <span className="figure-unit">/{p.total}</span>
-              </>
+              '—'
             )}
           </p>
           <SegBar milestones={s.milestones} />
-          <p className="figure-caption">
-            {estimate !== null ? `Agent 估算 · 里程碑 ${p.done}/${p.total}` : '里程碑完成'}
-          </p>
+          <p className="figure-caption">{figureCaption}</p>
         </div>
 
         <div className="strip-gap">
@@ -150,7 +153,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
 
         <div className={`strip-waiting${waiting === 0 ? ' is-none' : ''}`}>
           <p className="figure figure-sm">{waiting > 0 ? waiting : '—'}</p>
-          <p className="figure-caption">等你</p>
+          <p className="figure-caption">待确认</p>
         </div>
 
         <button
@@ -220,7 +223,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
             ) : null}
           </section>
 
-          <section className="more-col" aria-label="阻塞、等你、来源">
+          <section className="more-col" aria-label="阻塞、待确认、来源">
             {s.blockers.length > 0 ? (
               <>
                 <h4 className="more-title">
@@ -233,7 +236,7 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
                 </ul>
               </>
             ) : null}
-            <h4 className="more-title">等你</h4>
+            <h4 className="more-title">待确认</h4>
             <p className="more-text">
               {p.decisions} 个决定 · {p.awaitingAcceptance} 次验收
             </p>

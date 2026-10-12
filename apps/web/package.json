@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "5.3.0",
-    "@fontsource-variable/m-plus-2": "5.3.1",
     "@fontsource-variable/murecho": "5.3.1",
     "@fontsource-variable/source-serif-4": "5.3.1",
     "@fontsource/ibm-plex-mono": "5.3.0",

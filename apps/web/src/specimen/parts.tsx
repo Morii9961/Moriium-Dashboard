@@ -54,19 +54,6 @@ export function LineMap({ stage, size = 'card' }: { stage: Stage; size?: 'card' 
   );
 }
 
-/** 列表表头的站名：只写一次，和每一行的路线图对齐。 */
-export function StationLabels() {
-  return (
-    <ol className="linemap-stations station-labels" aria-hidden="true">
-      {STAGE_AXIS.map((s) => (
-        <li key={s} className="station">
-          <span className="station-name">{STATION[s]}</span>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
 const SEG_ORDER = { done: 0, in_progress: 1, blocked: 2, not_started: 3, unknown: 4 } as const;
 
 /** 里程碑分段条：一段一个里程碑，按完成、进行中、受阻、未开始、未知排列。文字说明在旁边。 */

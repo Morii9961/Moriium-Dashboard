@@ -38,9 +38,6 @@ importers:
       '@fontsource-variable/ibm-plex-sans':
         specifier: 5.3.0
         version: 5.3.0
-      '@fontsource-variable/m-plus-2':
-        specifier: 5.3.1
-        version: 5.3.1
       '@fontsource-variable/murecho':
         specifier: 5.3.1
         version: 5.3.1
@@ -149,9 +146,6 @@ packages:
 
   '@fontsource-variable/ibm-plex-sans@5.3.0':
     resolution: {integrity: sha512-agG8tXFEo0hD9+J7npa4vbbWult52eMLVaQ6WQRlhs/iCAojrMAoejru85W9HTVXHfyUj96KM7gp/KGAS87XaQ==}
-
-  '@fontsource-variable/m-plus-2@5.3.1':
-    resolution: {integrity: sha512-s2/uCVw5RYvbTBKYBD/d9yYfb/7apajRwf+DG3qKIzsZUmA8kYssGpA0M7yk8UKdvFI6b4PxlPxGq5g8a6Xeyg==}
 
   '@fontsource-variable/murecho@5.3.1':
     resolution: {integrity: sha512-wjIOewtCBmJrniMLnc5f+IFPSkZWukwaGyeRTUabl5VF4lkevkWkRurvUstaxSG8FxHHFGHaz2oTwD0R9dUceg==}
@@ -801,8 +795,6 @@ snapshots:
     optional: true
 
   '@fontsource-variable/ibm-plex-sans@5.3.0': {}
-
-  '@fontsource-variable/m-plus-2@5.3.1': {}
 
   '@fontsource-variable/murecho@5.3.1': {}
 
