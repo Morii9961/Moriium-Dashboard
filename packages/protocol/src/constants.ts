@@ -59,6 +59,9 @@ export type Priority = (typeof PRIORITIES)[number];
 export const REPORTER_AGENTS = ['codex', 'claude', 'other'] as const;
 export type ReporterAgent = (typeof REPORTER_AGENTS)[number];
 
+/** project_id 的格式（03 第 5 节）：小写字母开头，至少一个点，例如 mori.meta。 */
+export const PROJECT_ID_PATTERN = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/;
+
 export interface RegisteredProject {
   id: string;
   name: string;

@@ -17,6 +17,7 @@
     "verify": "pnpm check && pnpm typecheck && pnpm test && pnpm audit:public",
     "build": "pnpm --filter @moriium-dashboard/web build",
     "server": "pnpm --filter @moriium-dashboard/server start",
+    "server:dev": "pnpm --filter @moriium-dashboard/server dev",
     "dev": "pnpm --filter @moriium-dashboard/web dev",
     "specimen": "pnpm --filter @moriium-dashboard/web dev",
     "tokens": "node apps/web/scripts/gen-tokens.ts",

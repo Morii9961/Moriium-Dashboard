@@ -6,11 +6,12 @@
   "license": "MIT",
   "scripts": {
     "start": "node src/main.ts",
-    "dev": "node --watch src/main.ts",
+    "dev": "node --watch src/main.ts --dev",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@hono/node-server": "2.1.4",
+    "@moriium-dashboard/protocol": "workspace:*",
     "hono": "4.13.13"
   }
 }
