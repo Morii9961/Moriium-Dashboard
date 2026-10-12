@@ -10,6 +10,7 @@ import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { useResource } from './data.tsx';
+import { ProjectHistory } from './History.tsx';
 import { useImport } from './ImportDialog.tsx';
 import { Link } from './router.tsx';
 import type { BatchView, FileOutcome, ProjectWithCurrent } from './types.ts';
@@ -186,12 +187,15 @@ export function ProjectPage({ id }: { id: string }) {
         <div className="strips">
           <ProjectStrip item={item} now={now} defaultPinned />
         </div>
-      ) : (
+      ) : null}
+      {item ? null : (
         <EmptyState title={t('project.empty')}>
           <p className="empty-body">{t('project.emptyHint')}</p>
           <CopyLine text={SNAPSHOT_PHRASE} lang="zh-Hans" />
         </EmptyState>
       )}
+      {/* 回收站里有快照时也要显示，才能恢复。 */}
+      <ProjectHistory projectId={project.id} />
     </>
   );
 }

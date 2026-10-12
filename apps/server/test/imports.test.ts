@@ -273,3 +273,77 @@ describe('import requests', () => {
     expect(safeFileName('')).toBe('project-status.json');
   });
 });
+
+describe('history', () => {
+  const del = (path: string) =>
+    app.request(path, { method: 'DELETE', headers: { host, origin, 'x-moriium-dashboard': '1' } });
+  const restore = (id: number) =>
+    app.request(`/api/snapshots/${id}/restore`, {
+      method: 'POST',
+      headers: { host, origin, 'x-moriium-dashboard': '1' },
+    });
+  const history = async () =>
+    (
+      (await (await app.request('/api/projects/demo.beta/snapshots', { headers: { host } })).json()) as {
+        snapshots: { id: number; snapshotAt: string; deleted: boolean; superseded: boolean; stage: string }[];
+      }
+    ).snapshots;
+
+  it('lists snapshots newest first, including replaced ones, with stage and counts', async () => {
+    await commit([
+      file('history/t0-older.json'),
+      file('history/t1-base.json'),
+      file('history/t2-newer.json'),
+    ]);
+    await commit([file('history/t1-same-instant-different.json', { conflict: 'replace' })]);
+    const list = await history();
+    expect(list.map((s) => s.snapshotAt)).toEqual([
+      '2026-10-09T10:00:00+08:00',
+      '2026-10-05T02:00:00Z',
+      '2026-10-05T10:00:00+08:00',
+      '2026-10-01T10:00:00+08:00',
+    ]);
+    expect(list.filter((s) => s.superseded)).toHaveLength(1);
+    expect(list[0]).toMatchObject({ stage: expect.any(String), deleted: false });
+  });
+
+  it('compares two snapshots in time order', async () => {
+    await commit([file('history/t1-base.json'), file('history/t2-newer.json')]);
+    const [newer, older] = await history();
+    const res = await app.request(`/api/snapshots/compare?a=${newer?.id}&b=${older?.id}`, {
+      headers: { host },
+    });
+    const body = (await res.json()) as { before: { id: number }; after: { id: number }; diff: unknown };
+    expect(body.before.id).toBe(older?.id);
+    expect(body.after.id).toBe(newer?.id);
+    expect(body.diff).toBeTruthy();
+    expect((await app.request('/api/snapshots/compare?a=1&b=1', { headers: { host } })).status).toBe(400);
+  });
+
+  it('deleting the latest rolls the current state back; restoring brings it back', async () => {
+    await commit([file('history/t1-base.json'), file('history/t2-newer.json')]);
+    const [latest] = await history();
+    expect((await del(`/api/snapshots/${latest?.id}`)).status).toBe(200);
+    expect(current('demo.beta')?.snapshot_at).toBe('2026-10-05T10:00:00+08:00');
+    expect((await restore(latest?.id ?? 0)).status).toBe(200);
+    expect(current('demo.beta')?.snapshot_at).toBe('2026-10-09T10:00:00+08:00');
+    expect((await restore(latest?.id ?? 0)).status).toBe(409);
+  });
+
+  it('refuses to restore into a same-instant clash', async () => {
+    await commit([file('history/t1-base.json')]);
+    const [first] = await history();
+    await del(`/api/snapshots/${first?.id}`);
+    await commit([file('history/t1-same-instant-different.json')]);
+    expect((await restore(first?.id ?? 0)).status).toBe(409);
+  });
+
+  it('serves the raw bytes as a download', async () => {
+    await commit([file('history/t1-base.json')]);
+    const [s] = await history();
+    const res = await app.request(`/api/snapshots/${s?.id}/raw`, { headers: { host } });
+    expect(res.headers.get('content-type')).toBe('application/octet-stream');
+    expect(res.headers.get('content-disposition')).toContain('attachment');
+    expect(Buffer.from(await res.arrayBuffer()).equals(fixture('history/t1-base.json'))).toBe(true);
+  });
+});
