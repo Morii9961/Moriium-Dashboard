@@ -1036,8 +1036,15 @@
 }
 .icard-reporter {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px 6px;
+}
+.icard-reporter > span {
+  white-space: nowrap;
+}
+[lang="ja"] .idialog-title {
+  word-break: auto-phrase;
 }
 .icard-reporter select {
   height: 28px;
