@@ -31,9 +31,7 @@
       "title": "P0 规划获批：产品、协议、界面、架构与路线图",
       "status": "done",
       "evidence_level": "morii_accepted",
-      "evidence_refs": [
-        "docs/design-decisions.md"
-      ],
+      "evidence_refs": ["docs/design-decisions.md"],
       "human_acceptance": "accepted"
     },
     {
