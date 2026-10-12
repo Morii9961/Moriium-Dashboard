@@ -11,12 +11,15 @@
  */
 import { STAGE_AXIS, type Stage } from '@moriium-dashboard/protocol';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { navigate } from '../app/router.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 
 export interface MapLine {
-  anchor: string;
+  /** 点击这条线去哪里：页内锚点（#…）或站内路径（/projects/…）。 */
+  href: string;
   name: string;
-  stage: Stage;
+  /** null：登记了但还没有快照，画成没出发的虚线。 */
+  stage: Stage | null;
   /** 已经格式化好的进度，例如「≈80%」「64%」「—」。 */
   progress: string;
   /** 读屏用的进度说明，例如「Agent 估算 80%」。 */
@@ -25,7 +28,7 @@ export interface MapLine {
 }
 
 const AXIS = STAGE_AXIS as readonly Stage[];
-const stageIndex = (s: Stage) => AXIS.indexOf(s);
+const stageIndex = (s: Stage | null) => (s === null ? -1 : AXIS.indexOf(s));
 
 function useWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -55,15 +58,18 @@ export function TransitMap({ lines }: { lines: MapLine[] }) {
 
   // 窄屏：线名写在线的上方左端，站名错成两行；宽屏：线名写在终点右边。
   const narrow = width < 680;
-  const laneGap = narrow ? 58 : 50;
+  // 线名写在线的上方左端：窄屏，或者全部项目都还没有快照（终点右边没有东西可写）。
+  const allEmpty = sorted.length > 0 && sorted.every((l) => l.stage === null);
+  const labelsLeft = narrow || allEmpty;
+  const laneGap = labelsLeft ? 58 : 50;
   const top = narrow ? 78 : 64;
   const originX = 10;
   const firstX = narrow ? 44 : 64;
-  const rightPad = narrow ? 18 : 210;
+  const rightPad = labelsLeft ? 32 : 210;
   const step = Math.max(0, (width - firstX - rightPad) / (AXIS.length - 1));
   const stationX = (i: number) => firstX + i * step;
   const lastX = stationX(AXIS.length - 1);
-  const laneY = (i: number) => top + 18 + i * laneGap + (narrow ? 14 : 0);
+  const laneY = (i: number) => top + 18 + i * laneGap + (labelsLeft ? 14 : 0);
   const bottom = laneY(Math.max(0, sorted.length - 1)) + 18;
   const height = bottom + 22;
 
@@ -74,7 +80,7 @@ export function TransitMap({ lines }: { lines: MapLine[] }) {
     <nav className="tmap" ref={ref} aria-label={t('map.label')}>
       {width > 0 ? (
         <svg
-          className={`tmap-svg${narrow ? ' is-narrow' : ''}`}
+          className={`tmap-svg${narrow ? ' is-narrow' : ''}${labelsLeft ? ' labels-left' : ''}`}
           width={width}
           height={height}
           viewBox={`0 0 ${width} ${height}`}
@@ -127,24 +133,35 @@ export function TransitMap({ lines }: { lines: MapLine[] }) {
             const idx = stageIndex(l.stage);
             const off = idx < 0;
             const endX = off ? lastX : stationX(idx);
-            const label = t('map.lane', {
-              name: l.name,
-              stage: t(`stage.${l.stage}` as 'stage.planning'),
-              progress: l.progressLabel,
-              pending: l.pending,
-            });
-            const labelX = narrow ? firstX - 14 : endX + 22;
-            const labelY = narrow ? y - 14 : y + 5;
+            const stageText =
+              l.stage === null ? t('map.noSnapshot') : t(`stage.${l.stage}` as 'stage.planning');
+            const label =
+              l.stage === null
+                ? t('map.laneEmpty', { name: l.name })
+                : t('map.lane', {
+                    name: l.name,
+                    stage: stageText,
+                    progress: l.progressLabel,
+                    pending: l.pending,
+                  });
+            const labelX = labelsLeft ? firstX - 14 : endX + 22;
+            const labelY = labelsLeft ? y - 14 : y + 5;
             return (
               <a
-                key={l.anchor}
-                href={`#${l.anchor}`}
-                className={`tmap-lane${off ? ` is-off is-${l.stage}` : ''}`}
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  // 站内路径走客户端路由，不整页刷新。
+                  if (!l.href.startsWith('/') || e.metaKey || e.ctrlKey || e.shiftKey) return;
+                  e.preventDefault();
+                  navigate(l.href);
+                }}
+                className={`tmap-lane${off ? ` is-off is-${l.stage ?? 'none'}` : ''}`}
                 aria-label={label}
                 style={{ '--i': i } as CSSProperties}
               >
                 {/* 看不见的粗线：让细线也好点中。 */}
-                <path className="tmap-hit" d={`M ${originX} ${y} H ${lastX + (narrow ? 0 : 160)}`} />
+                <path className="tmap-hit" d={`M ${originX} ${y} H ${lastX + (labelsLeft ? 0 : 160)}`} />
                 {off ? null : <path className="tmap-ahead" d={`M ${endX} ${y} H ${lastX}`} />}
                 <path
                   className="tmap-line"
@@ -165,7 +182,7 @@ export function TransitMap({ lines }: { lines: MapLine[] }) {
                 <text className="tmap-label" x={labelX} y={labelY}>
                   <tspan className="tmap-label-name">{l.name}</tspan>
                   <tspan className="tmap-label-figure" dx={10}>
-                    {off ? t(`stage.${l.stage}` as 'stage.planning') : l.progress}
+                    {off ? stageText : l.progress}
                   </tspan>
                 </text>
               </a>

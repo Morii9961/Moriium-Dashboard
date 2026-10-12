@@ -7,6 +7,13 @@
       "runtimeArgs": ["--filter", "@moriium-dashboard/web", "dev"],
       "port": 5173,
       "url": "http://127.0.0.1:5173"
+    },
+    {
+      "name": "server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["apps/server/src/main.ts"],
+      "port": 5180,
+      "url": "http://127.0.0.1:5180"
     }
   ]
 }

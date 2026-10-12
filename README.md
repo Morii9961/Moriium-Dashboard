@@ -36,21 +36,23 @@ pnpm audit:public  # 公开树审计：数据库、导出包、密钥形态、IP
 
 服务端和脚本由 Node 直接运行 `.ts`，没有构建步骤，原因见 [ADR 0001](./docs/adr/0001-toolchain-and-native-typescript.md)。
 
-### 启动服务端
+### 使用
 
 ```bash
-pnpm server
+pnpm build    # 构建前端（apps/web/dist）
+pnpm server   # 启动本机服务，同时托管构建好的前端
 ```
 
-只监听 `http://127.0.0.1:5180`。第一次启动会在系统的应用数据目录（Windows 上是 `%LOCALAPPDATA%\moriium-dashboard`）建数据库并做一次备份；数据目录在仓库里或同步盘里时拒绝启动。可用的环境变量见 [`.env.example`](./.env.example)，设计见 [ADR 0003](./docs/adr/0003-server-storage-and-local-security.md)。目前只有 `GET /api/health`。
+然后打开 `http://127.0.0.1:5180`。服务只监听本机。第一次启动会在系统的应用数据目录（Windows 上是 `%LOCALAPPDATA%moriium-dashboard`）建数据库并做一次备份；数据目录在仓库里或同步盘里时拒绝启动。可用的环境变量见 [`.env.example`](./.env.example)，设计见 [ADR 0003](./docs/adr/0003-server-storage-and-local-security.md)。
 
-### 设计样张（P2.1）
+### 开发
 
 ```bash
-pnpm specimen
+pnpm server   # 本机服务（5180）
+pnpm dev      # 前端开发服务器（5173），/api 自动转给本机服务
 ```
 
-然后打开 `http://127.0.0.1:5173/specimen.html`。想用本机的真实快照，在 `apps/web/.env.local`（已被 `.gitignore` 排除）里写一行 `MORIIUM_SPECIMEN_SNAPSHOTS=`，后面跟文件路径，多个用分号分开。真实快照只在开发服务器上读取，不进仓库，也不进构建产物。地址后面加 `?demo` 只显示演示数据。
+应用在 `http://127.0.0.1:5173`，设计基线页在 `http://127.0.0.1:5173/specimen.html`。设计基线页想用本机的真实快照，在 `apps/web/.env.local`（已被 `.gitignore` 排除）里写一行 `MORIIUM_SPECIMEN_SNAPSHOTS=`，后面跟文件路径，多个用分号分开。真实快照只在开发服务器上读取，不进仓库，也不进构建产物。地址后面加 `?demo` 只显示演示数据。改了 `apps/web/src/design/tokens.ts` 后运行 `pnpm tokens` 重新生成 CSS。
 
 ### 检查快照文件
 

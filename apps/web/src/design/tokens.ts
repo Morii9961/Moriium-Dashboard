@@ -166,4 +166,5 @@ export const CONTRAST_PAIRS: [keyof ColorTokens, keyof ColorTokens, number, stri
   ['paused', 'surface', 3, '暂停图形'],
   ['unknown', 'surface', 3, '未知图形'],
   ['ink2', 'surface', 3, '路线图已经过的站（图形）'],
+  ['surface', 'accentText', 4.5, '主按钮文字（雾蓝底）'],
 ];
