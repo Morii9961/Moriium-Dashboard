@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
-import { Link } from './router.tsx';
+import { useImport } from './ImportDialog.tsx';
 
 /** 换页后焦点移到页面标题（tabIndex=-1），读屏会读出新页面的名字。 */
 export function PageHeader({ title, lede, meta }: { title: ReactNode; lede?: ReactNode; meta?: ReactNode }) {
@@ -32,6 +32,7 @@ export const SNAPSHOT_PHRASE = '生成项目状态快照';
 /** 「从这三步开始」：概览和导入页的空状态共用。 */
 export function SnapshotSteps({ importAction = true }: { importAction?: boolean }) {
   const { t } = useI18n();
+  const { open } = useImport();
   return (
     <section className="steps" aria-labelledby="steps-title">
       <h2 id="steps-title" className="steps-title">
@@ -48,9 +49,9 @@ export function SnapshotSteps({ importAction = true }: { importAction?: boolean 
         <li>
           <p>{t('overview.step3')}</p>
           {importAction ? (
-            <Link to="/imports" className="btn btn-primary">
+            <button type="button" className="btn btn-primary" onClick={() => open()}>
               {t('action.import')}
-            </Link>
+            </button>
           ) : null}
         </li>
       </ol>

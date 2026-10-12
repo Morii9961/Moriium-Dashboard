@@ -75,8 +75,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLocale,
       t: (key, values) => formatMessage(locale, key, values),
       relative: (fromMs, now) => {
-        const hours = Math.round((fromMs - now.getTime()) / 3_600_000);
-        if (Math.abs(hours) < 1) return rtf.format(0, 'hour');
+        // 不足一小时按分钟说；numeric: 'auto' 下 0 小时会说成「这一时间」，所以不用它。
+        const minutes = Math.round((fromMs - now.getTime()) / 60_000);
+        if (Math.abs(minutes) < 1) return rtf.format(0, 'second');
+        if (Math.abs(minutes) < 60) return rtf.format(minutes, 'minute');
+        const hours = Math.round(minutes / 60);
         if (Math.abs(hours) < 48) return rtf.format(hours, 'hour');
         return rtf.format(Math.round(hours / 24), 'day');
       },

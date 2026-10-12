@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { I18nProvider } from '../i18n/i18n.tsx';
 import { App } from './App.tsx';
 import { DataProvider } from './data.tsx';
+import { ImportProvider } from './ImportDialog.tsx';
 import { ServiceProvider } from './service.tsx';
 
 const root = document.getElementById('root');
@@ -17,7 +18,9 @@ if (root) {
       <I18nProvider>
         <ServiceProvider>
           <DataProvider>
-            <App />
+            <ImportProvider>
+              <App />
+            </ImportProvider>
           </DataProvider>
         </ServiceProvider>
       </I18nProvider>

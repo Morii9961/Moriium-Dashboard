@@ -117,7 +117,9 @@ describe('import preview', () => {
       file('history/t0-older.json'),
       file('history/t1-base.json'),
     ]);
-    expect(files.map((f) => f.placement?.kind)).toEqual(['latest', 'latest', 'latest']);
+    // 只有最晚的 t2 成为最新，另外两份标为「比同一批里的另一份早」。
+    expect(files.map((f) => f.placement?.kind)).toEqual(['latest', 'history', 'history']);
+    expect(files[1]?.placement).toMatchObject({ inBatch: true });
     // 第二次（库里已有 t2）时，更早的两份只进历史。
     await commit([file('history/t2-newer.json')]);
     const again = await check([file('history/t0-older.json'), file('history/t1-base.json')]);
@@ -176,6 +178,16 @@ describe('import commit and undo', () => {
     };
     expect(batches.batches[0]).toMatchObject({ importedCount: 1, skippedCount: 1 });
     expect(db.prepare("SELECT COUNT(*) AS n FROM audit_log WHERE action = 'import'").get()).toEqual({ n: 1 });
+  });
+
+  it('reports only the newest file of a project in one batch as the new latest', async () => {
+    const r = await commit([
+      file('history/t0-older.json'),
+      file('history/t2-newer.json'),
+      file('history/t1-base.json'),
+    ]);
+    expect(r.results.map((o) => o.placement)).toEqual(['history', 'latest', 'history']);
+    expect(current('demo.beta')?.snapshot_at).toBe('2026-10-09T10:00:00+08:00');
   });
 
   it('keeps an older snapshot in history without changing the current state', async () => {
