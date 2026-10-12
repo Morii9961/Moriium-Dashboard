@@ -74,6 +74,9 @@ describe('local paths', () => {
     j('C', ':/', 'Users/x'),
     j('/Us', 'ers/', 'someone/x'),
     j('/ho', 'me/', 'someone'),
+    // JSON 和代码字符串里转义过的反斜杠
+    j('"C', ':\\\\', 'Users\\\\demo\\\\notes.md"'),
+    j("'D", ':\\\\', "work'"),
   ])('flags %s', (line) => {
     expect(rules('a.md', line)).toContain('local-path');
   });
@@ -90,6 +93,23 @@ describe('emails', () => {
 
   it('allows example domains and the commit trailer address', () => {
     expect(rules('a.md', 'demo@example.com a@b.test noreply@anthropic.com @biomejs/biome')).toEqual([]);
+  });
+});
+
+describe('invisible characters', () => {
+  const cp = String.fromCodePoint;
+  it.each([
+    ['bidi override', cp(0x202e)],
+    ['bidi isolate', cp(0x2066)],
+    ['zero-width space', cp(0x200b)],
+    ['escape character', cp(0x1b)],
+    ['NUL-free C1 control', cp(0x85)],
+  ])('flags %s', (_name, ch) => {
+    expect(rules('a.ts', `const a = 1;${ch}\n`)).toContain('invisible-char');
+  });
+
+  it('allows tabs, CRLF line endings and ordinary CJK text', () => {
+    expect(rules('a.md', '\tindent\r\n中文与 English，标点。\r\n')).toEqual([]);
   });
 });
 
@@ -111,7 +131,7 @@ describe('reporting', () => {
     const secret = j('gh', 'p_', 'E'.repeat(36));
     const [line] = auditFile('a.txt', text(secret)).map(formatFinding);
     expect(line).not.toContain(secret);
-    expect(line).toBe('a.txt:1  secret  GitHub 令牌形态');
+    expect(line).toBe('a.txt:1  secret  GitHub 令牌');
   });
 
   it('applies allow entries by exact path or directory prefix and rule', () => {

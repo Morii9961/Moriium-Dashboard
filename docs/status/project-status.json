@@ -15,7 +15,7 @@
       "scripts/audit-public.ts",
       "本机 pnpm verify（2026-10-12 08:51）：Biome 通过、类型检查通过、Vitest 36/36、公开树审计通过"
     ],
-    "tests_rerun": true
+    "tests_rerun": false
   },
   "reporter": {
     "agent": "claude",

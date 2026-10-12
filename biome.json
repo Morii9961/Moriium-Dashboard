@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!docs/planning/schema"]
+    "includes": ["**", "!docs/planning/schema", "!docs/protocol/schema", "!packages/protocol/src/generated"]
   },
   "formatter": {
     "enabled": true,
