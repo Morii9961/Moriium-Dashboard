@@ -59,13 +59,14 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
   const matureWording = p.mature ? MATURE_WORDING[s.stage] : undefined;
   const estimate = s.overall_progress;
   const figure = progressFigure(s, p);
-  const known = p.total - p.unknown;
-  const figureCaption =
+  // 数字下面不再写来源（Morii 2026-10-12）。估算仍要和计算值分开（规则 1）：估算前面加「≈」，
+  // 读屏和悬停提示写全称；展开区的「估算」一行照旧。
+  const figureSource =
     figure === null
       ? '没有可计的里程碑'
       : figure.basis === 'estimate'
-        ? `Agent 估算 · 里程碑 ${p.done}/${p.total}`
-        : `${p.unknown > 0 ? '已知里程碑' : '里程碑'} ${p.done}/${known}`;
+        ? 'Agent 估算'
+        : `按${p.unknown > 0 ? '已知' : ''}里程碑计算：${p.done}/${p.total - p.unknown}`;
 
   const headline = matureWording
     ? matureWording
@@ -132,7 +133,12 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
         </div>
 
         <div className="strip-progress">
-          <p className="figure">
+          <p className="figure" title={figureSource}>
+            {figure?.basis === 'estimate' ? (
+              <span className="figure-approx" aria-hidden="true">
+                ≈
+              </span>
+            ) : null}
             {figure !== null ? (
               <>
                 {figure.percent}
@@ -141,9 +147,9 @@ export function ProjectStrip({ item, now }: { item: StripItem; now: Date }) {
             ) : (
               '—'
             )}
+            <span className="sr-only">（{figureSource}）</span>
           </p>
           <SegBar milestones={s.milestones} />
-          <p className="figure-caption">{figureCaption}</p>
         </div>
 
         <div className="strip-gap">

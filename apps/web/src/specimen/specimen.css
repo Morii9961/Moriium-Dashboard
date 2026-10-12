@@ -503,6 +503,13 @@ main {
   color: var(--c-ink3);
   margin-left: 1px;
 }
+.figure-approx {
+  margin-right: 3px;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  vertical-align: 0.5em;
+  color: var(--c-ink3);
+}
 .figure-sm {
   font-size: 30px;
 }
@@ -762,10 +769,6 @@ main {
   }
   .strip-toggle {
     grid-area: toggle;
-  }
-  /* 窄屏的说明可以换行，不压到旁边的「还差」。 */
-  .strip-progress .figure-caption {
-    white-space: normal;
   }
   .strip-more-inner {
     grid-template-columns: 1fr;
