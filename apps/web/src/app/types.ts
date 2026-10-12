@@ -112,3 +112,20 @@ export interface BatchView {
   undoneAt: string | null;
   results: FileOutcome[];
 }
+
+export interface HistoryItem extends SnapshotBrief {
+  stage: import('@moriium-dashboard/protocol').Stage;
+  milestonesDone: number;
+  milestonesTotal: number;
+  pending: number;
+  reporter: Reporter;
+  supersededBy: number | null;
+  deletedAt: string | null;
+  fileName: string;
+}
+
+export interface CompareResult {
+  before: SnapshotBrief;
+  after: SnapshotBrief;
+  diff: import('@moriium-dashboard/protocol').SnapshotDiff;
+}
