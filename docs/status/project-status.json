@@ -2,32 +2,27 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-12T08:32:00+08:00",
+  "snapshot_at": "2026-10-12T08:55:00+08:00",
   "source": {
-    "branch": null,
-    "commit_sha": null,
+    "branch": "claude/workspace-tooling",
+    "commit_sha": "6372af68b4e9bf3f66b188ce7eb6d1bb48d3e4cc",
     "basis": [
-      "docs/planning/README.md",
-      "docs/planning/01-product-vision-and-prd.md",
-      "docs/planning/02-information-architecture-ux.md",
-      "docs/planning/03-status-protocol-v1.md",
-      "docs/planning/04-import-and-history.md",
-      "docs/planning/05-architecture-and-data.md",
-      "docs/planning/06-mvp-and-roadmap.md",
-      "docs/planning/schema/project-status.v1.0.schema.json",
-      "docs/planning/schema/project-status.v1.1.schema.json",
+      "docs/planning/06-mvp-and-roadmap.md（P1 工作包与交付标准）",
       "docs/design-decisions.md",
-      "docs/handoff-2026-10-12-development-kickoff.md",
-      "AGENTS.md"
+      "docs/adr/0001-toolchain-and-native-typescript.md",
+      "https://github.com/Morii9961/Moriium-Dashboard（main@adfb890，P1.1 首次提交）",
+      ".github/workflows/ci.yml",
+      "scripts/audit-public.ts",
+      "本机 pnpm verify（2026-10-12 08:51）：Biome 通过、类型检查通过、Vitest 36/36、公开树审计通过"
     ],
-    "tests_rerun": false
+    "tests_rerun": true
   },
   "reporter": {
     "agent": "claude",
-    "note": "规划会话"
+    "note": "开发会话（P1）"
   },
-  "stage": "planning",
-  "summary": "规划已于 2026-10-12 获批：前端加本机 SQLite 小服务，协议支持 v1.0 与 v1.1，首版按 MVP 执行并以各项目的进度展示为重点。正式开发将在新会话里从 P1 开始，目前还没有代码和 Git 仓库。",
+  "stage": "development",
+  "summary": "进入开发。公开仓库已建立并推送首次提交；工作区、类型检查、测试、CI 和公开树审计已在分支上完成，等待 CI 与合并。协议包、样本和检查工具（P1.3 到 P1.6）还没开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -35,17 +30,20 @@
       "title": "P0 规划获批：产品、协议、界面、架构与路线图",
       "status": "done",
       "evidence_level": "morii_accepted",
-      "evidence_refs": [
-        "docs/design-decisions.md"
-      ],
+      "evidence_refs": ["docs/design-decisions.md"],
       "human_acceptance": "accepted"
     },
     {
       "id": "p1-repo-protocol",
       "title": "P1 仓库与协议：Git 仓库、协议包、校验与样本测试",
-      "status": "not_started",
-      "evidence_level": "self_report",
-      "evidence_refs": [],
+      "status": "in_progress",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard",
+        ".github/workflows/ci.yml",
+        "scripts/audit-public.ts",
+        "docs/adr/0001-toolchain-and-native-typescript.md"
+      ],
       "human_acceptance": "pending"
     },
     {
@@ -92,28 +90,32 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "p1-start",
-      "title": "在新会话里按启动提示词开始 P1.1：初始化 Git，创建公开仓库 Morii9961/Moriium-Dashboard 并推送",
-      "priority": "P0",
-      "result": "仓库建立，下一份快照能写入 branch 与 commit_sha"
-    },
-    {
       "id": "protocol-package",
-      "title": "实现 packages/protocol 与协议样本测试，提供 status:check 检查工具",
-      "priority": "P1",
-      "result": "Schema v1.0 与 v1.1 发布，接收规则有自动化测试"
+      "title": "实现 packages/protocol（P1.3）与协议样本（P1.4），提供 status:check 检查工具（P1.5）",
+      "priority": "P0",
+      "result": "Schema v1.0 与 v1.1 发布，接收规则有自动化测试，Morii 能用检查工具看真实快照"
     },
     {
       "id": "design-specimen",
-      "title": "制作设计样张页，至少用一个成熟项目、一个持续研发项目和 Dashboard 自己的快照",
+      "title": "制作设计样张页（P2.1），用成熟项目、持续研发项目和 Dashboard 自己的快照",
       "priority": "P1",
       "result": "Morii 用真实内容逐项确定字体、配色和阶段轴画法"
+    },
+    {
+      "id": "server-skeleton",
+      "title": "服务端骨架（P2.4）：Hono、SQLite 与迁移、数据目录、Host 与 Origin 检查、CSP、每日备份",
+      "priority": "P1",
+      "result": "服务端能在空数据库上启动并生成备份"
     }
   ],
   "needs_morii": [
     {
       "id": "enable-snapshots",
       "decision": "什么时候把「生成项目状态快照」的指令放进其他五个项目的 AGENTS.md？建议在 P1 结束、检查工具可用之后。"
+    },
+    {
+      "id": "data-dir-location",
+      "decision": "本机数据目录放在哪里？建议用系统的应用数据目录（Windows 上是 %LOCALAPPDATA%\\moriium-dashboard），不放进 OneDrive 等同步目录；也可以用 MORIIUM_DASHBOARD_DATA 指定别处。P2.4 之前需要答案。"
     },
     {
       "id": "vps-access",
