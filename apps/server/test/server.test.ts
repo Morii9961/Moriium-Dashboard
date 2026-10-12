@@ -68,7 +68,8 @@ describe('resolveConfig', () => {
   });
 
   it('refuses a synced folder unless explicitly allowed', () => {
-    const env = { MORIIUM_DASHBOARD_DATA: join(base.homedir, 'OneDrive', 'dash') };
+    // 用当前系统上的绝对路径：Windows 风格的路径在 Linux 上不算绝对路径，会先被「必须是绝对路径」拦下。
+    const env = { MORIIUM_DASHBOARD_DATA: join(tmpdir(), 'OneDrive', 'dash') };
     expect(() => resolveConfig({ ...base, env })).toThrow(/同步盘/);
     expect(() =>
       resolveConfig({ ...base, env: { ...env, MORIIUM_DASHBOARD_ALLOW_SYNCED_DATA_DIR: '1' } }),
