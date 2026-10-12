@@ -412,7 +412,7 @@ export function formatIssue(issue: Issue): FormattedIssue {
       const kinds = list(p.kinds).map((k) => (k === 'local_path' ? '本机绝对路径' : 'IP 地址'));
       return {
         location,
-        problem: `包含${kinds.join('和')}（${list(p.fields).join('、')}）。这些信息会保存在你的私有数据里，不会公开。`,
+        problem: `${spaced(`包含${kinds.join('和')}`)}（${list(p.fields).join('、')}）。这些信息会保存在你的私有数据里，不会公开。`,
       };
     }
   }

@@ -35,6 +35,14 @@ pnpm audit:public  # 公开树审计：数据库、导出包、密钥形态、IP
 
 服务端和脚本由 Node 直接运行 `.ts`，没有构建步骤，原因见 [ADR 0001](./docs/adr/0001-toolchain-and-native-typescript.md)。
 
+### 检查快照文件
+
+```bash
+pnpm status:check path/to/project-status.json
+```
+
+输出和导入预览一致：能不能导入、错误和提醒（位置 · 问题 · 收到了什么 · 怎么改），无法导入时附一段可以直接粘贴回 Agent 会话的修复说明。只读取文件，不访问网络，不保存任何内容。可以一次检查多个文件；`pnpm status:check --help` 列出全部选项。退出码：0 可以导入，1 无法导入，2 需要先做选择（文件被代码块包着）。
+
 ## 数据与隐私
 
 数据库、备份、导出包和任何令牌都不进这个仓库。运行时数据放在环境变量 `MORIIUM_DASHBOARD_DATA` 指定的仓库外目录。仓库里的演示数据全部虚构。
