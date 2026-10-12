@@ -16,10 +16,13 @@
     "audit:public": "node scripts/audit-public.ts",
     "verify": "pnpm check && pnpm typecheck && pnpm test && pnpm audit:public",
     "server": "pnpm --filter @moriium-dashboard/server start",
+    "specimen": "pnpm --filter @moriium-dashboard/web dev",
+    "screenshots": "node scripts/screenshots.ts",
     "status:check": "node packages/protocol/src/cli/status-check.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.64.0",
     "@types/node": "24.19.2",
     "typescript": "7.0.2",
     "vitest": "5.0.3"

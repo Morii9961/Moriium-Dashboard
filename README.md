@@ -44,6 +44,14 @@ pnpm server
 
 只监听 `http://127.0.0.1:5180`。第一次启动会在系统的应用数据目录（Windows 上是 `%LOCALAPPDATA%\moriium-dashboard`）建数据库并做一次备份；数据目录在仓库里或同步盘里时拒绝启动。可用的环境变量见 [`.env.example`](./.env.example)，设计见 [ADR 0003](./docs/adr/0003-server-storage-and-local-security.md)。目前只有 `GET /api/health`。
 
+### 设计样张（P2.1）
+
+```bash
+pnpm specimen
+```
+
+然后打开 `http://127.0.0.1:5173/specimen.html`。想用本机的真实快照，在 `apps/web/.env.local`（已被 `.gitignore` 排除）里写一行 `MORIIUM_SPECIMEN_SNAPSHOTS=`，后面跟文件路径，多个用分号分开。真实快照只在开发服务器上读取，不进仓库，也不进构建产物。地址后面加 `?demo` 只显示演示数据。
+
 ### 检查快照文件
 
 ```bash
