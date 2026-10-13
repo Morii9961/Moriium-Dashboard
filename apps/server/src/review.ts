@@ -12,7 +12,7 @@ export interface AcceptanceRecord {
 }
 
 export class ReviewError extends Error {
-  readonly code: 'invalid_field' | 'not_found' | 'snapshot_changed' | 'suspected_secret';
+  readonly code: 'invalid_field' | 'not_found' | 'snapshot_changed' | 'suspected_secret' | 'project_changed';
   constructor(code: ReviewError['code']) {
     super(code);
     this.code = code;

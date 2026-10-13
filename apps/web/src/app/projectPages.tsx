@@ -3,10 +3,9 @@
  * 概览和项目页的完整内容（需要你决定、新鲜度、历史、验收）在 P4；这里先让导入的快照显示出来。
  */
 import { DownloadSimple } from '@phosphor-icons/react';
-import { type ReactNode, useMemo } from 'react';
+import { useMemo } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
-import { figureOf, ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
-import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
+import { ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { useResource } from './data.tsx';
@@ -14,7 +13,7 @@ import { useImport } from './ImportDialog.tsx';
 import { ProjectDetailView } from './ProjectDetail.tsx';
 import { ProjectList } from './ProjectList.tsx';
 import { Link } from './router.tsx';
-import type { BatchView, FileOutcome, ProjectWithCurrent } from './types.ts';
+import { type BatchView, type FileOutcome, localizedName, type ProjectWithCurrent } from './types.ts';
 import { EmptyState, PageHeader, SNAPSHOT_PHRASE, SnapshotSteps } from './ui.tsx';
 
 const projectPath = (id: string) => `/projects/${encodeURIComponent(id)}`;
@@ -23,12 +22,12 @@ function useProjects() {
   return useResource<{ projects: ProjectWithCurrent[] }>('/api/projects');
 }
 
-function stripItem(p: ProjectWithCurrent): StripItem | null {
+function stripItem(p: ProjectWithCurrent, locale: string): StripItem | null {
   const c = p.current;
   if (!c) return null;
   return {
     anchor: `p-${p.id.replace(/[^a-z0-9]+/g, '-')}`,
-    name: p.name,
+    name: localizedName(p, locale),
     snapshot: c.snapshot,
     utcMs: c.utcMs,
     offsetMinutes: c.offsetMinutes,
@@ -70,13 +69,24 @@ export function ProjectsPage() {
         title={t('nav.projects')}
         lede={data ? t('projects.registered', { count: data.projects.length }) : undefined}
       />
-      {data ? <ProjectList projects={data.projects} now={now} /> : <RegistryPending failed={!!error} />}
+      {data ? (
+        <>
+          <div className="page-actions">
+            <Link to="/settings#set-projects" className="btn">
+              {t('manual.register')}
+            </Link>
+          </div>
+          <ProjectList projects={data.projects} now={now} />
+        </>
+      ) : (
+        <RegistryPending failed={!!error} />
+      )}
     </>
   );
 }
 
 export function ProjectPage({ id }: { id: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useProjects();
   if (!data) {
@@ -100,19 +110,19 @@ export function ProjectPage({ id }: { id: string }) {
       </>
     );
   }
-  const item = stripItem(project);
+  const item = stripItem(project, locale);
   return (
     <>
-      <PageHeader meta={<span className="mono">{project.id}</span>} title={project.name} />
+      <PageHeader meta={<span className="mono">{project.id}</span>} title={localizedName(project, locale)} />
       <div className="page-actions">
-        <ImportButton projectId={project.id} />
+        {project.tracking === 'protocol' ? <ImportButton projectId={project.id} /> : null}
       </div>
       {item ? (
         <div className="strips">
           <ProjectStrip item={item} now={now} />
         </div>
       ) : null}
-      {item ? null : (
+      {item || project.tracking === 'manual' ? null : (
         <EmptyState title={t('project.empty')}>
           <p className="empty-body">{t('project.emptyHint')}</p>
           <CopyLine text={SNAPSHOT_PHRASE} lang="zh-Hans" />

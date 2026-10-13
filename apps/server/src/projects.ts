@@ -1,15 +1,31 @@
 /**
  * 项目登记表（P3.1）。快照只按 project_id 精确匹配这张表（04 第 6 节），不自动建项目。
  */
-import { PROJECT_ID_PATTERN, type RegisteredProject } from '@moriium-dashboard/protocol';
+import { PROJECT_ID_PATTERN, type RegisteredProject, scanSecrets } from '@moriium-dashboard/protocol';
 import type { Database } from './db.ts';
 
 export const ATTENTION = ['active', 'waiting', 'incubating', 'paused', 'archived'] as const;
 export type Attention = (typeof ATTENTION)[number];
 export const TRACKING = ['protocol', 'manual'] as const;
 export type Tracking = (typeof TRACKING)[number];
+export const CATEGORIES = ['research', 'website', 'creation', 'life', 'learning', 'exploration'] as const;
+export const PRIORITIES = ['focus', 'normal', 'later'] as const;
+export interface ProjectMetadata {
+  nameJa: string;
+  nameEn: string;
+  category: (typeof CATEGORIES)[number];
+  priority: (typeof PRIORITIES)[number];
+  agentAssignments: { agent: 'claude' | 'codex' | 'other'; scope: string }[];
+  repositoryUrl: string;
+  websiteUrl: string;
+  workingOn: string;
+  nextStep: string;
+  keyDate: string;
+  keyDateLabel: string;
+  manualLang: 'zh-Hans' | 'ja' | 'en';
+}
 
-export interface Project {
+export interface Project extends ProjectMetadata {
   id: string;
   name: string;
   tracking: Tracking;
@@ -22,7 +38,14 @@ export interface Project {
 }
 
 /** 请求不合法时抛出；code 原样返回给前端，由前端翻译成三语文案。 */
-export type ProjectErrorCode = 'invalid_id' | 'invalid_name' | 'invalid_field' | 'exists' | 'not_found';
+export type ProjectErrorCode =
+  | 'invalid_id'
+  | 'invalid_name'
+  | 'invalid_field'
+  | 'exists'
+  | 'not_found'
+  | 'suspected_secret'
+  | 'project_changed';
 
 export class ProjectError extends Error {
   readonly code: ProjectErrorCode;
@@ -35,6 +58,18 @@ export class ProjectError extends Error {
 }
 
 interface Row {
+  name_ja: string;
+  name_en: string;
+  category: Project['category'];
+  priority: Project['priority'];
+  agent_assignments: string;
+  repository_url: string;
+  website_url: string;
+  working_on: string;
+  next_step: string;
+  key_date: string;
+  key_date_label: string;
+  manual_lang: Project['manualLang'];
   id: string;
   name: string;
   tracking: Tracking;
@@ -54,6 +89,18 @@ function toProject(r: Row): Project {
     core = [];
   }
   return {
+    nameJa: r.name_ja,
+    nameEn: r.name_en,
+    category: r.category,
+    priority: r.priority,
+    agentAssignments: JSON.parse(r.agent_assignments) as Project['agentAssignments'],
+    repositoryUrl: r.repository_url,
+    websiteUrl: r.website_url,
+    workingOn: r.working_on,
+    nextStep: r.next_step,
+    keyDate: r.key_date,
+    keyDateLabel: r.key_date_label,
+    manualLang: r.manual_lang,
     id: r.id,
     name: r.name,
     tracking: r.tracking,
@@ -76,6 +123,7 @@ const UNSAFE_CHARS = new RegExp(
 function cleanName(value: unknown): string {
   if (typeof value !== 'string') throw new ProjectError('invalid_name', 'name');
   const name = value.trim().replace(/\s+/g, ' ');
+  if (scanSecrets(name).length) throw new ProjectError('suspected_secret');
   if (!name || name.length > MAX_NAME || UNSAFE_CHARS.test(name))
     throw new ProjectError('invalid_name', 'name');
   return name;
@@ -93,7 +141,9 @@ export function getProject(db: Database, id: string): Project | undefined {
 
 /** 给协议校验用的登记表：所有登记过的项目（包括已归档的）。 */
 export function registry(db: Database): RegisteredProject[] {
-  return listProjects(db).map((p) => ({ id: p.id, name: p.name }));
+  return listProjects(db)
+    .filter((p) => p.tracking === 'protocol')
+    .map((p) => ({ id: p.id, name: p.name }));
 }
 
 export function createProject(db: Database, input: Record<string, unknown>, now: Date): Project {
@@ -116,8 +166,67 @@ export function createProject(db: Database, input: Record<string, unknown>, now:
 export function updateProject(db: Database, id: string, patch: Record<string, unknown>, now: Date): Project {
   const current = getProject(db, id);
   if (!current) throw new ProjectError('not_found');
+  if ('expectedUpdatedAt' in patch && patch.expectedUpdatedAt !== current.updatedAt)
+    throw new ProjectError('project_changed');
   const sets: string[] = [];
   const values: (string | number)[] = [];
+  for (const [key, column, max] of [
+    ['nameJa', 'name_ja', 80],
+    ['nameEn', 'name_en', 80],
+    ['repositoryUrl', 'repository_url', 1000],
+    ['websiteUrl', 'website_url', 1000],
+    ['workingOn', 'working_on', 2000],
+    ['nextStep', 'next_step', 2000],
+    ['keyDateLabel', 'key_date_label', 80],
+  ] as const) {
+    if (!(key in patch)) continue;
+    if (['workingOn', 'nextStep', 'keyDateLabel'].includes(key) && current.tracking !== 'manual')
+      throw new ProjectError('invalid_field', key);
+    const value = projectText(patch[key], max);
+    if ((key === 'repositoryUrl' || key === 'websiteUrl') && value) {
+      try {
+        const url = new URL(value);
+        if (url.protocol !== 'https:' || url.username || url.password) throw new Error();
+      } catch {
+        throw new ProjectError('invalid_field', key);
+      }
+    }
+    sets.push(`${column} = ?`);
+    values.push(value);
+  }
+  for (const [key, column, allowed] of [
+    ['category', 'category', CATEGORIES],
+    ['priority', 'priority', PRIORITIES],
+    ['manualLang', 'manual_lang', ['zh-Hans', 'ja', 'en']],
+  ] as const)
+    if (key in patch) {
+      if (!(allowed as readonly unknown[]).includes(patch[key])) throw new ProjectError('invalid_field', key);
+      sets.push(`${column} = ?`);
+      values.push(patch[key] as string);
+    }
+  if ('keyDate' in patch) {
+    if (
+      current.tracking !== 'manual' ||
+      typeof patch.keyDate !== 'string' ||
+      (patch.keyDate && !isCalendarDate(patch.keyDate))
+    )
+      throw new ProjectError('invalid_field', 'keyDate');
+    sets.push('key_date = ?');
+    values.push(patch.keyDate);
+  }
+  if ('agentAssignments' in patch) {
+    const a = patch.agentAssignments;
+    if (
+      !Array.isArray(a) ||
+      a.length > 3 ||
+      !a.every((v) => v && typeof v === 'object' && ['claude', 'codex', 'other'].includes(v.agent)) ||
+      new Set(a.map((v) => v.agent)).size !== a.length
+    )
+      throw new ProjectError('invalid_field', 'agentAssignments');
+    const clean = a.map((v) => ({ agent: v.agent as string, scope: projectText(v.scope, 2000) }));
+    sets.push('agent_assignments = ?');
+    values.push(JSON.stringify(clean));
+  }
   if ('name' in patch) {
     sets.push('name = ?');
     values.push(cleanName(patch.name));
@@ -152,7 +261,24 @@ export function updateProject(db: Database, id: string, patch: Record<string, un
   }
   if (sets.length === 0) return current;
   sets.push('updated_at = ?');
-  values.push(now.toISOString(), id);
+  const previousAt = Date.parse(current.updatedAt);
+  values.push(
+    new Date(Math.max(now.getTime(), Number.isFinite(previousAt) ? previousAt + 1 : 0)).toISOString(),
+    id,
+  );
   db.prepare(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`).run(...values);
   return getProject(db, id) as Project;
+}
+
+export function projectText(value: unknown, max = 2000) {
+  if (typeof value !== 'string' || value.length > max) throw new ProjectError('invalid_field');
+  if (scanSecrets(value).length) throw new ProjectError('suspected_secret');
+  return value.trim();
+}
+export function isCalendarDate(value: string) {
+  return (
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value)) &&
+    new Date(value).toISOString().slice(0, 10) === value
+  );
 }

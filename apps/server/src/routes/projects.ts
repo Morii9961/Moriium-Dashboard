@@ -4,9 +4,10 @@ import type { AppContext } from '../app.ts';
 import { audit } from '../audit.ts';
 import { transaction } from '../db.ts';
 import { reviewItems } from '../items.ts';
+import { manualMilestones, saveManual } from '../manual.ts';
 import { projectViews } from '../overview.ts';
 import { createProject, getProject, listProjects, ProjectError, updateProject } from '../projects.ts';
-import { acceptanceRecords, stageEntry } from '../review.ts';
+import { acceptanceRecords, ReviewError, stageEntry } from '../review.ts';
 import { currentSnapshot, currentSnapshots, snapshotCounts } from '../snapshots.ts';
 import { readJsonObject } from './util.ts';
 
@@ -16,6 +17,8 @@ const STATUS = {
   invalid_field: 400,
   exists: 409,
   not_found: 404,
+  suspected_secret: 400,
+  project_changed: 409,
 } as const;
 
 export function projectRoutes(app: Hono, ctx: AppContext) {
@@ -37,6 +40,7 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
         acceptances: acceptanceRecords(ctx.db, project.id),
         stageEntry: stageEntry(ctx.db, project.id),
         reviewItems: reviewItems(ctx.db, project.id, now()),
+        manualMilestones: manualMilestones(ctx.db, project.id),
       },
     });
   });
@@ -55,6 +59,23 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
       if (error instanceof ProjectError)
         return c.json({ error: error.code, field: error.field }, STATUS[error.code]);
       throw error;
+    }
+  });
+
+  app.put('/api/projects/:id/manual', async (c) => {
+    const body = await readJsonObject(c);
+    if (!body) return c.json({ error: 'invalid_json' }, 400);
+    try {
+      const milestones = transaction(ctx.db, () => {
+        const result = saveManual(ctx.db, c.req.param('id'), body, now());
+        audit(ctx.db, 'manual.save', c.req.param('id'), '更新手动项目与里程碑', now());
+        return result;
+      });
+      return c.json({ milestones });
+    } catch (e) {
+      if (e instanceof ProjectError) return c.json({ error: e.code, field: e.field }, STATUS[e.code]);
+      if (e instanceof ReviewError) return c.json({ error: e.code }, 409);
+      throw e;
     }
   });
 

@@ -4,6 +4,18 @@ export type Attention = 'active' | 'waiting' | 'incubating' | 'paused' | 'archiv
 export const ATTENTION: readonly Attention[] = ['active', 'waiting', 'incubating', 'paused', 'archived'];
 
 export interface Project {
+  nameJa: string;
+  nameEn: string;
+  category: 'research' | 'website' | 'creation' | 'life' | 'learning' | 'exploration';
+  priority: 'focus' | 'normal' | 'later';
+  agentAssignments: { agent: ReporterAgent; scope: string }[];
+  repositoryUrl: string;
+  websiteUrl: string;
+  workingOn: string;
+  nextStep: string;
+  keyDate: string;
+  keyDateLabel: string;
+  manualLang: 'zh-Hans' | 'ja' | 'en';
   id: string;
   name: string;
   tracking: 'protocol' | 'manual';
@@ -49,7 +61,23 @@ export interface ProjectWithCurrent extends Project {
   snapshotCount: number;
   acceptances: AcceptanceRecord[];
   reviewItems: ReviewItem[];
+  manualMilestones: ManualMilestone[];
 }
+
+export interface ManualMilestone {
+  id: number;
+  projectId: string;
+  title: string;
+  lang: 'zh-Hans' | 'ja' | 'en';
+  status: import('@moriium-dashboard/protocol').Milestone['status'];
+  targetDate: string | null;
+  sortOrder: number;
+  at: string;
+}
+export const CATEGORIES = ['research', 'website', 'creation', 'life', 'learning', 'exploration'] as const;
+export const PRIORITIES = ['focus', 'normal', 'later'] as const;
+export const localizedName = (p: Project, locale: string) =>
+  locale === 'ja' ? p.nameJa || p.name : locale === 'en' ? p.nameEn || p.name : p.name;
 
 export interface ItemState {
   projectId: string;

@@ -1,5 +1,6 @@
 import type { Database } from './db.ts';
 import { reviewItems } from './items.ts';
+import { manualMilestones } from './manual.ts';
 import { listProjects } from './projects.ts';
 import { acceptanceRecords } from './review.ts';
 import { currentSnapshots, getSnapshot, snapshotCounts } from './snapshots.ts';
@@ -13,6 +14,7 @@ export function projectViews(db: Database, now: Date) {
     snapshotCount: counts.get(p.id) ?? 0,
     acceptances: acceptanceRecords(db, p.id),
     reviewItems: reviewItems(db, p.id, now),
+    manualMilestones: manualMilestones(db, p.id),
   }));
 }
 export function overview(db: Database, now: Date) {

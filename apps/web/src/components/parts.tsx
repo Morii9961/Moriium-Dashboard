@@ -133,7 +133,11 @@ export function StatusMark({ status }: { status: Milestone['status'] }) {
 }
 
 /** 里程碑格：每个里程碑一格，形状区分状态；格子对读屏隐藏，旁边总有文字。 */
-export function MilestoneGrid({ milestones }: { milestones: readonly Milestone[] }) {
+export function MilestoneGrid({
+  milestones,
+}: {
+  milestones: readonly (Pick<Milestone, 'id' | 'status'> & Partial<Milestone>)[];
+}) {
   return (
     <span className="mgrid" aria-hidden="true">
       {milestones.map((m) => (
