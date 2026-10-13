@@ -5,6 +5,13 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const en: Messages = {
+  'overview.all': 'All →',
+  'overview.paused': 'Paused · {n}',
+  'overview.delivery': 'Recent delivery',
+  'overview.noDelivery': 'No milestones accepted in the past 14 days.',
+  'overview.freshness': 'Report freshness',
+  'overview.reports': 'Latest Agent reports',
+  'overview.update': 'Update',
   'item.gone': 'No longer in the report',
   'item.goneCount': 'No longer in the report · {n}',
   'item.open': 'Open',

@@ -7,6 +7,7 @@ import { createApp } from '../src/app.ts';
 import { REPO_ROOT } from '../src/config.ts';
 import { applyMigrations, type Database, loadMigrations, openDatabase } from '../src/db.ts';
 import { itemStates, reviewItems, stateKey } from '../src/items.ts';
+import { overview } from '../src/overview.ts';
 import type { AcceptanceRecord } from '../src/review.ts';
 import { stageEntry } from '../src/review.ts';
 import { readZip } from '../src/zip.ts';
@@ -223,5 +224,38 @@ describe('cross-snapshot item states', () => {
       pending: false,
       state: { status: 'acknowledged' },
     });
+  });
+});
+
+describe('overview projections', () => {
+  it('uses unresolved decisions and local acceptance, with confirmed delivery only', async () => {
+    const snapshotId = await importSnapshot();
+    expect(overview(db, now).pending).toHaveLength(2);
+    const key = stateKey(base.needs_morii[0], base.needs_morii[0].decision);
+    await request(`/api/items/demo.beta/needs_morii/${encodeURIComponent(key)}`, 'PUT', {
+      snapshotId,
+      status: 'decided',
+      conclusion: '第一组',
+    });
+    await request('/api/acceptance/demo.beta/core', 'PUT', { snapshotId, status: 'accepted' });
+    const o = overview(db, now);
+    expect(o.pending).toHaveLength(0);
+    expect(o.recentDelivery).toHaveLength(1);
+    expect(o.recentDelivery[0]).toMatchObject({ milestoneId: 'core', snapshotId, status: 'accepted' });
+    expect(overview(db, new Date('2026-11-01T00:00:00Z')).recentDelivery).toHaveLength(0);
+    db.prepare("UPDATE projects SET attention='paused' WHERE id='demo.beta'").run();
+    expect(overview(db, now).pending).toHaveLength(0);
+  });
+  it('latest imported Agent report can be older than current project snapshot', async () => {
+    const latest = structuredClone(base);
+    latest.snapshot_at = '2026-10-12T10:00:00+08:00';
+    await importSnapshot(latest);
+    const old = structuredClone(base);
+    old.snapshot_at = '2026-10-01T10:00:00+08:00';
+    await importSnapshot(old);
+    const o = overview(db, now);
+    expect(o.projects.find((p) => p.id === 'demo.beta')?.current?.snapshotAt).toBe(latest.snapshot_at);
+    expect(o.latestReports[0]?.snapshotAt).toBe(old.snapshot_at);
+    expect(o.latestReports[0]?.importedAt).toBe(now.toISOString());
   });
 });

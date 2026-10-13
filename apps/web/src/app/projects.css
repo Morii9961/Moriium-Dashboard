@@ -184,6 +184,109 @@
 .project-detail summary {
   cursor: pointer;
 }
+.overview-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: var(--space-6);
+}
+.overview-section {
+  margin-top: var(--space-6);
+}
+.overview-section h2 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-4);
+}
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.overview-pending,
+.age-list,
+.delivery-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+.overview-pending > li,
+.age-list > li,
+.delivery-list > li {
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: var(--space-4);
+  overflow-wrap: anywhere;
+}
+.pending-project {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+}
+.pending-decision {
+  list-style: none;
+  padding: 0;
+}
+.age-list > li {
+  display: grid;
+  gap: var(--space-2);
+}
+.age-list .btn {
+  justify-self: start;
+}
+.overview-layout a,
+.overview-pending a {
+  color: var(--c-accent-text);
+}
+.overview-side .source-note {
+  margin-top: var(--space-4);
+}
+@media (min-width: 1280px) {
+  .overview-layout .strip-main {
+    grid-template-columns: minmax(0, 1fr) 72px 50px 28px;
+  }
+  .overview-layout .strip-id {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .overview-layout .strip-progress {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .overview-layout .strip-waiting {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .overview-layout .strip-toggle {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .overview-layout .strip-route {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .overview-layout .strip-gap {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .overview-layout .strip-more-inner {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1279px) {
+  .overview-layout {
+    grid-template-columns: 1fr;
+  }
+  .overview-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+  }
+}
+@media (max-width: 767px) {
+  .overview-side {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 767px) {
   .source-grid {
     grid-template-columns: 1fr;

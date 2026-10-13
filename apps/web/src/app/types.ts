@@ -86,6 +86,32 @@ export interface ProjectDetail extends ProjectWithCurrent {
   stageEntry: { snapshotAt: string; utcMs: number; offsetMinutes: number; onlySnapshot: boolean } | null;
 }
 
+export interface OverviewData {
+  projects: ProjectWithCurrent[];
+  pending: {
+    projectId: string;
+    projectName: string;
+    snapshotId: number;
+    utcMs: number;
+    kind: 'decision' | 'acceptance';
+    key: string;
+    title: string;
+    item: ReviewItem | null;
+    milestoneId: string | null;
+  }[];
+  latestReports: {
+    agent: ReporterAgent | null;
+    projectId: string;
+    projectName: string;
+    snapshotAt: string;
+    utcMs: number;
+    offsetMinutes: number;
+    importedAt: string;
+    reporterSource: Reporter['source'];
+  }[];
+  recentDelivery: (AcceptanceRecord & { projectName: string; title: string })[];
+}
+
 /** 协议包给出的问题说明（中文），加上 JSON Pointer。 */
 export interface ShownIssue {
   code: string;

@@ -4,6 +4,13 @@
  * 新增键先加在这里，ja.ts、en.ts 必须有同样的键和同样的参数（测试会检查）。
  */
 export const zhHans = {
+  'overview.all': '全部 →',
+  'overview.paused': '已暂停 · {n}',
+  'overview.delivery': '最近交付',
+  'overview.noDelivery': '近 14 天没有验收通过的里程碑。',
+  'overview.freshness': '报告新鲜度',
+  'overview.reports': 'Agent 最近报告',
+  'overview.update': '更新',
   'item.gone': '已从报告中消失',
   'item.goneCount': '已从报告中消失 · {n}',
   'item.open': '未处理',
