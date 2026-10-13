@@ -13,6 +13,11 @@ import type { OverviewData, ProjectWithCurrent } from './types.ts';
 import { localizedName } from './types.ts';
 import { PageHeader, SnapshotSteps } from './ui.tsx';
 
+function projectLabel(data: OverviewData, id: string, locale: string, fallback: string) {
+  const p = data.projects.find((p) => p.id === id);
+  return p ? localizedName(p, locale) : fallback;
+}
+
 function itemOf(p: ProjectWithCurrent, locale: string): StripItem | null {
   const c = p.current;
   if (!c) return null;
@@ -34,7 +39,7 @@ function itemOf(p: ProjectWithCurrent, locale: string): StripItem | null {
 }
 
 export function PendingList({ data, limit }: { data: OverviewData; limit?: number }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const entries = limit ? data.pending.slice(0, limit) : data.pending;
   if (!entries.length) return <p>{t('inbox.empty')}</p>;
   return (
@@ -42,7 +47,7 @@ export function PendingList({ data, limit }: { data: OverviewData; limit?: numbe
       {entries.map((i) => (
         <li key={`${i.projectId}:${i.kind}:${i.key}`}>
           <Link to={projectPath(i.projectId)} className="pending-project">
-            {i.projectName}
+            {projectLabel(data, i.projectId, locale, i.projectName)}
           </Link>
           {i.kind === 'acceptance' ? (
             <Link to={`${projectPath(i.projectId)}#milestone-${encodeURIComponent(i.milestoneId ?? '')}`}>
@@ -190,7 +195,7 @@ export function OverviewPage() {
                       .filter((p) => p.attention === 'paused')
                       .map((p) => (
                         <p key={p.id}>
-                          <Link to={projectPath(p.id)}>{p.name}</Link>
+                          <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
                         </p>
                       ))}
                   </details>
@@ -202,7 +207,9 @@ export function OverviewPage() {
                   <ul className="delivery-list">
                     {data.recentDelivery.map((r) => (
                       <li key={`${r.projectId}:${r.milestoneId}`}>
-                        <Link to={projectPath(r.projectId)}>{r.projectName}</Link>
+                        <Link to={projectPath(r.projectId)}>
+                          {projectLabel(data, r.projectId, locale, r.projectName)}
+                        </Link>
                         <p lang="zh-Hans">{r.title}</p>
                         <time dateTime={r.at}>
                           {t('evidence.accepted', { date: snapshotTime(Date.parse(r.at), 480) })}
@@ -224,7 +231,7 @@ export function OverviewPage() {
                     .sort((a, b) => ageRank(b) - ageRank(a))
                     .map((p) => (
                       <li key={p.id}>
-                        <Link to={projectPath(p.id)}>{p.name}</Link>
+                        <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
                         <ReportAge project={p} now={now} />
                         <button type="button" className="btn" onClick={() => open(p.id)}>
                           {t('overview.update')}
@@ -239,7 +246,9 @@ export function OverviewPage() {
                   {data.latestReports.map((r) => (
                     <li key={r.agent ?? 'unknown'}>
                       <strong>{t(r.agent ? `agent.${r.agent}` : 'agent.unknown')}</strong>
-                      <Link to={projectPath(r.projectId)}>{r.projectName}</Link>
+                      <Link to={projectPath(r.projectId)}>
+                        {projectLabel(data, r.projectId, locale, r.projectName)}
+                      </Link>
                       <span>
                         {t('more.snapshot')} · {relative(r.utcMs, now)}
                       </span>

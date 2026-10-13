@@ -147,12 +147,13 @@ export function MilestoneGrid({
   );
 }
 
-export type EvidenceKind = 'self' | 'evidence' | 'test' | 'reported' | 'accepted' | 'rejected';
+export type EvidenceKind = 'self' | 'evidence' | 'test' | 'reported' | 'accepted' | 'rejected' | 'unknown';
 
 export function evidenceKindOf(m: Milestone): EvidenceKind {
   if (m.evidence_level === 'morii_accepted' || m.human_acceptance === 'accepted') return 'reported';
   if (m.evidence_level === 'existing_test') return 'test';
   if (m.evidence_level === 'repository') return 'evidence';
+  if (m.evidence_level === 'unknown') return 'unknown';
   return 'self';
 }
 

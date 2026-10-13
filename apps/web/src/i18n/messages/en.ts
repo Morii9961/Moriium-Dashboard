@@ -5,6 +5,10 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const en: Messages = {
+  'settings.pauseNote': 'Pause reason (optional)',
+  'strip.noPriorityNext': 'No P0 / P1 next action in the snapshot',
+  'detail.evidenceSummary':
+    'Self-reported {self} · Repository or test evidence {evidence} · Evidence unspecified {unknown} · Accepted by you {accepted} · Reported acceptance {reported}',
   'settings.name': 'Name (Chinese)',
   'settings.nameJa': 'Name (Japanese)',
   'settings.nameEn': 'Name (English)',
@@ -142,6 +146,7 @@ export const en: Messages = {
   'status.unknown': 'Unknown',
 
   'evidence.self': 'Self-reported',
+  'evidence.unknown': 'Evidence unspecified',
   'evidence.evidence': 'Repository evidence',
   'evidence.test': 'Has test record',
   'evidence.reported': 'Reported as accepted',

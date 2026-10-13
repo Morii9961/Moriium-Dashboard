@@ -1,8 +1,9 @@
 import type { Milestone } from '@moriium-dashboard/protocol';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
 import { EvidenceTag, LineMap, StatusMark } from '../components/parts.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
+import { evidenceSummary } from '../progress.ts';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
 import { ProjectHistory } from './History.tsx';
@@ -158,6 +159,8 @@ function Source({ project }: { project: ProjectDetail }) {
   const c = project.current;
   if (!c) return null;
   const s = c.snapshot;
+  const offset = Math.abs(c.offsetMinutes);
+  const zone = `UTC${c.offsetMinutes >= 0 ? '+' : '-'}${String(Math.floor(offset / 60)).padStart(2, '0')}:${String(offset % 60).padStart(2, '0')}`;
   return (
     <section className="source-panel" aria-label={t('detail.source')}>
       <dl className="source-grid">
@@ -172,7 +175,11 @@ function Source({ project }: { project: ProjectDetail }) {
           {s.source.commit_sha ? `@ ${s.source.commit_sha}` : null}
         </dd>
         <dt>{t('more.snapshot')}</dt>
-        <dd>{snapshotTime(c.utcMs, c.offsetMinutes)}</dd>
+        <dd>
+          <time dateTime={c.snapshotAt} title={c.snapshotAt}>
+            {snapshotTime(c.utcMs, c.offsetMinutes)} ({zone})
+          </time>
+        </dd>
         <dt>{t('detail.imported')}</dt>
         <dd>
           <time dateTime={c.importedAt}>{snapshotTime(Date.parse(c.importedAt), 480)} (UTC+8)</time> ·{' '}
@@ -199,6 +206,12 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
     `/api/projects/${encodeURIComponent(projectId)}`,
   );
   const [section, setSection] = useState('summary');
+  useEffect(() => {
+    if (!data || section !== 'summary' || !location.hash.startsWith('#milestone-')) return;
+    const target = document.getElementById(location.hash.slice(1));
+    target?.scrollIntoView({ block: 'start' });
+    target?.focus({ preventScroll: true });
+  }, [data, section]);
   if (!data) return <p>{t(error ? 'projects.loadFailed' : 'common.loading')}</p>;
   const p = data.project;
   const s = p.current?.snapshot;
@@ -269,6 +282,9 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
               </p>
             ) : null}
             <h2>{t('more.milestones')}</h2>
+            <p className="evidence-summary">
+              {t('detail.evidenceSummary', evidenceSummary(s, p.acceptances))}
+            </p>
             <table className="milestone-table">
               <thead>
                 <tr>
@@ -279,7 +295,7 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
               </thead>
               <tbody>
                 {s.milestones.map((m) => (
-                  <tr key={m.id} id={`milestone-${encodeURIComponent(m.id)}`}>
+                  <tr key={m.id} id={`milestone-${encodeURIComponent(m.id)}`} tabIndex={-1}>
                     <th scope="row">
                       <StatusMark status={m.status} />
                       <p lang="zh-Hans">{m.title}</p>
@@ -294,7 +310,9 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
                               ? 'test'
                               : m.evidence_level === 'morii_accepted'
                                 ? 'reported'
-                                : 'self'
+                                : m.evidence_level === 'unknown'
+                                  ? 'unknown'
+                                  : 'self'
                         }
                       />
                       {m.evidence_refs.length ? (

@@ -1,12 +1,12 @@
 # Moriium Dashboard
 
-Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项目状态快照」，Dashboard 导入后显示每个项目做到哪里、还差什么、下一步是什么、需要 Morii 做什么；另有今日焦点、基本任务和成果登记。
+Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项目状态快照」，Dashboard 导入后显示每个项目做到哪里、还差什么、下一步是什么、需要 Morii 做什么。今日焦点、基本任务和成果登记安排在 P5。
 
 它不是任务管理软件，也不是实时运维平台。快照由 Morii 手动触发、手动导入；Agent 自报、有仓库或测试证据、Morii 验收三层始终分开显示，没有可信依据时不画进度百分比。
 
 ## 当前状态
 
-规划已于 2026-10-12 获批，P1（仓库与协议）的工作包都已提交审阅：协议包、样本和检查工具可以用；界面和服务端还没开始。
+P1 到 P3 已合并。P4 的项目列表、详情、独立验收与处理状态、概览和手动项目已实现并完成代码与本机界面验证，等待 Morii 的 30 秒测试与六项目逐项验收。P5、P6 尚未开始。
 
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
@@ -43,7 +43,9 @@ pnpm build    # 构建前端（apps/web/dist）
 pnpm server   # 启动本机服务，同时托管构建好的前端
 ```
 
-然后打开 `http://127.0.0.1:5180`。服务只监听本机。第一次启动会在系统的应用数据目录（Windows 上是 `%LOCALAPPDATA%moriium-dashboard`）建数据库并做一次备份；数据目录在仓库里或同步盘里时拒绝启动。可用的环境变量见 [`.env.example`](./.env.example)，设计见 [ADR 0003](./docs/adr/0003-server-storage-and-local-security.md)。
+然后打开 `http://127.0.0.1:5180`。服务只监听本机。第一次启动会在系统的应用数据目录（Windows 上是 `%LOCALAPPDATA%\moriium-dashboard`）建数据库并做一次备份；数据目录在仓库里或同步盘里时拒绝启动。可用的环境变量见 [`.env.example`](./.env.example)，设计见 [ADR 0003](./docs/adr/0003-server-storage-and-local-security.md)。
+
+Windows 的打包应用可能把 `%LOCALAPPDATA%` 重定向到自己的应用数据目录。换到另一个终端或 Agent 应用后，如果看到空项目，不要重新导入或覆盖原库；先确认旧实例的实际数据位置，用 `MORIIUM_DASHBOARD_DATA` 指向同一目录。数据库迁移会先生成备份；测试与真实内容走查使用仓库外的独立副本。
 
 ### 开发
 
@@ -70,9 +72,9 @@ pnpm status:check path/to/project-status.json
 
 ## English
 
-Moriium Dashboard is a single-user workspace. Agents working on Morii's projects write "project status snapshots" in a shared JSON format (the Project Status Protocol). The dashboard imports them and shows, for each project, where it stands, what is still missing, what comes next, and what needs Morii's decision. It also holds a daily focus list, basic tasks, and a log of finished work. Agent self-reports, repository or test evidence, and Morii's own acceptance are always shown separately, and no progress percentage is drawn without a trustworthy basis.
+Moriium Dashboard is a single-user workspace. Agents write project status snapshots in a shared JSON format. The dashboard imports them and shows each project's stage, remaining work, next action, and decisions for Morii. Agent reports, repository or test evidence, and Morii's acceptance stay separate. Progress uses a marked Agent estimate or the completion rate of known milestones. Daily focus, tasks, and works are planned for P5.
 
-**Status:** planning was approved on 2026-10-12. P1 (repository and protocol) is in review: the protocol package, fixtures and the checker work; the UI and server have not started.
+**Status:** P1–P3 are merged. P4 implementation and local verification are complete; Morii's walkthrough and acceptance remain pending. P5 and P6 have not started.
 
 **Protocol:** see [`docs/protocol/README.md`](./docs/protocol/README.md) (Chinese) and the JSON Schemas for [v1.0](./docs/protocol/schema/project-status.v1.0.schema.json) and [v1.1](./docs/protocol/schema/project-status.v1.1.schema.json). Run `pnpm status:check <file>` to check a snapshot.
 

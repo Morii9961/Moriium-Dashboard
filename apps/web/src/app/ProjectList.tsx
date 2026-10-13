@@ -60,6 +60,11 @@ function ProjectTable({ projects, now }: { projects: ProjectWithCurrent[]; now: 
                   {localizedName(p, locale)}
                 </Link>
                 <span className="project-attention">{t(`attention.${p.attention}`)}</span>
+                {p.attention === 'paused' && p.attentionNote ? (
+                  <p className="source-note" lang="zh-Hans">
+                    {p.attentionNote}
+                  </p>
+                ) : null}
               </th>
               <td className="project-progress-cell">
                 {s && f ? (

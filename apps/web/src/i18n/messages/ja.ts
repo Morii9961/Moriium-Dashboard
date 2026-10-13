@@ -5,6 +5,10 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const ja: Messages = {
+  'settings.pauseNote': '一時停止の理由（任意）',
+  'strip.noPriorityNext': 'スナップショットに P0 / P1 の次の行動はありません',
+  'detail.evidenceSummary':
+    '自己申告 {self} · リポジトリまたはテストの根拠 {evidence} · 根拠未記載 {unknown} · ご自身の確認 {accepted} · 報告による確認 {reported}',
   'settings.name': '名前（中国語）',
   'settings.nameJa': '名前（日本語）',
   'settings.nameEn': '名前（英語）',
@@ -142,6 +146,7 @@ export const ja: Messages = {
   'status.unknown': '不明',
 
   'evidence.self': '自己申告',
+  'evidence.unknown': '根拠が記載されていません',
   'evidence.evidence': 'リポジトリの根拠',
   'evidence.test': 'テスト記録あり',
   'evidence.reported': '受け入れ済み（報告による）',

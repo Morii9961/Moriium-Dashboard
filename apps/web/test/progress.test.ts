@@ -1,8 +1,10 @@
 import type { Snapshot } from '@moriium-dashboard/protocol';
 import { describe, expect, it } from 'vitest';
+import { evidenceKindOf } from '../src/components/parts.tsx';
 import { contrast, toHex } from '../src/design/color.ts';
 import { CONTRAST_PAIRS, tokensFor } from '../src/design/tokens.ts';
 import {
+  evidenceSummary,
   freshness,
   headlineNextAction,
   progressFigure,
@@ -55,6 +57,30 @@ describe('visible milestones', () => {
       ...Array.from({ length: 10 }, (_, i) => `done-${19 - i}`),
     ]);
   });
+});
+
+it('separates missing evidence, repository proof, report claims and local acceptance', () => {
+  const s = snap({
+    milestones: [
+      { ...m('self', 'done'), evidence_level: 'self_report' },
+      { ...m('unknown', 'done'), evidence_level: 'unknown' },
+      m('proof', 'done'),
+      m('claim', 'done', 'accepted'),
+    ],
+  });
+  expect(
+    evidenceSummary(s, [
+      { milestoneId: 'proof', status: 'accepted' },
+      { milestoneId: 'claim', status: 'rejected' },
+    ]),
+  ).toEqual({ self: 1, evidence: 2, unknown: 1, accepted: 1, reported: 1 });
+  expect(evidenceKindOf(s.milestones[1] as Snapshot['milestones'][number])).toBe('unknown');
+  expect(
+    summarizeProgress(s, undefined, [
+      { milestoneId: 'proof', status: 'accepted' },
+      { milestoneId: 'claim', status: 'rejected' },
+    ]).awaitingAcceptance,
+  ).toBe(3);
 });
 
 describe('summarizeProgress (02 §5.4)', () => {

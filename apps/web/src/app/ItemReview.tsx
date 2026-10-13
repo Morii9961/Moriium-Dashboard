@@ -43,7 +43,10 @@ export function ItemReview({
     }
   };
   return (
-    <li className="review-item" id={`item-${encodeURIComponent(item.key)}`}>
+    <li
+      className="review-item"
+      id={`item-${encodeURIComponent(projectId)}-${item.kind}-${encodeURIComponent(item.key)}`}
+    >
       <p lang="zh-Hans">{item.text}</p>
       {item.impact ? (
         <p className="source-note" lang="zh-Hans">
