@@ -34,7 +34,11 @@ export const MATURE_WORDING: Partial<Record<Snapshot['stage'], string>> = {
   maintenance: '维护中',
 };
 
-export function summarizeProgress(snapshot: Snapshot, coreMilestoneIds?: readonly string[]): ProgressSummary {
+export function summarizeProgress(
+  snapshot: Snapshot,
+  coreMilestoneIds?: readonly string[],
+  acceptances: readonly { milestoneId: string; status: 'accepted' | 'rejected' }[] = [],
+): ProgressSummary {
   const milestones: Milestone[] =
     coreMilestoneIds && coreMilestoneIds.length > 0
       ? snapshot.milestones.filter((m) => coreMilestoneIds.includes(m.id))
@@ -46,7 +50,10 @@ export function summarizeProgress(snapshot: Snapshot, coreMilestoneIds?: readonl
   const notStarted = count('not_started');
   const unknown = count('unknown');
   const awaitingAcceptance = milestones.filter(
-    (m) => m.status === 'done' && m.human_acceptance === 'pending',
+    (m) =>
+      m.status === 'done' &&
+      (acceptances.find((a) => a.milestoneId === m.id)?.status === 'rejected' ||
+        (!acceptances.some((a) => a.milestoneId === m.id) && m.human_acceptance === 'pending')),
   ).length;
   const reportedAccepted = milestones.filter(
     (m) =>

@@ -47,6 +47,20 @@ export interface SnapshotRecord extends SnapshotBrief {
 export interface ProjectWithCurrent extends Project {
   current: SnapshotRecord | null;
   snapshotCount: number;
+  acceptances: AcceptanceRecord[];
+}
+
+export interface AcceptanceRecord {
+  projectId: string;
+  milestoneId: string;
+  status: 'accepted' | 'rejected';
+  note: string;
+  at: string;
+  snapshotId: number;
+}
+
+export interface ProjectDetail extends ProjectWithCurrent {
+  stageEntry: { snapshotAt: string; utcMs: number; offsetMinutes: number; onlySnapshot: boolean } | null;
 }
 
 /** 协议包给出的问题说明（中文），加上 JSON Pointer。 */

@@ -41,7 +41,7 @@ function ProjectTable({ projects, now }: { projects: ProjectWithCurrent[]; now: 
       <tbody>
         {projects.map((p) => {
           const s = p.current?.snapshot;
-          const f = s ? figureOf(s, t) : null;
+          const f = s ? figureOf(s, t, p.acceptances) : null;
           const selected = s ? visibleMilestones(s.milestones, p.coreMilestones) : [];
           const next = s ? headlineNextAction(s) : null;
           return (
@@ -124,7 +124,7 @@ export function ProjectList({ projects, now }: { projects: ProjectWithCurrent[];
     if (filter === 'resting') return resting(p);
     if (resting(p)) return false;
     if (filter === 'pending') {
-      const f = p.current ? figureOf(p.current.snapshot, t) : null;
+      const f = p.current ? figureOf(p.current.snapshot, t, p.acceptances) : null;
       return f && f.p.decisions + f.p.awaitingAcceptance > 0;
     }
     if (filter === 'stale')
