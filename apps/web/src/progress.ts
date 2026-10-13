@@ -131,11 +131,20 @@ export function headlineNextAction(snapshot: Snapshot) {
 
 export type Freshness = 'fresh' | 'aging' | 'stale' | 'not_counted';
 
-/** 报告新鲜度（04 第 11 节）：7 天内较新，7 到 14 天有些旧，超过 14 天过期；暂停不计算。 */
-export function freshness(snapshotAtUtcMs: number, now: Date, stage: Snapshot['stage']): Freshness {
-  if (stage === 'paused') return 'not_counted';
+/**
+ * 报告新鲜度（04 第 11 节）。阈值按项目设置（登记表的 freshnessDays，默认 14 天）：
+ * 超过阈值算过期，超过一半算有些旧。阶段为 paused 或项目已暂停时不计算。按 snapshot_at 算，不按导入时间。
+ */
+export function freshness(
+  snapshotAtUtcMs: number,
+  now: Date,
+  stage: Snapshot['stage'],
+  options: { staleAfterDays?: number; projectPaused?: boolean } = {},
+): Freshness {
+  if (stage === 'paused' || options.projectPaused) return 'not_counted';
+  const limit = options.staleAfterDays ?? 14;
   const days = (now.getTime() - snapshotAtUtcMs) / 86_400_000;
-  if (days > 14) return 'stale';
-  if (days > 7) return 'aging';
+  if (days > limit) return 'stale';
+  if (days > limit / 2) return 'aging';
   return 'fresh';
 }

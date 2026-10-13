@@ -107,7 +107,7 @@ apps/web/src/
 
 规划见 06 的 P4 一节和 02 第 4、5 节。已有的东西尽量复用：
 
-1. **4.1 项目列表**（`/projects`）：现在是一行行的简单列表。改成桌面表格、手机卡片：名称、阶段（`LineMap` 的 compact 或 row 版）、里程碑格（`MilestoneGrid`）、进度（`figureOf`）、新鲜度（`freshness` 要改为用项目自己的 `freshnessDays`，现在固定 14 天）、待确认数。暂停或归档的项目收起显示。
+1. **4.1 项目列表**（`/projects`）：现在是一行行的简单列表。改成桌面表格、手机卡片：名称、阶段（`LineMap` 的 compact 或 row 版）、里程碑格（`MilestoneGrid`）、进度（`figureOf`）、新鲜度（`freshness` 已按项目的 `freshnessDays` 和「已暂停」计算，2026-10-13 补上）、待确认数。暂停或归档的项目收起显示。
 2. **4.2 项目详情**：现在是长条加历史。补「来源行」（报告来自、分支 @ 提交、快照时间、导入时间，明确写「这是导入时间，不是在线状态」）、完整里程碑表（每行有证据标签和验收操作）、阻塞、全部下一步、待决定放最上面。考虑做成 02 第 5.2 节的分区（概况 · 历史 · 设置）。
 3. **4.3 验收与处理状态**（04 第 9 节）：新迁移建 `acceptance_records`（project_id、milestone_id、通过或退回、说明、时间、依据快照）和 `item_states`（project_id、类别、键、状态、结论、稍后到期日）。键用 `packages/protocol` 的 `itemKey`（有 id 用 id，没有就用规范化文本的哈希）。接口按 05 第 11 节：`PUT /api/acceptance/:project/:milestone`、`PUT /api/items/:project/:kind/:key`。显示时 Morii 的记录优先，快照里的 `human_acceptance` 显示为「据报告」；已退回但新快照仍写 accepted 时显示矛盾提示。
 4. **4.5 概览**：现在是标题 + 线路总图 + 项目长条。按 02 第 4 节补「需要你决定」（汇总各项目当前快照的 needs_morii 和待验收，显示 5 条，`/inbox` 看全部）、报告新鲜度、Agent 最近报告、最近交付（验收通过的里程碑）。线路总图保持为首屏招牌，其余区块安静。可以加 `GET /api/overview` 一次取回。
@@ -128,7 +128,6 @@ apps/web/src/
 
 ## 七、已知的不足（P4 或以后）
 
-- 新鲜度阈值还没按项目设置生效（`freshness` 固定 14 天）。
 - 项目长条的「核心里程碑」设置已存在于登记表（`coreMilestones`），界面还没用上。
 - 协议包的问题说明只有中文（已决定 MVP 不翻译）。
 - 回收站没有永久删除。
