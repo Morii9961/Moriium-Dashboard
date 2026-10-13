@@ -4,6 +4,7 @@ import type { AppContext } from '../app.ts';
 import { audit } from '../audit.ts';
 import { transaction } from '../db.ts';
 import { reviewItems } from '../items.ts';
+import { projectViews } from '../overview.ts';
 import { createProject, getProject, listProjects, ProjectError, updateProject } from '../projects.ts';
 import { acceptanceRecords, stageEntry } from '../review.ts';
 import { currentSnapshot, currentSnapshots, snapshotCounts } from '../snapshots.ts';
@@ -22,17 +23,7 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
 
   // 每个项目带上当前快照（没有时为 null）和有效快照份数。数据量很小，一次取回。
   app.get('/api/projects', (c) => {
-    const current = currentSnapshots(ctx.db);
-    const counts = snapshotCounts(ctx.db);
-    return c.json({
-      projects: listProjects(ctx.db).map((p) => ({
-        ...p,
-        current: current.get(p.id) ?? null,
-        snapshotCount: counts.get(p.id) ?? 0,
-        acceptances: acceptanceRecords(ctx.db, p.id),
-        reviewItems: reviewItems(ctx.db, p.id, now()),
-      })),
-    });
+    return c.json({ projects: projectViews(ctx.db, now()) });
   });
 
   app.get('/api/projects/:id', (c) => {

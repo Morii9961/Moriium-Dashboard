@@ -5,6 +5,13 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const ja: Messages = {
+  'overview.all': 'すべて →',
+  'overview.paused': '一時停止 · {n}',
+  'overview.delivery': '最近の確認済みマイルストーン',
+  'overview.noDelivery': '直近 14 日間に確認済みのマイルストーンはありません。',
+  'overview.freshness': '報告の新しさ',
+  'overview.reports': 'Agent の最近の報告',
+  'overview.update': '更新します',
   'item.gone': '報告から消えています',
   'item.goneCount': '報告から消えた項目 · {n}',
   'item.open': '未対応',
