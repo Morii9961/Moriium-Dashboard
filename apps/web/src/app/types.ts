@@ -4,6 +4,7 @@ export type Attention = 'active' | 'waiting' | 'incubating' | 'paused' | 'archiv
 export const ATTENTION: readonly Attention[] = ['active', 'waiting', 'incubating', 'paused', 'archived'];
 
 export interface Project {
+  attentionNote: string;
   nameJa: string;
   nameEn: string;
   category: 'research' | 'website' | 'creation' | 'life' | 'learning' | 'exploration';

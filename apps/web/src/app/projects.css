@@ -66,6 +66,7 @@
 }
 .project-next {
   display: flex;
+  align-items: baseline;
   gap: var(--space-2);
   color: var(--c-ink2);
 }
@@ -271,6 +272,24 @@
 }
 .project-category {
   margin-bottom: var(--space-5);
+}
+.strip-next-headline {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  margin-top: var(--space-3);
+  overflow-wrap: anywhere;
+  font-size: var(--text-sm);
+}
+.strip-next-headline > span:first-child {
+  flex-shrink: 0;
+  color: var(--c-ink2);
+}
+.evidence-summary {
+  margin-bottom: var(--space-4);
+}
+.milestone-table tr[id] {
+  scroll-margin-top: var(--space-7);
 }
 @media (max-width: 767px) {
   .settings-fields,

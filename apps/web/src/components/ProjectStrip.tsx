@@ -12,7 +12,13 @@ import { displayValue, type Snapshot } from '@moriium-dashboard/protocol';
 import { type MouseEvent, useEffect, useId, useState } from 'react';
 import { type I18n, useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
-import { freshness, progressFigure, summarizeProgress } from '../progress.ts';
+import {
+  freshness,
+  headlineNextAction,
+  progressFigure,
+  summarizeProgress,
+  visibleMilestones,
+} from '../progress.ts';
 import {
   EvidenceTag,
   evidenceKindOf,
@@ -86,6 +92,8 @@ export function ProjectStrip({
   const [pinned, setPinned] = useState(defaultPinned);
   const id = useId();
   const s = item.snapshot;
+  const gridMilestones = visibleMilestones(s.milestones, item.coreMilestones);
+  const headlineNext = headlineNextAction(s);
   const { p, figure, source } = figureOf(s, t, item.acceptances, item.pendingDecisions);
   const fresh = freshness(item.utcMs, now, s.stage, {
     ...(item.staleAfterDays !== undefined ? { staleAfterDays: item.staleAfterDays } : {}),
@@ -120,6 +128,9 @@ export function ProjectStrip({
     p.blocked > 0 ? t('gap.blocked', { n: p.blocked }) : '',
     p.blockers > 0 ? t('gap.blockers', { n: p.blockers }) : '',
     p.unknown > 0 ? t('gap.unknown', { n: p.unknown }) : '',
+    s.milestones.length > gridMilestones.length
+      ? t('list.moreMilestones', { n: s.milestones.length - gridMilestones.length })
+      : '',
   ]
     .filter(Boolean)
     .join(' · ');
@@ -192,12 +203,23 @@ export function ProjectStrip({
             )}
             <span className="sr-only">（{source}）</span>
           </p>
-          <SegBar milestones={s.milestones} />
+          <SegBar milestones={gridMilestones} />
         </div>
 
         <div className="strip-gap">
           <p className={`strip-headline${mature ? ' is-mature' : ''}`}>{headline}</p>
           {subline ? <p className="strip-subline">{subline}</p> : null}
+          <p className="strip-next-headline">
+            <span>{t('more.next')}</span>
+            {headlineNext ? (
+              <>
+                <span className="prio">{headlineNext.priority}</span>
+                <span lang="zh-Hans">{displayValue(headlineNext.title)}</span>
+              </>
+            ) : (
+              <span>{t(s.next_actions.length ? 'strip.noPriorityNext' : 'more.noNext')}</span>
+            )}
+          </p>
         </div>
 
         <div className={`strip-waiting${waiting === 0 ? ' is-none' : ''}`}>

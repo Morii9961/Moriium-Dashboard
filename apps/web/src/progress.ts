@@ -147,6 +147,24 @@ export function visibleMilestones(milestones: readonly Milestone[], core: readon
   ].slice(0, 12);
 }
 
+/** 证据与人工验收独立统计：仓库/测试计数不是 Dashboard 核实或人工验收。 */
+export function evidenceSummary(
+  snapshot: Snapshot,
+  acceptances: readonly { milestoneId: string; status: 'accepted' | 'rejected' }[] = [],
+) {
+  const done = snapshot.milestones.filter((m) => m.status === 'done');
+  return {
+    self: done.filter((m) => m.evidence_level === 'self_report').length,
+    evidence: done.filter((m) => m.evidence_level === 'repository' || m.evidence_level === 'existing_test')
+      .length,
+    accepted: done.filter((m) => acceptances.some((a) => a.milestoneId === m.id && a.status === 'accepted'))
+      .length,
+    reported: done.filter((m) => m.human_acceptance === 'accepted' || m.evidence_level === 'morii_accepted')
+      .length,
+    unknown: done.filter((m) => m.evidence_level === 'unknown').length,
+  };
+}
+
 export type Freshness = 'fresh' | 'aging' | 'stale' | 'not_counted';
 
 /**

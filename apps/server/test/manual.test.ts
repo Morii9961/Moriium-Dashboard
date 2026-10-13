@@ -117,6 +117,11 @@ it('validates project metadata and retains core IDs independently of current rep
   expect((await req('/api/projects/demo.manual', 'PATCH', patch)).status).toBe(200);
   expect(getProject(db, 'demo.manual')).toMatchObject(patch);
   expect(
+    (await req('/api/projects/demo.manual', 'PATCH', { attention: 'paused', attentionNote: '等待新的素材' }))
+      .status,
+  ).toBe(200);
+  expect(getProject(db, 'demo.manual')).toMatchObject({ attention: 'paused', attentionNote: '等待新的素材' });
+  expect(
     (await req('/api/projects/demo.manual', 'PATCH', { expectedUpdatedAt: 'stale', name: 'overwrite' }))
       .status,
   ).toBe(409);

@@ -4,6 +4,10 @@
  * 新增键先加在这里，ja.ts、en.ts 必须有同样的键和同样的参数（测试会检查）。
  */
 export const zhHans = {
+  'settings.pauseNote': '暂停原因（可选）',
+  'strip.noPriorityNext': '快照里没有 P0 / P1 下一步',
+  'detail.evidenceSummary':
+    '自报 {self} · 仓库或测试证据 {evidence} · 证据未注明 {unknown} · 你已验收 {accepted} · 据报告已验收 {reported}',
   'settings.name': '名称（中文）',
   'settings.nameJa': '名称（日文）',
   'settings.nameEn': '名称（英文）',
@@ -141,6 +145,7 @@ export const zhHans = {
   'status.unknown': '未知',
 
   'evidence.self': '自报',
+  'evidence.unknown': '证据未注明',
   'evidence.evidence': '仓库证据',
   'evidence.test': '有测试记录',
   'evidence.reported': '据报告已验收',

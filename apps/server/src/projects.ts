@@ -11,6 +11,7 @@ export type Tracking = (typeof TRACKING)[number];
 export const CATEGORIES = ['research', 'website', 'creation', 'life', 'learning', 'exploration'] as const;
 export const PRIORITIES = ['focus', 'normal', 'later'] as const;
 export interface ProjectMetadata {
+  attentionNote: string;
   nameJa: string;
   nameEn: string;
   category: (typeof CATEGORIES)[number];
@@ -58,6 +59,7 @@ export class ProjectError extends Error {
 }
 
 interface Row {
+  attention_note: string;
   name_ja: string;
   name_en: string;
   category: Project['category'];
@@ -89,6 +91,7 @@ function toProject(r: Row): Project {
     core = [];
   }
   return {
+    attentionNote: r.attention_note,
     nameJa: r.name_ja,
     nameEn: r.name_en,
     category: r.category,
@@ -172,6 +175,7 @@ export function updateProject(db: Database, id: string, patch: Record<string, un
   const values: (string | number)[] = [];
   for (const [key, column, max] of [
     ['nameJa', 'name_ja', 80],
+    ['attentionNote', 'attention_note', 2000],
     ['nameEn', 'name_en', 80],
     ['repositoryUrl', 'repository_url', 1000],
     ['websiteUrl', 'website_url', 1000],

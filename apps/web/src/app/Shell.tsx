@@ -204,8 +204,10 @@ export function Shell({ children }: { children: ReactNode }) {
       first.current = false;
       return;
     }
-    window.scrollTo(0, 0);
-    document.querySelector<HTMLElement>('main .page-title')?.focus({ preventScroll: true });
+    const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null;
+    if (target) target.scrollIntoView({ block: 'start' });
+    else window.scrollTo(0, 0);
+    (target ?? document.querySelector<HTMLElement>('main .page-title'))?.focus({ preventScroll: true });
   }, [path]);
 
   const closeDrawer = () => drawer.current?.close();

@@ -18,6 +18,7 @@ export function ProjectSettings({ project: p }: { project: ProjectDetail }) {
     try {
       await api('PATCH', `/api/projects/${encodeURIComponent(p.id)}`, {
         expectedUpdatedAt: p.updatedAt,
+        attentionNote: draft.attentionNote,
         name: draft.name,
         nameJa: draft.nameJa,
         nameEn: draft.nameEn,
@@ -107,6 +108,16 @@ export function ProjectSettings({ project: p }: { project: ProjectDetail }) {
           </label>
         ))}
       </div>
+      {draft.attention === 'paused' ? (
+        <label className="field">
+          <span>{t('settings.pauseNote')}</span>
+          <textarea
+            value={draft.attentionNote}
+            maxLength={2000}
+            onChange={(e) => set('attentionNote', e.currentTarget.value)}
+          />
+        </label>
+      ) : null}
       {p.current ? (
         <fieldset className="core-options">
           <legend>{t('settings.core')}</legend>
