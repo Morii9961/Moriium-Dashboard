@@ -39,6 +39,7 @@ function stripItem(p: ProjectWithCurrent): StripItem | null {
     acceptances: p.acceptances,
     coreMilestones: p.coreMilestones,
     href: projectPath(p.id),
+    pendingDecisions: p.reviewItems.filter((i) => i.kind === 'needs_morii' && i.pending && !i.gone).length,
   };
 }
 
@@ -75,7 +76,12 @@ export function OverviewPage() {
         progressLabel: '',
         pending: 0,
       };
-    const f = figureOf(p.current.snapshot, t, p.acceptances);
+    const f = figureOf(
+      p.current.snapshot,
+      t,
+      p.acceptances,
+      p.reviewItems.filter((i) => i.kind === 'needs_morii' && i.pending && !i.gone).length,
+    );
     return {
       href: `#${stripItem(p)?.anchor}`,
       name: p.name,

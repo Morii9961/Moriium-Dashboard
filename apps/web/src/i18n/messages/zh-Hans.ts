@@ -4,6 +4,18 @@
  * 新增键先加在这里，ja.ts、en.ts 必须有同样的键和同样的参数（测试会检查）。
  */
 export const zhHans = {
+  'item.gone': '已从报告中消失',
+  'item.goneCount': '已从报告中消失 · {n}',
+  'item.open': '未处理',
+  'item.decided': '已决定',
+  'item.later': '稍后',
+  'item.not_applicable': '不适用',
+  'item.acknowledged': '已知晓',
+  'item.repeated': '新报告仍列出已决定的条目，Agent 可能还不知道。',
+  'item.edit': '处理状态',
+  'item.state': '状态',
+  'item.due': '稍后日期',
+  'item.conclusion': '结论（已决定时必填）',
   'detail.unverified': '引用未经 Dashboard 核实。',
   'detail.changed': '当前快照已改变，请核对后重新记录。',
   'detail.secret': '内容疑似包含密钥，未保存。',
