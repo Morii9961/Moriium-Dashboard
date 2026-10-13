@@ -6,17 +6,19 @@ import { freshness } from '../progress.ts';
 import { useResource } from './data.tsx';
 import { useImport } from './ImportDialog.tsx';
 import { ItemReview } from './ItemReview.tsx';
+import { ManualSummary } from './ManualProject.tsx';
 import { projectPath, ReportAge } from './ProjectList.tsx';
 import { Link } from './router.tsx';
 import type { OverviewData, ProjectWithCurrent } from './types.ts';
+import { localizedName } from './types.ts';
 import { PageHeader, SnapshotSteps } from './ui.tsx';
 
-function itemOf(p: ProjectWithCurrent): StripItem | null {
+function itemOf(p: ProjectWithCurrent, locale: string): StripItem | null {
   const c = p.current;
   if (!c) return null;
   return {
     anchor: `p-${p.id.replace(/[^a-z0-9]+/g, '-')}`,
-    name: p.name,
+    name: localizedName(p, locale),
     snapshot: c.snapshot,
     utcMs: c.utcMs,
     offsetMinutes: c.offsetMinutes,
@@ -70,19 +72,26 @@ export function InboxPage() {
 
 export function OverviewPage() {
   const { open } = useImport();
-  const { t, fullDate, relative, snapshotTime } = useI18n();
+  const { t, locale, fullDate, relative, snapshotTime } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useResource<OverviewData>('/api/overview');
-  const projects = data?.projects.filter((p) => p.attention === 'active' || p.attention === 'waiting') ?? [];
-  const items = projects.map(itemOf).filter((i): i is StripItem => !!i);
+  const projects = [
+    ...(data?.projects.filter((p) => p.attention === 'active' || p.attention === 'waiting') ?? []),
+  ].sort(
+    (a, b) =>
+      ['focus', 'normal', 'later'].indexOf(a.priority) - ['focus', 'normal', 'later'].indexOf(b.priority) ||
+      Number(a.attention === 'waiting') - Number(b.attention === 'waiting') ||
+      a.sortOrder - b.sortOrder,
+  );
+  const items = projects.map((p) => itemOf(p, locale)).filter((i): i is StripItem => !!i);
   const lines: MapLine[] = projects
     .filter((p) => p.tracking === 'protocol')
     .map((p) => {
-      const item = itemOf(p);
+      const item = itemOf(p, locale);
       if (!item)
         return {
           href: projectPath(p.id),
-          name: p.name,
+          name: localizedName(p, locale),
           stage: null,
           progress: '',
           progressLabel: '',
@@ -91,7 +100,7 @@ export function OverviewPage() {
       const f = figureOf(item.snapshot, t, item.acceptances, item.pendingDecisions);
       return {
         href: `#${item.anchor}`,
-        name: p.name,
+        name: localizedName(p, locale),
         stage: item.snapshot.stage,
         progress: f.text,
         progressLabel: f.label,
@@ -113,7 +122,7 @@ export function OverviewPage() {
         meta={<time dateTime={now.toISOString()}>{fullDate(now)}</time>}
         title={
           data ? (
-            items.length ? (
+            items.length || projects.some((p) => p.tracking === 'manual') ? (
               <>
                 <span>{t('hero.projects', { projects: projects.length })}</span>
                 <span className="title-second">{t('hero.pending', { pending: data.pending.length })}</span>
@@ -131,7 +140,7 @@ export function OverviewPage() {
       ) : (
         <>
           <TransitMap lines={lines} />
-          {items.length === 0 ? <SnapshotSteps /> : null}
+          {items.length === 0 && !projects.some((p) => p.tracking === 'manual') ? <SnapshotSteps /> : null}
           <div className="overview-layout">
             <div>
               <section className="overview-section">
@@ -154,10 +163,20 @@ export function OverviewPage() {
                   ))}
                 </div>
                 {projects
-                  .filter((p) => !p.current)
+                  .filter((p) => p.tracking === 'manual')
+                  .map((p) => (
+                    <article className="manual-overview" key={p.id}>
+                      <h3>
+                        <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
+                      </h3>
+                      <ManualSummary project={p} />
+                    </article>
+                  ))}
+                {projects
+                  .filter((p) => !p.current && p.tracking === 'protocol')
                   .map((p) => (
                     <p key={p.id}>
-                      <Link to={projectPath(p.id)}>{p.name}</Link> · {t('map.noSnapshot')}
+                      <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link> · {t('map.noSnapshot')}
                     </p>
                   ))}
                 {data.projects.some((p) => p.attention === 'paused') ? (

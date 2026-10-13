@@ -7,6 +7,8 @@ import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
 import { ProjectHistory } from './History.tsx';
 import { ItemReviewList } from './ItemReview.tsx';
+import { ManualProject } from './ManualProject.tsx';
+import { ProjectSettings } from './ProjectSettings.tsx';
 import type { AcceptanceRecord, ProjectDetail } from './types.ts';
 
 export function ReferenceList({ refs }: { refs: readonly string[] }) {
@@ -46,11 +48,13 @@ export function ReviewMessage({ code }: { code: string | null }) {
         ? t(
             code === 'saved'
               ? 'action.saved'
-              : code === 'snapshot_changed'
-                ? 'detail.changed'
-                : code === 'suspected_secret'
-                  ? 'detail.secret'
-                  : 'apiError.unknown',
+              : code === 'project_changed'
+                ? 'manual.changed'
+                : code === 'snapshot_changed'
+                  ? 'detail.changed'
+                  : code === 'suspected_secret'
+                    ? 'detail.secret'
+                    : 'apiError.unknown',
           )
         : ''}
     </p>
@@ -203,24 +207,26 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
       <Source project={p} />
       <fieldset className="list-filters detail-tabs">
         <legend className="sr-only">{t('detail.sections')}</legend>
-        {['summary', 'history', 'settings'].map((key) => (
-          <button
-            type="button"
-            className="btn"
-            key={key}
-            aria-pressed={key === section}
-            onClick={() => setSection(key)}
-          >
-            {t(`detail.${key as 'summary' | 'history' | 'settings'}`)}
-          </button>
-        ))}
+        {(p.tracking === 'manual' ? ['summary', 'settings'] : ['summary', 'history', 'settings']).map(
+          (key) => (
+            <button
+              type="button"
+              className="btn"
+              key={key}
+              aria-pressed={key === section}
+              onClick={() => setSection(key)}
+            >
+              {t(`detail.${key as 'summary' | 'history' | 'settings'}`)}
+            </button>
+          ),
+        )}
       </fieldset>
       {section === 'history' ? (
         <ProjectHistory projectId={p.id} />
       ) : section === 'settings' ? (
-        <p>
-          <a href="/settings">{t('detail.editSettings')}</a>
-        </p>
+        <ProjectSettings key={p.updatedAt} project={p} />
+      ) : p.tracking === 'manual' ? (
+        <ManualProject key={p.updatedAt} project={p} />
       ) : s ? (
         <div className="project-detail">
           <section className="detail-section">

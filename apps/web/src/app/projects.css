@@ -189,6 +189,98 @@
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: var(--space-6);
 }
+.settings-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin: var(--space-5) 0;
+}
+.core-options {
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-5) 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.core-options label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+.project-settings textarea {
+  width: 100%;
+  min-height: 80px;
+  background: var(--c-raised);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+}
+.manual-summary {
+  display: grid;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+.manual-summary dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-2);
+}
+.manual-summary dt {
+  color: var(--c-ink2);
+}
+.manual-summary .tag {
+  justify-self: start;
+}
+.manual-milestones {
+  margin: var(--space-5) 0;
+}
+.manual-rows {
+  display: grid;
+  gap: var(--space-5);
+  padding-left: var(--space-5);
+}
+.manual-rows li {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+.manual-overview {
+  padding: var(--space-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0;
+}
+.manual-overview h3 {
+  margin-bottom: var(--space-3);
+}
+.list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: var(--space-5) 0;
+}
+.project-category h2 {
+  position: sticky;
+  top: 0;
+  background: var(--c-canvas);
+  padding: var(--space-3) 0;
+  font-size: var(--text-xl);
+  z-index: 1;
+}
+.project-category {
+  margin-bottom: var(--space-5);
+}
+@media (max-width: 767px) {
+  .settings-fields,
+  .manual-rows li {
+    grid-template-columns: 1fr;
+  }
+  .manual-rows .btn {
+    justify-self: start;
+  }
+}
 .overview-section {
   margin-top: var(--space-6);
 }

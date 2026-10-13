@@ -104,13 +104,14 @@ function AddProject() {
   const [name, setName] = useState('');
   const [error, setError] = useState<MessageKey | null>(null);
   const [busy, setBusy] = useState(false);
+  const [tracking, setTracking] = useState('protocol');
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      await api('POST', '/api/projects', { id: id.trim(), name });
+      await api('POST', '/api/projects', { id: id.trim(), name, tracking });
       setId('');
       setName('');
       invalidate();
@@ -125,6 +126,13 @@ function AddProject() {
     <form className="reg-add" onSubmit={submit}>
       <h3 className="reg-add-title">{t('settings.addProject')}</h3>
       <div className="reg-add-fields">
+        <label className="field">
+          <span>{t('manual.tracking')}</span>
+          <select value={tracking} onChange={(e) => setTracking(e.currentTarget.value)}>
+            <option value="protocol">{t('manual.protocol')}</option>
+            <option value="manual">{t('list.manual')}</option>
+          </select>
+        </label>
         <label className="field">
           <span className="field-label">{t('project.field.id')}</span>
           <input
