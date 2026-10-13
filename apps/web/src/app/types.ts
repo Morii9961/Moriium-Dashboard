@@ -48,6 +48,29 @@ export interface ProjectWithCurrent extends Project {
   current: SnapshotRecord | null;
   snapshotCount: number;
   acceptances: AcceptanceRecord[];
+  reviewItems: ReviewItem[];
+}
+
+export interface ItemState {
+  projectId: string;
+  kind: 'needs_morii' | 'blockers';
+  key: string;
+  text: string;
+  status: 'open' | 'decided' | 'later' | 'not_applicable' | 'acknowledged';
+  conclusion: string;
+  dueDate: string | null;
+  at: string;
+  snapshotId: number;
+}
+export interface ReviewItem {
+  kind: ItemState['kind'];
+  key: string;
+  text: string;
+  impact: string | null;
+  state: ItemState | null;
+  gone: boolean;
+  pending: boolean;
+  repeated: boolean;
 }
 
 export interface AcceptanceRecord {

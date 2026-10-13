@@ -6,6 +6,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
 import { ProjectHistory } from './History.tsx';
+import { ItemReviewList } from './ItemReview.tsx';
 import type { AcceptanceRecord, ProjectDetail } from './types.ts';
 
 export function ReferenceList({ refs }: { refs: readonly string[] }) {
@@ -224,15 +225,14 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
         <div className="project-detail">
           <section className="detail-section">
             <h2>{t('more.pending')}</h2>
-            {s.needs_morii.length ? (
-              <ul className="detail-items" lang="zh-Hans">
-                {s.needs_morii.map((n) => (
-                  <li key={n.id ?? n.decision}>{n.decision}</li>
-                ))}
-              </ul>
-            ) : (
+            <ItemReviewList
+              items={p.reviewItems.filter((i) => i.kind === 'needs_morii')}
+              projectId={p.id}
+              snapshotId={p.current?.id ?? 0}
+            />
+            {!p.reviewItems.some((i) => i.kind === 'needs_morii' && i.pending) ? (
               <p>{t('inbox.empty')}</p>
-            )}
+            ) : null}
             <ul className="detail-items">
               {s.milestones
                 .filter(
@@ -312,14 +312,11 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
           </section>
           <section className="detail-section">
             <h2>{t('more.blockers')}</h2>
-            <ul className="detail-items" lang="zh-Hans">
-              {s.blockers.map((b) => (
-                <li key={b.id ?? b.title}>
-                  <strong>{b.title}</strong>
-                  <p>{b.impact}</p>
-                </li>
-              ))}
-            </ul>
+            <ItemReviewList
+              items={p.reviewItems.filter((i) => i.kind === 'blockers')}
+              projectId={p.id}
+              snapshotId={p.current?.id ?? 0}
+            />
             {!s.blockers.length ? <p>{t('detail.noBlockers')}</p> : null}
           </section>
           <section className="detail-section">

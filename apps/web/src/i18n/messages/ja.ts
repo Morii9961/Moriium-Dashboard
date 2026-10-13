@@ -5,6 +5,18 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const ja: Messages = {
+  'item.gone': '報告から消えています',
+  'item.goneCount': '報告から消えた項目 · {n}',
+  'item.open': '未対応',
+  'item.decided': '決定済み',
+  'item.later': '後で確認します',
+  'item.not_applicable': '該当しません',
+  'item.acknowledged': '確認しました',
+  'item.repeated': '新しい報告にも決定済みの項目があり、Agent に伝わっていない可能性があります。',
+  'item.edit': '対応状況を記録します',
+  'item.state': '状態',
+  'item.due': '確認日',
+  'item.conclusion': '結論（決定済みの場合は必須です）',
   'detail.unverified': '参照は Dashboard で検証していません。',
   'detail.changed': '現在のスナップショットが変わりました。確認して再度記録してください。',
   'detail.secret': '内容にキーが含まれている可能性があり、保存していません。',

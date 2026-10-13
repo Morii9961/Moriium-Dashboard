@@ -40,6 +40,7 @@ export interface StripItem {
   acceptances?: readonly { milestoneId: string; status: 'accepted' | 'rejected'; at: string }[];
   coreMilestones?: readonly string[];
   href?: string;
+  pendingDecisions?: number;
   /** 设计基线页用来标出数据来源；应用里不传。 */
   origin?: Origin;
 }
@@ -49,8 +50,14 @@ const STATUS_ORDER = { blocked: 0, in_progress: 1, not_started: 2, unknown: 3, d
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2 } as const;
 
 /** 进度数字和它的来源说明；长条和线路总图共用。 */
-export function figureOf(s: Snapshot, t: I18n['t'], acceptances: StripItem['acceptances'] = []) {
+export function figureOf(
+  s: Snapshot,
+  t: I18n['t'],
+  acceptances: StripItem['acceptances'] = [],
+  pendingDecisions?: number,
+) {
   const p = summarizeProgress(s, undefined, acceptances);
+  if (pendingDecisions !== undefined) p.decisions = pendingDecisions;
   const figure = progressFigure(s, p);
   const source =
     figure === null
@@ -79,7 +86,7 @@ export function ProjectStrip({
   const [pinned, setPinned] = useState(defaultPinned);
   const id = useId();
   const s = item.snapshot;
-  const { p, figure, source } = figureOf(s, t, item.acceptances);
+  const { p, figure, source } = figureOf(s, t, item.acceptances, item.pendingDecisions);
   const fresh = freshness(item.utcMs, now, s.stage, {
     ...(item.staleAfterDays !== undefined ? { staleAfterDays: item.staleAfterDays } : {}),
     ...(item.projectPaused ? { projectPaused: true } : {}),

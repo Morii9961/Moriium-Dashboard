@@ -7,6 +7,7 @@
  */
 import type { Database } from './db.ts';
 import { listBatches } from './imports.ts';
+import { itemStates } from './items.ts';
 import { listProjects } from './projects.ts';
 import { acceptanceRecords } from './review.ts';
 import { createZip, type ZipEntry } from './zip.ts';
@@ -82,6 +83,7 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
       snapshots: snapshots.length,
       importBatches: batches.length,
       acceptances: acceptanceRecords(db).length,
+      itemStates: itemStates(db).length,
     },
   };
   return createZip(
@@ -89,7 +91,13 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
       { name: 'manifest.json', data: json(manifest) },
       {
         name: 'data.json',
-        data: json({ projects, snapshots, importBatches: batches, acceptances: acceptanceRecords(db) }),
+        data: json({
+          projects,
+          snapshots,
+          importBatches: batches,
+          acceptances: acceptanceRecords(db),
+          itemStates: itemStates(db),
+        }),
       },
       ...files,
     ],

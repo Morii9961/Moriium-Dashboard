@@ -5,6 +5,18 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const en: Messages = {
+  'item.gone': 'No longer in the report',
+  'item.goneCount': 'No longer in the report · {n}',
+  'item.open': 'Open',
+  'item.decided': 'Decided',
+  'item.later': 'Later',
+  'item.not_applicable': 'Not applicable',
+  'item.acknowledged': 'Acknowledged',
+  'item.repeated': 'The new report still lists this decision. The Agent may not know yet.',
+  'item.edit': 'Record handling status',
+  'item.state': 'Status',
+  'item.due': 'Review date',
+  'item.conclusion': 'Conclusion (required for a decision)',
   'detail.unverified': 'References have not been verified by Dashboard.',
   'detail.changed': 'The current snapshot changed. Review it before recording again.',
   'detail.secret': 'Potential secret detected. Nothing was saved.',

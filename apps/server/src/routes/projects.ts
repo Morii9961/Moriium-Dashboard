@@ -3,6 +3,7 @@ import type { Hono } from 'hono';
 import type { AppContext } from '../app.ts';
 import { audit } from '../audit.ts';
 import { transaction } from '../db.ts';
+import { reviewItems } from '../items.ts';
 import { createProject, getProject, listProjects, ProjectError, updateProject } from '../projects.ts';
 import { acceptanceRecords, stageEntry } from '../review.ts';
 import { currentSnapshot, currentSnapshots, snapshotCounts } from '../snapshots.ts';
@@ -29,6 +30,7 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
         current: current.get(p.id) ?? null,
         snapshotCount: counts.get(p.id) ?? 0,
         acceptances: acceptanceRecords(ctx.db, p.id),
+        reviewItems: reviewItems(ctx.db, p.id, now()),
       })),
     });
   });
@@ -43,6 +45,7 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
         snapshotCount: snapshotCounts(ctx.db).get(project.id) ?? 0,
         acceptances: acceptanceRecords(ctx.db, project.id),
         stageEntry: stageEntry(ctx.db, project.id),
+        reviewItems: reviewItems(ctx.db, project.id, now()),
       },
     });
   });
