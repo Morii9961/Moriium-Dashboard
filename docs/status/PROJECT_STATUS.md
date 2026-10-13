@@ -1,45 +1,52 @@
 # Moriium Dashboard · 项目状态
 
-> 与 [`project-status.json`](./project-status.json) 内容相同，这是给人看的版本。
-> 快照时间：2026-10-12 20:43（UTC+8）· 协议 v1.1 · 报告来自 Claude（开发会话 P1 到 P3，交接给 Codex）· 分支 `main` · 提交 `f5702df` · 测试：生成快照时未重跑（按 v1 约定写 false；之前刚跑过 `pnpm verify`，290/290）
+> 与 [project-status.json](./project-status.json) 同步。
+> 快照时间：2026-10-13 19:58:26（UTC+8）· 协议 v1.1 · 报告来自 Codex · 分支 `codex/p4-6-progress-review` · 代码提交 `4b5a086a280c948cf784d920b994d1f987b22698`。
+> `tests_rerun` 按 v1 约定写 `false`：生成快照不另跑测试。开发期间完整验证为 306 个测试通过；相同代码提交的 Windows、Linux CI 通过。
 
 ## 阶段
 
-**开发中（development）**。整体进度：不估算（`null`）。
+**开发中（development）**。整体进度保持 `null`，不估算。
 
-P1 到 P3 已完成并合并进 `main`：协议包与检查工具、设计基线与应用外壳、项目登记、导入、历史与导出。六个项目的真实快照已导入 Morii 本机。下一步是 P4 项目与概览，由 Codex 接手，交接见 [`docs/handoff-2026-10-12-codex-p4.md`](../handoff-2026-10-12-codex-p4.md)。
+P4 六个工程工作包已实现：项目列表与详情、独立验收、跨快照处理状态、概览、手动项目与进度打磨。真实数据库只读副本走查通过。Morii 的 30 秒测试、六项目逐项验收与来源抽查尚未进行，因此 P4 里程碑保持进行中。P5、P6 未开始。
 
 ## 里程碑
 
 | ID | 里程碑 | 状态 | 证据 | Morii 验收 |
 | --- | --- | --- | --- | --- |
-| `p0-plan-approval` | P0 规划获批 | 完成 | Morii 已验收：[设计决定记录](../design-decisions.md) | 已验收 |
-| `p1-repo-protocol` | P1 仓库与协议 | 完成 | 仓库：[#6](https://github.com/Morii9961/Moriium-Dashboard/pull/6) 及之前的 PR | 待验收 |
-| `p2-shell-design` | P2 外壳与设计基线 | 完成 | 仓库：[#7](https://github.com/Morii9961/Moriium-Dashboard/pull/7) 到 [#10](https://github.com/Morii9961/Moriium-Dashboard/pull/10)、[设计决定记录](../design-decisions.md) | 待验收 |
-| `p3-import-history` | P3 导入与历史 | 完成 | 仓库：[#11](https://github.com/Morii9961/Moriium-Dashboard/pull/11) 到 [#15](https://github.com/Morii9961/Moriium-Dashboard/pull/15) | 待验收 |
-| `p4-projects-overview` | P4 项目与概览 | 未开始 | — | 待验收 |
+| `p0-plan-approval` | P0 规划获批 | 完成 | [设计决定](../design-decisions.md) | 据记录已验收 |
+| `p1-repo-protocol` | P1 仓库与协议 | 完成 | [#6](https://github.com/Morii9961/Moriium-Dashboard/pull/6) 及之前的 PR | 待验收 |
+| `p2-shell-design` | P2 外壳与设计基线 | 完成 | [#7](https://github.com/Morii9961/Moriium-Dashboard/pull/7) 到 [#10](https://github.com/Morii9961/Moriium-Dashboard/pull/10) | 待验收 |
+| `p3-import-history` | P3 导入与历史 | 完成 | [#11](https://github.com/Morii9961/Moriium-Dashboard/pull/11) 到 [#15](https://github.com/Morii9961/Moriium-Dashboard/pull/15) | 待验收 |
+| `p4-projects-overview` | P4 项目与概览 | 进行中：工程完成，产品验收待进行 | [#18](https://github.com/Morii9961/Moriium-Dashboard/pull/18) 到 [#23](https://github.com/Morii9961/Moriium-Dashboard/pull/23)、[验证记录](../verification/p4-6.md) | 待验收 |
 | `p5-mvp` | P5 MVP 完成 | 未开始 | — | 待验收 |
 | `p6-vps-deploy` | P6 VPS 部署 | 未开始 | — | 待验收 |
 
+工作包按交接顺序执行：4.1 → 4.2 → 4.3 → 4.5 → 4.4 → 4.6。PR #18 到 #22 已普通合并；P4.6 对应 PR #23。快照绑定生成时已经验证的代码提交，文档与快照随后在同一 PR 中提交。
+
 ## 阻塞
 
-无。
+无工程阻塞。P4 产品验收待 Morii 进行，不代填验收结果。
 
 ## 下一步
 
-| ID | 优先级 | 做什么 | 完成后得到什么 |
+| ID | 优先级 | 工作 | 结果 |
 | --- | --- | --- | --- |
-| `p4-project-list` | P0 | 项目列表（P4.1）：表格与手机卡片、阶段轴、里程碑格、按项目阈值的新鲜度 | 项目页一眼看出每个项目做到哪里、报告是否过期 |
-| `p4-project-detail` | P0 | 项目详情与验收（P4.2、P4.3）：来源行、里程碑与证据、验收通过或退回、待决定与阻塞的处理状态 | Morii 的判断单独记录，下一份快照来了也不会被覆盖 |
-| `p4-overview` | P1 | 概览（P4.5）：需要你决定、报告新鲜度、Agent 最近报告、最近交付 | 30 秒测试可以通过 |
+| `p4-human-walkthrough` | P0 | 30 秒概览测试、六项目各 10 秒检查与 10 个状态来源抽查 | 记录 Morii 的验收结果和需要调整的地方，之后再决定是否进入 P5 |
 
 ## 需要 Morii 决定
 
 | ID | 决定 |
 | --- | --- |
-| `enable-snapshots` | 建议现在就把「生成项目状态快照」的指令（[`docs/protocol/agent-snapshot-prompt.md`](../protocol/agent-snapshot-prompt.md)）放进其他五个项目的 `AGENTS.md`。这一步改的是其他仓库，需要 Morii 自己做，或另行明确授权。 |
-| `vps-access` | 部署到 VPS 后用私网访问，还是公网子域名加登录？最晚在 P6 开始前定。 |
+| `p4-acceptance` | P4 的概览、六项目进度展示与来源抽查是否通过？工程检查已完成，验收由 Morii 记录。 |
+| `enable-snapshots` | 其他五个仓库的快照指令仍由 Morii 自己加入，或另行明确授权；本轮没有修改其他仓库。 |
+| `vps-access` | VPS 的私网或公网访问方式仍在 P6 之前决定；本轮没有部署。 |
 
-## 依据
+## 验证与交接
 
-规划 06、设计决定记录、交接文档、PR #6 到 #15（已合并）、本机 `pnpm verify` 与 CI、Morii 本机数据目录里的真实快照导入。
+- `pnpm verify`：306 个测试、类型检查与公开树审计通过；`pnpm build` 通过。
+- 虚构数据 12 组三语 / 浅深 / 桌面 / 375px、键盘、减少动画走查通过；既有 token 对比度测试通过。
+- 正式库只读副本：概览、列表和六个详情的 96 页矩阵通过，无横向溢出、CSP 错误或外部请求。开发方逐卡检查完成，真实截图不提交。
+- [P4 停点交接](../handoff-2026-10-13-p4-stop.md)说明取舍、数据位置、启动方式与待验收事项。
+
+本轮快照没有自动导入 Dashboard；由 Morii 手动导入。

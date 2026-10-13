@@ -2,26 +2,32 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-12T20:43:00+08:00",
+  "snapshot_at": "2026-10-13T19:58:26+08:00",
   "source": {
-    "branch": "main",
-    "commit_sha": "f5702df266068f78fb2cff5aea3c9d9d6d556f2e",
+    "branch": "codex/p4-6-progress-review",
+    "commit_sha": "4b5a086a280c948cf784d920b994d1f987b22698",
     "basis": [
-      "docs/planning/06-mvp-and-roadmap.md（P1 到 P3 的交付标准）",
-      "docs/design-decisions.md（含 2026-10-12 Morii 交给开发方决定的几件事）",
-      "docs/handoff-2026-10-12-codex-p4.md（交接给 Codex）",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/15（PR #6 到 #15 已按顺序合并进 main）",
-      "本机 pnpm verify：Biome 无错误、类型检查通过、Vitest 290/290、公开树审计通过；CI 在 ubuntu 和 windows 上通过",
-      "Morii 本机正式数据目录：已导入六个项目的真实快照和 Dashboard 的 4 份历史快照"
+      "docs/planning/06-mvp-and-roadmap.md（P4 交付标准）",
+      "docs/design-decisions.md",
+      "docs/verification/p4-6.md",
+      "docs/handoff-2026-10-13-p4-stop.md",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/18",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/19",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/20",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/21",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/22",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/23",
+      "本机 pnpm verify：306 个测试、类型检查与公开树审计通过；pnpm build 通过；真实库只读副本 96 页及虚构数据 12 组走查通过",
+      "P4.6 代码提交 4b5a086 的 Windows、Linux CI 已通过；PR #18 到 #22 已普通合并；Morii 的 P4 产品验收尚未进行"
     ],
     "tests_rerun": false
   },
   "reporter": {
-    "agent": "claude",
-    "note": "开发会话（P1 到 P3），交接给 Codex"
+    "agent": "codex",
+    "note": "P4 开发收尾；工程验证与开发方走查完成，Morii 产品验收待进行"
   },
   "stage": "development",
-  "summary": "P1 到 P3 已完成并合并进 main：协议包与检查工具、设计基线与应用外壳、项目登记、导入、历史与导出。六个项目的真实快照已导入 Morii 本机。下一步是 P4 项目与概览，由 Codex 接手。",
+  "summary": "P4 六个工程工作包已实现：项目、概览、独立验收与处理状态、手动项目及进度打磨完成本机验证。真实库副本走查通过，待 Morii 做 30 秒测试和六项目验收；P5、P6 未开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -71,9 +77,17 @@
     {
       "id": "p4-projects-overview",
       "title": "P4 项目与概览：项目列表与详情、验收、需要你决定、概览",
-      "status": "not_started",
-      "evidence_level": "self_report",
-      "evidence_refs": [],
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/18",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/19",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/20",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/21",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/22",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/23",
+        "docs/verification/p4-6.md"
+      ],
       "human_acceptance": "pending"
     },
     {
@@ -96,25 +110,17 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "p4-project-list",
-      "title": "项目列表（P4.1）：表格与手机卡片、阶段轴、里程碑格、按项目阈值的新鲜度",
+      "id": "p4-human-walkthrough",
+      "title": "进行 P4 的 30 秒概览测试、六项目各 10 秒走查与 10 个来源抽查",
       "priority": "P0",
-      "result": "项目页一眼看出每个项目做到哪里、报告是否过期"
-    },
-    {
-      "id": "p4-project-detail",
-      "title": "项目详情与验收（P4.2、P4.3）：来源行、里程碑与证据、验收通过或退回、待决定与阻塞的处理状态",
-      "priority": "P0",
-      "result": "Morii 的判断单独记录，下一份快照来了也不会被覆盖"
-    },
-    {
-      "id": "p4-overview",
-      "title": "概览（P4.5）：需要你决定、报告新鲜度、Agent 最近报告、最近交付",
-      "priority": "P1",
-      "result": "30 秒测试可以通过"
+      "result": "记录 Morii 的验收结果和需要调整的地方，之后再决定是否进入 P5"
     }
   ],
   "needs_morii": [
+    {
+      "id": "p4-acceptance",
+      "decision": "P4 的概览、六项目进度展示与来源抽查是否通过？工程检查已完成，验收由 Morii 记录。"
+    },
     {
       "id": "enable-snapshots",
       "decision": "建议现在就把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md。这一步改的是其他仓库，需要 Morii 自己做，或另行明确授权。"
