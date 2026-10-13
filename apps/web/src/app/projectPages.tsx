@@ -2,7 +2,7 @@
  * 和快照有关的页面：概览、项目列表、项目详情、导入记录（P3）。
  * 概览和项目页的完整内容（需要你决定、新鲜度、历史、验收）在 P4；这里先让导入的快照显示出来。
  */
-import { ArrowRight, DownloadSimple } from '@phosphor-icons/react';
+import { DownloadSimple } from '@phosphor-icons/react';
 import { type ReactNode, useMemo } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
 import { figureOf, ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
@@ -12,6 +12,7 @@ import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { useResource } from './data.tsx';
 import { ProjectHistory } from './History.tsx';
 import { useImport } from './ImportDialog.tsx';
+import { ProjectList } from './ProjectList.tsx';
 import { Link } from './router.tsx';
 import type { BatchView, FileOutcome, ProjectWithCurrent } from './types.ts';
 import { EmptyState, PageHeader, SNAPSHOT_PHRASE, SnapshotSteps } from './ui.tsx';
@@ -118,7 +119,7 @@ export function OverviewPage() {
 }
 
 export function ProjectsPage() {
-  const { t, relative } = useI18n();
+  const { t } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useProjects();
   return (
@@ -127,28 +128,7 @@ export function ProjectsPage() {
         title={t('nav.projects')}
         lede={data ? t('projects.registered', { count: data.projects.length }) : undefined}
       />
-      {data ? (
-        <ul className="project-list">
-          {data.projects.map((p) => (
-            <li key={p.id}>
-              <Link to={projectPath(p.id)} className="project-row">
-                <span className="project-row-name">{p.name}</span>
-                <span className="project-row-id mono">{p.id}</span>
-                <span className={`project-row-state${p.current ? ' has-snapshot' : ''}`}>
-                  {p.current
-                    ? `${t(`stage.${p.current.snapshot.stage}` as MessageKey)} · ${relative(p.current.utcMs, now)}`
-                    : p.attention === 'active'
-                      ? t('map.noSnapshot')
-                      : t(`attention.${p.attention}`)}
-                </span>
-                <ArrowRight className="project-row-go" size={18} aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <RegistryPending failed={!!error} />
-      )}
+      {data ? <ProjectList projects={data.projects} now={now} /> : <RegistryPending failed={!!error} />}
     </>
   );
 }

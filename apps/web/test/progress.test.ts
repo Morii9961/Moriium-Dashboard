@@ -2,7 +2,13 @@ import type { Snapshot } from '@moriium-dashboard/protocol';
 import { describe, expect, it } from 'vitest';
 import { contrast, toHex } from '../src/design/color.ts';
 import { CONTRAST_PAIRS, tokensFor } from '../src/design/tokens.ts';
-import { freshness, headlineNextAction, progressFigure, summarizeProgress } from '../src/progress.ts';
+import {
+  freshness,
+  headlineNextAction,
+  progressFigure,
+  summarizeProgress,
+  visibleMilestones,
+} from '../src/progress.ts';
 
 const m = (id: string, status: Snapshot['milestones'][number]['status'], acceptance = 'pending') =>
   ({
@@ -28,6 +34,27 @@ const snap = (over: Partial<Snapshot>): Snapshot => ({
   next_actions: [],
   needs_morii: [],
   ...over,
+});
+
+describe('visible milestones', () => {
+  it('keeps core IDs in report order without changing the overall percentage', () => {
+    const s = snap({ milestones: [m('a', 'done'), m('b', 'in_progress'), m('c', 'unknown')] });
+    expect(visibleMilestones(s.milestones, ['b', 'missing']).map((x) => x.id)).toEqual(['b']);
+    expect(progressFigure(s, summarizeProgress(s))).toEqual({ percent: 50, basis: 'milestones' });
+  });
+  it('bounds a long grid, prioritizing blocked and active work over recent completions', () => {
+    const list = [
+      ...Array.from({ length: 20 }, (_, i) => m(`done-${i}`, 'done')),
+      m('active', 'in_progress'),
+      m('blocked', 'blocked'),
+      m('unknown', 'unknown'),
+    ];
+    expect(visibleMilestones(list).map((x) => x.id)).toEqual([
+      'blocked',
+      'active',
+      ...Array.from({ length: 10 }, (_, i) => `done-${19 - i}`),
+    ]);
+  });
 });
 
 describe('summarizeProgress (02 §5.4)', () => {

@@ -5,6 +5,17 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const ja: Messages = {
+  'list.progress': '段階とマイルストーン',
+  'list.gapNext': '残っていること · 次の行動',
+  'list.moreMilestones': 'ほかに {n} 件のマイルストーンがあります',
+  'list.manual': '手動プロジェクト',
+  'list.filter': 'プロジェクトを絞り込みます',
+  'list.all': 'すべて',
+  'list.pending': '確認が必要',
+  'list.stale': '期限を過ぎた報告',
+  'list.resting': '一時停止とアーカイブ',
+  'list.restingCount': '一時停止とアーカイブ · {n}',
+  'list.noMatch': '該当するプロジェクトはありません。',
   'app.name': 'Moriium Dashboard',
   'a11y.skip': '本文へ移動',
 

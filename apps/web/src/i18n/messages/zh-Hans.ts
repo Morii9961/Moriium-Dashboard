@@ -4,6 +4,17 @@
  * 新增键先加在这里，ja.ts、en.ts 必须有同样的键和同样的参数（测试会检查）。
  */
 export const zhHans = {
+  'list.progress': '阶段与里程碑',
+  'list.gapNext': '还差什么 · 下一步',
+  'list.moreMilestones': '另有 {n} 个里程碑',
+  'list.manual': '手动项目',
+  'list.filter': '筛选项目',
+  'list.all': '全部',
+  'list.pending': '需要我',
+  'list.stale': '报告过期',
+  'list.resting': '暂停与归档',
+  'list.restingCount': '暂停与归档 · {n}',
+  'list.noMatch': '没有符合条件的项目。',
   'app.name': 'Moriium Dashboard',
   'a11y.skip': '跳到正文',
 
