@@ -5,6 +5,17 @@
 import type { Messages } from './zh-Hans.ts';
 
 export const en: Messages = {
+  'list.progress': 'Stage and milestones',
+  'list.gapNext': 'Remaining · Next',
+  'list.moreMilestones': '{n} other milestones',
+  'list.manual': 'Manual project',
+  'list.filter': 'Filter projects',
+  'list.all': 'All',
+  'list.pending': 'Needs me',
+  'list.stale': 'Stale reports',
+  'list.resting': 'Paused and archived',
+  'list.restingCount': 'Paused and archived · {n}',
+  'list.noMatch': 'No projects match this filter.',
   'app.name': 'Moriium Dashboard',
   'a11y.skip': 'Skip to content',
 

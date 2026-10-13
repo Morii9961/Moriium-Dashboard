@@ -129,6 +129,17 @@ export function headlineNextAction(snapshot: Snapshot) {
   );
 }
 
+/** 卡片只展示核心里程碑；未设置时，长列表保留受阻、进行中和最近完成的项。 */
+export function visibleMilestones(milestones: readonly Milestone[], core: readonly string[] = []) {
+  if (core.length) return milestones.filter((m) => core.includes(m.id));
+  if (milestones.length <= 12) return [...milestones];
+  return [
+    ...milestones.filter((m) => m.status === 'blocked'),
+    ...milestones.filter((m) => m.status === 'in_progress'),
+    ...milestones.filter((m) => m.status === 'done').reverse(),
+  ].slice(0, 12);
+}
+
 export type Freshness = 'fresh' | 'aging' | 'stale' | 'not_counted';
 
 /**
