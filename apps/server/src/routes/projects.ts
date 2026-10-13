@@ -4,6 +4,7 @@ import type { AppContext } from '../app.ts';
 import { audit } from '../audit.ts';
 import { transaction } from '../db.ts';
 import { createProject, getProject, listProjects, ProjectError, updateProject } from '../projects.ts';
+import { acceptanceRecords, stageEntry } from '../review.ts';
 import { currentSnapshot, currentSnapshots, snapshotCounts } from '../snapshots.ts';
 import { readJsonObject } from './util.ts';
 
@@ -27,6 +28,7 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
         ...p,
         current: current.get(p.id) ?? null,
         snapshotCount: counts.get(p.id) ?? 0,
+        acceptances: acceptanceRecords(ctx.db, p.id),
       })),
     });
   });
@@ -34,7 +36,15 @@ export function projectRoutes(app: Hono, ctx: AppContext) {
   app.get('/api/projects/:id', (c) => {
     const project = getProject(ctx.db, c.req.param('id'));
     if (!project) return c.json({ error: 'not_found' }, 404);
-    return c.json({ project: { ...project, current: currentSnapshot(ctx.db, project.id) ?? null } });
+    return c.json({
+      project: {
+        ...project,
+        current: currentSnapshot(ctx.db, project.id) ?? null,
+        snapshotCount: snapshotCounts(ctx.db).get(project.id) ?? 0,
+        acceptances: acceptanceRecords(ctx.db, project.id),
+        stageEntry: stageEntry(ctx.db, project.id),
+      },
+    });
   });
 
   app.post('/api/projects', async (c) => {

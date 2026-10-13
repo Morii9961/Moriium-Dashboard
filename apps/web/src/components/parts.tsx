@@ -153,7 +153,7 @@ export function evidenceKindOf(m: Milestone): EvidenceKind {
 }
 
 /** 证据与验收的层级（02 第 11.2 节）：自报虚线、有证据实线、你的验收浅色填充。 */
-export function EvidenceTag({ kind, date = '' }: { kind: EvidenceKind; date?: string }) {
+export function EvidenceTag({ kind, date = '' }: { kind: EvidenceKind; date?: string | undefined }) {
   const { t } = useI18n();
   return (
     <span className={`tag tag-${kind}`}>

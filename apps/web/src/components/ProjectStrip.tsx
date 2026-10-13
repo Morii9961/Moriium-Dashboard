@@ -37,6 +37,9 @@ export interface StripItem {
   staleAfterDays?: number;
   /** 项目的关注状态是「已暂停」：不计算过期。 */
   projectPaused?: boolean;
+  acceptances?: readonly { milestoneId: string; status: 'accepted' | 'rejected'; at: string }[];
+  coreMilestones?: readonly string[];
+  href?: string;
   /** 设计基线页用来标出数据来源；应用里不传。 */
   origin?: Origin;
 }
@@ -46,8 +49,8 @@ const STATUS_ORDER = { blocked: 0, in_progress: 1, not_started: 2, unknown: 3, d
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2 } as const;
 
 /** 进度数字和它的来源说明；长条和线路总图共用。 */
-export function figureOf(s: Snapshot, t: I18n['t']) {
-  const p = summarizeProgress(s);
+export function figureOf(s: Snapshot, t: I18n['t'], acceptances: StripItem['acceptances'] = []) {
+  const p = summarizeProgress(s, undefined, acceptances);
   const figure = progressFigure(s, p);
   const source =
     figure === null
@@ -76,7 +79,7 @@ export function ProjectStrip({
   const [pinned, setPinned] = useState(defaultPinned);
   const id = useId();
   const s = item.snapshot;
-  const { p, figure, source } = figureOf(s, t);
+  const { p, figure, source } = figureOf(s, t, item.acceptances);
   const fresh = freshness(item.utcMs, now, s.stage, {
     ...(item.staleAfterDays !== undefined ? { staleAfterDays: item.staleAfterDays } : {}),
     ...(item.projectPaused ? { projectPaused: true } : {}),
@@ -145,7 +148,7 @@ export function ProjectStrip({
       <div className="strip-main">
         <div className="strip-id">
           <h3 className="strip-name" id={`${id}-name`}>
-            {displayValue(item.name)}
+            {item.href ? <a href={item.href}>{displayValue(item.name)}</a> : displayValue(item.name)}
           </h3>
           <p className="strip-meta">
             <span>{t(`stage.${s.stage}` as MessageKey)}</span>
@@ -250,7 +253,18 @@ export function ProjectStrip({
                   <span className="more-ms-title" lang="zh-Hans" title={m.title}>
                     {displayValue(m.title)}
                   </span>
-                  {m.status === 'done' ? <EvidenceTag kind={evidenceKindOf(m)} /> : null}
+                  {item.acceptances?.find((a) => a.milestoneId === m.id) ? (
+                    <EvidenceTag
+                      kind={
+                        item.acceptances.find((a) => a.milestoneId === m.id)?.status === 'accepted'
+                          ? 'accepted'
+                          : 'rejected'
+                      }
+                      date={item.acceptances.find((a) => a.milestoneId === m.id)?.at.slice(0, 10)}
+                    />
+                  ) : m.status === 'done' ? (
+                    <EvidenceTag kind={evidenceKindOf(m)} />
+                  ) : null}
                 </li>
               ))}
             </ul>

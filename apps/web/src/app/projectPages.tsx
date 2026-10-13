@@ -10,8 +10,8 @@ import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { useResource } from './data.tsx';
-import { ProjectHistory } from './History.tsx';
 import { useImport } from './ImportDialog.tsx';
+import { ProjectDetailView } from './ProjectDetail.tsx';
 import { ProjectList } from './ProjectList.tsx';
 import { Link } from './router.tsx';
 import type { BatchView, FileOutcome, ProjectWithCurrent } from './types.ts';
@@ -36,6 +36,9 @@ function stripItem(p: ProjectWithCurrent): StripItem | null {
     agentInferred: c.reporter.source === 'branch',
     staleAfterDays: p.freshnessDays,
     projectPaused: p.attention === 'paused',
+    acceptances: p.acceptances,
+    coreMilestones: p.coreMilestones,
+    href: projectPath(p.id),
   };
 }
 
@@ -72,7 +75,7 @@ export function OverviewPage() {
         progressLabel: '',
         pending: 0,
       };
-    const f = figureOf(p.current.snapshot, t);
+    const f = figureOf(p.current.snapshot, t, p.acceptances);
     return {
       href: `#${stripItem(p)?.anchor}`,
       name: p.name,
@@ -167,7 +170,7 @@ export function ProjectPage({ id }: { id: string }) {
       </div>
       {item ? (
         <div className="strips">
-          <ProjectStrip item={item} now={now} defaultPinned />
+          <ProjectStrip item={item} now={now} />
         </div>
       ) : null}
       {item ? null : (
@@ -176,8 +179,7 @@ export function ProjectPage({ id }: { id: string }) {
           <CopyLine text={SNAPSHOT_PHRASE} lang="zh-Hans" />
         </EmptyState>
       )}
-      {/* 回收站里有快照时也要显示，才能恢复。 */}
-      <ProjectHistory projectId={project.id} />
+      <ProjectDetailView key={project.id} projectId={project.id} />
     </>
   );
 }
