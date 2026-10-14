@@ -2,32 +2,35 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-13T19:58:26+08:00",
+  "snapshot_at": "2026-10-14T18:29:44+08:00",
   "source": {
-    "branch": "codex/p4-6-progress-review",
-    "commit_sha": "4b5a086a280c948cf784d920b994d1f987b22698",
+    "branch": "codex/p5-5-accessibility",
+    "commit_sha": "cc89929940a6ec7c6e2eb542ba39f968f416149f",
     "basis": [
-      "docs/planning/06-mvp-and-roadmap.md（P4 交付标准）",
+      "docs/planning/01-product-vision-and-prd.md 第 8 节与 06-mvp-and-roadmap.md 的 P5 交付标准",
       "docs/design-decisions.md",
-      "docs/verification/p4-6.md",
-      "docs/handoff-2026-10-13-p4-stop.md",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/18",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/19",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/20",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/21",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/22",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/23",
-      "本机 pnpm verify：306 个测试、类型检查与公开树审计通过；pnpm build 通过；真实库只读副本 96 页及虚构数据 12 组走查通过",
-      "P4.6 代码提交 4b5a086 的 Windows、Linux CI 已通过；PR #18 到 #22 已普通合并；Morii 的 P4 产品验收尚未进行"
+      "docs/verification/p5-1.md",
+      "docs/verification/p5-2.md",
+      "docs/verification/p5-3.md",
+      "docs/verification/p5-4.md",
+      "docs/verification/p5-5.md",
+      "docs/handoff-2026-10-14-p5-trial.md",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/24",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/25",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/26",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/27",
+      "P5 PR #24 到 #27 已核实普通合并；P5.5 随本快照所在 PR 交付，最终 CI 与合并以 GitHub 为准",
+      "本机 pnpm verify：326 项测试、17 个测试文件、类型与公开树审计通过；生产构建通过；虚构数据库十二组桌面/375px、浅深与三语功能及草稿走查通过",
+      "P4 产品验收及 P5 一周真实试用尚未进行；本轮没有打开正式库或运行正式数据迁移"
     ],
     "tests_rerun": false
   },
   "reporter": {
     "agent": "codex",
-    "note": "P4 开发收尾；工程验证与开发方走查完成，Morii 产品验收待进行"
+    "note": "P5 核心工程与开发方界面评审完成；P4 产品验收及 P5 一周真实试用待 Morii"
   },
-  "stage": "development",
-  "summary": "P4 六个工程工作包已实现：项目、概览、独立验收与处理状态、手动项目及进度打磨完成本机验证。真实库副本走查通过，待 Morii 做 30 秒测试和六项目验收；P5、P6 未开始。",
+  "stage": "acceptance",
+  "summary": "P5 核心工程完成：Agents、今日焦点与精力、任务及确切来源、成果与受限封面、最近交付和界面评审已验证。P4 产品验收与 P5 一周真实试用待 Morii；正式实例尚未更新，未打 v0.1.0，P6 未开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -93,9 +96,16 @@
     {
       "id": "p5-mvp",
       "title": "P5 MVP 完成：Agents、今日焦点与任务、作品，一周试用",
-      "status": "not_started",
-      "evidence_level": "self_report",
-      "evidence_refs": [],
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/24",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/25",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/26",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/27",
+        "docs/verification/p5-5.md",
+        "docs/handoff-2026-10-14-p5-trial.md"
+      ],
       "human_acceptance": "pending"
     },
     {
@@ -113,13 +123,23 @@
       "id": "p4-human-walkthrough",
       "title": "进行 P4 的 30 秒概览测试、六项目各 10 秒走查与 10 个来源抽查",
       "priority": "P0",
-      "result": "记录 Morii 的验收结果和需要调整的地方，之后再决定是否进入 P5"
+      "result": "补记 Morii 的 P4 产品验收与实际需要调整的地方；P5 开发授权不代替验收"
+    },
+    {
+      "id": "p5-week-trial",
+      "title": "使用更新后的原有正式实例，进行一周真实试用并完成四项 MVP 产品验收",
+      "priority": "P0",
+      "result": "记录实际开始日期、各推进项目至少一次导入、30 秒测试、十个来源抽查、虚假进度检查和使用反馈；通过后再打 v0.1.0 标签"
     }
   ],
   "needs_morii": [
     {
       "id": "p4-acceptance",
       "decision": "P4 的概览、六项目进度展示与来源抽查是否通过？工程检查已完成，验收由 Morii 记录。"
+    },
+    {
+      "id": "p5-week-trial",
+      "decision": "P5 一周真实使用是否顺手，四项 MVP 产品验收是否通过？请记录实际日期与问题；开发方不代填验收。"
     },
     {
       "id": "enable-snapshots",

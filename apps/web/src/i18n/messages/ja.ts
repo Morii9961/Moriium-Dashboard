@@ -503,4 +503,5 @@ export const ja: Messages = {
   'works.afterSave': '記録を保存してから、カードでカバーを選べます。',
   'works.openLink': '作品リンクを開く',
   'works.recorded': '自分で記録した成果',
+  'personal.discard': '未保存の入力があります。入力を破棄して移動しますか？',
 };

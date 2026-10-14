@@ -11,7 +11,7 @@ interface Report
   > {
   previousId: number | null;
   changes: {
-    stage: { from: string; to: string } | null;
+    stage: { from: SnapshotRecord['snapshot']['stage']; to: SnapshotRecord['snapshot']['stage'] } | null;
     completed: number;
     blockers: number;
     decisions: number;
@@ -133,7 +133,7 @@ export function AgentsPage({ agent }: { agent?: string }) {
                       <>
                         {r.changes.stage ? (
                           <p>
-                            {r.changes.stage.from} → {r.changes.stage.to}
+                            {t(`stage.${r.changes.stage.from}`)} → {t(`stage.${r.changes.stage.to}`)}
                           </p>
                         ) : null}
                         <p>

@@ -2,7 +2,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import { Link } from './router.tsx';
 import { localizedName, type OverviewData } from './types.ts';
 export function RecentDeliveries({ data }: { data: OverviewData }) {
-  const { t, locale, snapshotTime } = useI18n();
+  const { t, locale, snapshotTime, calendarDate } = useI18n();
   const entries = [
     ...data.recentWorks.map((w) => ({
       kind: 'work' as const,
@@ -43,7 +43,7 @@ export function RecentDeliveries({ data }: { data: OverviewData }) {
                 </Link>
                 <p>
                   {t(`works.kind.${entry.work.kind}`)} ·{' '}
-                  <time dateTime={entry.work.date}>{entry.work.date}</time>
+                  <time dateTime={entry.work.date}>{calendarDate(entry.work.date)}</time>
                 </p>
                 {entry.work.projectId ? <p>{projectName(entry.work.projectId)}</p> : null}
                 <span>{t('works.recorded')}</span>

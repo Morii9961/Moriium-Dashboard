@@ -1,12 +1,12 @@
 # Moriium Dashboard
 
-Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项目状态快照」，Dashboard 导入后显示每个项目做到哪里、还差什么、下一步是什么、需要 Morii 做什么。今日焦点、基本任务和成果登记安排在 P5。
+Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项目状态快照」，Dashboard 导入后显示每个项目做到哪里、还差什么、下一步是什么、需要 Morii 做什么。今日焦点、基本任务和成果登记已实现，待真实试用。
 
 它不是任务管理软件，也不是实时运维平台。快照由 Morii 手动触发、手动导入；Agent 自报、有仓库或测试证据、Morii 验收三层始终分开显示，没有可信依据时不画进度百分比。
 
 ## 当前状态
 
-P1 到 P3 已合并。P4 的项目列表、详情、独立验收与处理状态、概览和手动项目已实现并完成代码与本机界面验证，等待 Morii 的 30 秒测试与六项目逐项验收。P5、P6 尚未开始。
+P1 到 P3 已合并。P4 工程完成，产品验收待 Morii。P5 核心功能与界面评审已完成：Agents、今日焦点和精力、任务及来源、成果与封面，等待一周真实试用。未打 `v0.1.0` 标签，P6 未开始。启动与试用清单见 [P5 交接](./docs/handoff-2026-10-14-p5-trial.md)。
 
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
@@ -72,9 +72,9 @@ pnpm status:check path/to/project-status.json
 
 ## English
 
-Moriium Dashboard is a single-user workspace. Agents write project status snapshots in a shared JSON format. The dashboard imports them and shows each project's stage, remaining work, next action, and decisions for Morii. Agent reports, repository or test evidence, and Morii's acceptance stay separate. Progress uses a marked Agent estimate or the completion rate of known milestones. Daily focus, tasks, and works are planned for P5.
+Moriium Dashboard is a single-user workspace. Agents write project status snapshots in a shared JSON format. The dashboard imports them and shows each project's stage, remaining work, next action, and decisions for Morii. Agent reports, repository or test evidence, and Morii's acceptance stay separate. Progress uses a marked Agent estimate or the completion rate of known milestones. Daily focus, tasks, and works are implemented and await real use.
 
-**Status:** P1–P3 are merged. P4 implementation and local verification are complete; Morii's walkthrough and acceptance remain pending. P5 and P6 have not started.
+**Status:** P1–P3 are merged. P4 product acceptance remains pending. P5 core implementation and local UI review are complete; a week of real use and Morii's acceptance remain pending. No `v0.1.0` tag has been created; P6 has not started. See the [P5 handoff](./docs/handoff-2026-10-14-p5-trial.md).
 
 **Protocol:** see [`docs/protocol/README.md`](./docs/protocol/README.md) (Chinese) and the JSON Schemas for [v1.0](./docs/protocol/schema/project-status.v1.0.schema.json) and [v1.1](./docs/protocol/schema/project-status.v1.1.schema.json). Run `pnpm status:check <file>` to check a snapshot.
 

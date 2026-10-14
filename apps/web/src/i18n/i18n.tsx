@@ -41,6 +41,7 @@ export interface I18n {
   /** 按快照原文的时区显示月、日、时、分。 */
   snapshotTime: (utcMs: number, offsetMinutes: number) => string;
   fullDate: (d: Date) => string;
+  calendarDate: (date: string) => string;
   list: (items: string[]) => string;
 }
 
@@ -69,6 +70,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       timeZone: 'UTC',
     });
     const full = new Intl.DateTimeFormat(locale, { dateStyle: 'full' });
+    const calendar = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' });
     const lf = new Intl.ListFormat(locale, { type: 'conjunction' });
     return {
       locale,
@@ -86,6 +88,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       // 把时刻挪到原文时区再按 UTC 显示，得到「原文写的那个钟点」。
       snapshotTime: (utcMs, offsetMinutes) => snap.format(new Date(utcMs + offsetMinutes * 60_000)),
       fullDate: (d) => full.format(d),
+      calendarDate: (date) => calendar.format(new Date(`${date}T12:00:00Z`)),
       list: (items) => lf.format(items),
     };
   }, [locale, setLocale]);

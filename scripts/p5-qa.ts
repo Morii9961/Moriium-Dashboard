@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { chromium } from '@playwright/test';
+import { chromium, type Page } from '@playwright/test';
 import { createApp } from '../apps/server/src/app.ts';
 import { applyMigrations, loadMigrations, openDatabase } from '../apps/server/src/db.ts';
 
@@ -51,9 +51,9 @@ const phase = process.argv[2] ?? 'p5-1';
 const out = `screenshots/${phase}`;
 mkdirSync(out, { recursive: true });
 try {
-  for (const width of [1440, 375])
+  for (const width of process.env.QA_WIDTH ? [Number(process.env.QA_WIDTH)] : [1440, 375])
     for (const theme of ['light', 'dark'] as const)
-      for (const locale of ['zh-Hans', 'ja', 'en']) {
+      for (const locale of process.env.QA_LOCALE ? [process.env.QA_LOCALE] : ['zh-Hans', 'ja', 'en']) {
         const page = await browser.newPage({
           viewport: { width, height: 900 },
           colorScheme: theme,
@@ -67,6 +67,11 @@ try {
           { theme, locale },
         );
         const errors: string[] = [];
+        if (process.env.QA_SLOW_FOCUS)
+          await page.route('**/api/focus/*', async (route) => {
+            if (route.request().method() === 'GET') await new Promise((done) => setTimeout(done, 500));
+            await route.continue();
+          });
         page.on('pageerror', (e) => errors.push(e.message));
         page.on('response', (r) => {
           if (r.status() >= 400) console.log(`HTTP ${r.status()}: ${r.url()}`);
@@ -83,6 +88,7 @@ try {
           if ((await page.locator('.agent-card').count()) !== 4) throw new Error('Agent groups missing');
           if ((await page.locator('.agent-reports li').count()) !== 2)
             throw new Error('Report records missing');
+          await page.evaluate(() => window.scrollTo(0, 0));
           await page.screenshot({ path: `${out}/${width}-${theme}-${locale}-demo.png`, fullPage: true });
           if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
             throw new Error(`Overflow: ${width}/${theme}/${locale}`);
@@ -105,9 +111,11 @@ try {
             await page.keyboard.press('Enter');
             await page.waitForFunction(
               () => document.querySelector<HTMLInputElement>('.focus-add input')?.value === '',
+              undefined,
+              { timeout: process.env.QA_SLOW_FOCUS ? 2000 : 30000 },
             );
           }
-          if ((await page.locator('.focus-list li').count()) !== 3) throw new Error('Focus list missing');
+          await page.waitForFunction(() => document.querySelectorAll('.focus-list li').length === 3);
           await page.locator('.focus-list li').last().locator('button').first().click();
           await page.waitForFunction(() =>
             document.querySelectorAll('.focus-list li')[1]?.textContent?.includes('Prepare a longer'),
@@ -117,6 +125,7 @@ try {
           await page.reload({ waitUntil: 'networkidle' });
           if (!(await page.locator('.focus-list input[type="checkbox"]').first().isChecked()))
             throw new Error('Focus completion did not persist');
+          await page.evaluate(() => window.scrollTo(0, 0));
           await page.screenshot({ path: `${out}/${width}-${theme}-${locale}-demo.png`, fullPage: true });
           if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
             throw new Error('Focus overflow');
@@ -128,6 +137,7 @@ try {
           await page.locator('input[value="rest"]').click();
           await page.waitForFunction(() => !document.querySelector('.overview-layout'));
           if (await page.locator('.age-list').count()) throw new Error('Rest shows freshness');
+          await page.evaluate(() => window.scrollTo(0, 0));
           await page.screenshot({ path: `${out}/rest-${width}-${theme}-${locale}-demo.png`, fullPage: true });
           await page.locator('input[value="normal"]').click();
           await page.locator('.overview-layout').waitFor();
@@ -138,7 +148,7 @@ try {
               2 - i,
             );
           }
-          if (phase === 'p5-3') {
+          if (phase === 'p5-3' || phase === 'p5-5') {
             await page.goto(`${base}/projects/demo.beta`, { waitUntil: 'networkidle' });
             await page.locator('.task-transfer button').first().click();
             await page
@@ -163,12 +173,14 @@ try {
             await page.keyboard.press('Enter');
             await page.waitForFunction(() => !document.querySelector('.task-editor'));
             if ((await openTasks.count()) !== 2) throw new Error('Task creation failed');
+            await page.evaluate(() => window.scrollTo(0, 0));
             await page.screenshot({
               path: `${out}/tasks-${width}-${theme}-${locale}-demo.png`,
               fullPage: true,
             });
             if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
               throw new Error('Tasks overflow');
+            if (phase === 'p5-5') await auditFilteredDraft(page, 'task');
             await page.locator('.focus-list input').click();
             await page.waitForFunction(
               () => document.querySelectorAll('.tasks-panel > .task-list .task-row').length === 1,
@@ -193,7 +205,7 @@ try {
             await page.locator('.focus-list li button').last().click();
             await page.waitForFunction(() => !document.querySelector('.focus-list li'));
           }
-          if (phase === 'p5-4') {
+          if (phase === 'p5-4' || phase === 'p5-5') {
             const jpeg = await page.evaluate(async () => {
               const canvas = document.createElement('canvas');
               canvas.width = 1600;
@@ -267,6 +279,7 @@ try {
             );
             await card.locator('.work-controls button').nth(1).click();
             await card.locator('p').filter({ hasText: '★' }).waitFor();
+            await page.evaluate(() => window.scrollTo(0, 0));
             await page.screenshot({
               path: `${out}/works-${width}-${theme}-${locale}-demo.png`,
               fullPage: true,
@@ -276,6 +289,7 @@ try {
             await page.locator('.work-filters select').first().selectOption('photos');
             if ((await page.locator('.work-card').count()) !== 1) throw new Error('Work filter failed');
             await page.locator('.work-filters select').first().selectOption('');
+            if (phase === 'p5-5') await auditFilteredDraft(page, 'work');
             await page.goto(base, { waitUntil: 'networkidle' });
             await page.locator('.delivery-list a[href^="/studio#work-"]').first().waitFor();
             if ((await page.locator('.delivery-list a[href^="/studio#work-"]').count()) !== 2)
@@ -295,6 +309,7 @@ try {
             await page.waitForFunction(() => !document.querySelector('.work-card'));
           }
         }
+        if (phase === 'p5-5') await auditPersonalUi(page, base);
         if (errors.length) throw new Error(errors.join('\n'));
         console.log(`${width}/${theme}/${locale}: rendered, keyboard, overflow, CSP and network passed`);
         await page.close();
@@ -304,4 +319,169 @@ try {
   await new Promise<void>((done, reject) => server.close((e: Error | undefined) => (e ? reject(e) : done())));
   db.close();
   rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+}
+
+async function auditFilteredDraft(page: Page, kind: 'task' | 'work') {
+  let dialogs = 0;
+  const dismiss = async (dialog: import('@playwright/test').Dialog) => {
+    dialogs++;
+    await dialog.dismiss();
+  };
+  page.on('dialog', dismiss);
+  try {
+    const row = page.locator(kind === 'task' ? '.tasks-panel > .task-list .task-row' : '.work-card').first();
+    await row
+      .locator(kind === 'task' ? '.page-actions > button' : '.work-controls > button')
+      .first()
+      .click();
+    const editor = row.locator(`.${kind}-editor`);
+    await editor.locator(`input[name="${kind}-title"]`).fill('演示保留草稿');
+    const actions =
+      kind === 'task' ? row.locator('.task-check input') : row.locator('.work-controls > button');
+    if (!(await actions.last().isDisabled())) throw new Error('Editing row has conflicting action');
+    const filter = page.locator(kind === 'task' ? '.task-filter select' : '.work-filters select').first();
+    await filter.selectOption(kind === 'task' ? 'demo.beta' : 'article');
+    if (
+      dialogs !== 1 ||
+      (await filter.inputValue()) !== '' ||
+      (await editor.locator(`input[name="${kind}-title"]`).inputValue()) !== '演示保留草稿'
+    )
+      throw new Error('Filter discarded draft without agreement');
+    page.off('dialog', dismiss);
+    page.once('dialog', (dialog) => dialog.accept());
+    await editor.locator('button[type="button"]').click();
+    await editor.waitFor({ state: 'detached' });
+  } finally {
+    page.off('dialog', dismiss);
+  }
+}
+
+async function auditPersonalUi(page: Page, base: string) {
+  let accept = false;
+  const dialogs: string[] = [];
+  const handle = async (dialog: import('@playwright/test').Dialog) => {
+    dialogs.push(dialog.type());
+    if (accept) await dialog.accept();
+    else await dialog.dismiss();
+  };
+  page.on('dialog', handle);
+  const settle = () =>
+    page.evaluate(
+      () => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))),
+    );
+  const formLabels = async () => {
+    const errors = await page
+      .locator('.personal-editor')
+      .evaluateAll((forms) =>
+        forms.flatMap((form) =>
+          Array.from(form.querySelectorAll<HTMLInputElement>('input,select,textarea')).flatMap((input) =>
+            input.labels?.length && input.name ? [] : [input.outerHTML],
+          ),
+        ),
+      );
+    if (errors.length) throw new Error(`Form labels/names missing: ${errors.length}`);
+  };
+  try {
+    await page.goto(base, { waitUntil: 'networkidle' });
+    await page.locator('.focus-add input').fill('演示尚未保存的焦点');
+    await settle();
+    await page.locator('a[href="/planner"]:visible').first().click();
+    if (
+      new URL(page.url()).pathname !== '/' ||
+      (await page.locator('.focus-add input').inputValue()) !== '演示尚未保存的焦点' ||
+      dialogs.length !== 1
+    )
+      throw new Error('Draft navigation rejection failed');
+    accept = true;
+    await page.locator('a[href="/planner"]:visible').first().click();
+    await page.waitForURL('**/planner');
+    const newTask = page.locator('.tasks-panel .section-heading button');
+    await newTask.focus();
+    await page.keyboard.press('Enter');
+    await page.locator('.task-editor legend').waitFor();
+    await page.keyboard.press('Tab');
+    if ((await page.evaluate(() => document.activeElement?.getAttribute('name'))) !== 'task-title')
+      throw new Error('Editor keyboard entry failed');
+    await page.keyboard.type('演示未保存任务');
+    await formLabels();
+    await settle();
+    accept = false;
+    const before = dialogs.length;
+    await page.goBack();
+    await page.waitForURL('**/planner');
+    if (
+      dialogs.length !== before + 1 ||
+      (await page.locator('.task-editor input[name="task-title"]').inputValue()) !== '演示未保存任务'
+    )
+      throw new Error('Back rejection lost draft');
+    accept = true;
+    await page.goBack();
+    await page.waitForURL(`${base}/`);
+    await page.locator('a[href="/studio"]:visible').first().click();
+    await page.waitForURL('**/studio');
+    const newWork = page.locator('.works-panel .section-heading button');
+    await newWork.focus();
+    await page.keyboard.press('Enter');
+    await page.locator('.work-editor legend').waitFor();
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('演示未保存成果');
+    await formLabels();
+    await settle();
+    accept = false;
+    const unloadBefore = dialogs.length;
+    try {
+      await page.reload({ waitUntil: 'commit', timeout: 1500 });
+    } catch (e) {
+      if (
+        !(e instanceof Error) ||
+        (!e.message.includes('ERR_ABORTED') &&
+          !(
+            e.name === 'TimeoutError' &&
+            dialogs.length === unloadBefore + 1 &&
+            dialogs.at(-1) === 'beforeunload'
+          ))
+      )
+        throw e;
+    }
+    if (
+      dialogs.length !== unloadBefore + 1 ||
+      dialogs.at(-1) !== 'beforeunload' ||
+      (await page.locator('.work-editor input[name="work-title"]').inputValue()) !== '演示未保存成果'
+    )
+      throw new Error('Reload guard lost draft');
+    accept = true;
+    await page.locator('.work-editor button[type="button"]').click();
+    await page.waitForFunction(() => !document.querySelector('.work-editor'));
+    if (!(await newWork.evaluate((el) => el === document.activeElement)))
+      throw new Error('Editor close lost focus');
+    for (let i = 0; i < 18; i++) {
+      await page.keyboard.press('Tab');
+      const covered = await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!(el instanceof HTMLElement) || el.tagName === 'BODY') return false;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return false;
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!hit && !el.contains(hit) && !hit.contains(el);
+      });
+      if (covered) throw new Error('Focused element covered by fixed UI');
+    }
+    await page.goto(`${base}/projects/demo.beta`, { waitUntil: 'networkidle' });
+    await page
+      .locator('.detail-tabs button')
+      .filter({ hasText: /任务|タスク|Tasks/ })
+      .click();
+    await page.locator('.tasks-panel .section-heading button').click();
+    await page.locator('.task-editor input[name="task-title"]').fill('演示页签草稿');
+    accept = false;
+    const tabBefore = dialogs.length;
+    await page.locator('.detail-tabs button').first().click();
+    if (dialogs.length !== tabBefore + 1 || !(await page.locator('.task-editor').isVisible()))
+      throw new Error('Section discarded draft without agreement');
+    accept = true;
+    await page.locator('.detail-tabs button').first().click();
+    await page.locator('.task-editor').waitFor({ state: 'detached' });
+  } finally {
+    page.off('dialog', handle);
+  }
 }
