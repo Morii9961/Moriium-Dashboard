@@ -193,6 +193,107 @@ try {
             await page.locator('.focus-list li button').last().click();
             await page.waitForFunction(() => !document.querySelector('.focus-list li'));
           }
+          if (phase === 'p5-4') {
+            const jpeg = await page.evaluate(async () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = 1600;
+              canvas.height = 900;
+              const context = canvas.getContext('2d');
+              if (!context) throw new Error('No canvas');
+              context.fillStyle = '#517d97';
+              context.fillRect(0, 0, 1600, 900);
+              const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.85));
+              if (!blob) throw new Error('No JPEG');
+              return Array.from(new Uint8Array(await blob.arrayBuffer()));
+            });
+            const marker = Buffer.from('demo-private-location\0');
+            const exif = Buffer.alloc(6 + 26 + marker.length);
+            exif.write('Exif', 0);
+            exif.write('II', 6);
+            exif.writeUInt16LE(42, 8);
+            exif.writeUInt32LE(8, 10);
+            exif.writeUInt16LE(1, 14);
+            exif.writeUInt16LE(0x013b, 16);
+            exif.writeUInt16LE(2, 18);
+            exif.writeUInt32LE(marker.length, 20);
+            exif.writeUInt32LE(26, 24);
+            marker.copy(exif, 32);
+            const segment = Buffer.alloc(4);
+            segment[0] = 0xff;
+            segment[1] = 0xe1;
+            segment.writeUInt16BE(exif.length + 2, 2);
+            const originalJpeg = Buffer.concat([
+              Buffer.from(jpeg.slice(0, 2)),
+              segment,
+              exif,
+              Buffer.from(jpeg.slice(2)),
+            ]);
+            page.on('request', (r) => {
+              if (r.method() === 'PUT' && r.url().includes('/cover') && r.postDataBuffer()?.includes(marker))
+                errors.push('Original EXIF marker leaked');
+            });
+            await page.goto(`${base}/studio`, { waitUntil: 'networkidle' });
+            const title = `演示照片集 ${width}/${theme}/${locale}`;
+            for (const [text, kind] of [
+              [title, 'photos'],
+              ['A longer demonstration article about making something useful', 'article'],
+            ]) {
+              await page.locator('.works-panel .section-heading button').click();
+              await page
+                .locator('.work-editor input')
+                .first()
+                .fill(text as string);
+              await page
+                .locator('.work-editor select')
+                .first()
+                .selectOption(kind as string);
+              await page.locator('.work-editor select').last().selectOption('demo.beta');
+              await page
+                .locator('.work-editor textarea')
+                .fill('虚构成果说明：光线与色彩经过重新整理，没有真实个人数据。');
+              await page.locator('.work-editor button[type="submit"]').focus();
+              await page.keyboard.press('Enter');
+              await page.waitForFunction(() => !document.querySelector('.work-editor'));
+            }
+            const card = page.locator('.work-card').filter({ hasText: title });
+            await card
+              .locator('input[type="file"]')
+              .setInputFiles({ name: 'demo-photo.jpg', mimeType: 'image/jpeg', buffer: originalJpeg });
+            await card.locator('.work-cover').waitFor();
+            await page.waitForFunction(() =>
+              Array.from(document.querySelectorAll<HTMLImageElement>('.work-cover')).some(
+                (img) => img.naturalWidth === 800 && img.naturalHeight === 450,
+              ),
+            );
+            await card.locator('.work-controls button').nth(1).click();
+            await card.locator('p').filter({ hasText: '★' }).waitFor();
+            await page.screenshot({
+              path: `${out}/works-${width}-${theme}-${locale}-demo.png`,
+              fullPage: true,
+            });
+            if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+              throw new Error('Works overflow');
+            await page.locator('.work-filters select').first().selectOption('photos');
+            if ((await page.locator('.work-card').count()) !== 1) throw new Error('Work filter failed');
+            await page.locator('.work-filters select').first().selectOption('');
+            await page.goto(base, { waitUntil: 'networkidle' });
+            await page.locator('.delivery-list a[href^="/studio#work-"]').first().waitFor();
+            if ((await page.locator('.delivery-list a[href^="/studio#work-"]').count()) !== 2)
+              throw new Error('Recent works missing');
+            await page.locator('.delivery-list a[href^="/studio#work-"]').first().focus();
+            await page.keyboard.press('Enter');
+            await page.locator('.work-card').first().waitFor();
+            await card.locator('.work-controls button').last().click();
+            await page.waitForFunction(() => document.querySelectorAll('.work-card').length === 1);
+            await page.locator('.work-trash summary').click();
+            const trashed = page.locator('.work-trash p').filter({ hasText: title });
+            await trashed.locator('button').click();
+            await page.waitForFunction(() => document.querySelectorAll('.work-card').length === 2);
+            await page.locator('.work-card').first().locator('.work-controls button').last().click();
+            await page.waitForFunction(() => document.querySelectorAll('.work-card').length === 1);
+            await page.locator('.work-card').first().locator('.work-controls button').last().click();
+            await page.waitForFunction(() => !document.querySelector('.work-card'));
+          }
         }
         if (errors.length) throw new Error(errors.join('\n'));
         console.log(`${width}/${theme}/${locale}: rendered, keyboard, overflow, CSP and network passed`);

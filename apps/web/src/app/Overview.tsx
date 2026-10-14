@@ -3,6 +3,7 @@ import { figureOf, ProjectStrip, type StripItem } from '../components/ProjectStr
 import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { freshness } from '../progress.ts';
+import { RecentDeliveries } from './Deliveries.tsx';
 import { useResource } from './data.tsx';
 import { useImport } from './ImportDialog.tsx';
 import { ItemReview } from './ItemReview.tsx';
@@ -78,7 +79,7 @@ export function InboxPage() {
 
 export function OverviewPage() {
   const { open } = useImport();
-  const { t, locale, fullDate, relative, snapshotTime } = useI18n();
+  const { t, locale, fullDate, relative } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useResource<OverviewData>('/api/overview');
   const today = useToday();
@@ -217,26 +218,7 @@ export function OverviewPage() {
                     </details>
                   ) : null}
                 </section>
-                <section className="overview-section">
-                  <h2>{t('overview.delivery')}</h2>
-                  {data.recentDelivery.length ? (
-                    <ul className="delivery-list">
-                      {data.recentDelivery.map((r) => (
-                        <li key={`${r.projectId}:${r.milestoneId}`}>
-                          <Link to={projectPath(r.projectId)}>
-                            {projectLabel(data, r.projectId, locale, r.projectName)}
-                          </Link>
-                          <p lang="zh-Hans">{r.title}</p>
-                          <time dateTime={r.at}>
-                            {t('evidence.accepted', { date: snapshotTime(Date.parse(r.at), 480) })}
-                          </time>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>{t('overview.noDelivery')}</p>
-                  )}
-                </section>
+                <RecentDeliveries data={data} />
               </div>
               <aside className="overview-side">
                 <section className="overview-section">

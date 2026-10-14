@@ -138,3 +138,93 @@
 .task-row p {
   margin: var(--space-2) 0;
 }
+.work-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-5);
+  margin: var(--space-5) 0;
+}
+.work-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-width: 0;
+  scroll-margin-top: var(--space-7);
+}
+.work-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.work-no-cover {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  color: var(--c-ink3);
+  border-bottom: 1px solid var(--c-border);
+}
+.work-body {
+  padding: var(--space-5);
+  overflow-wrap: anywhere;
+}
+.work-body h3 {
+  font-size: var(--text-xl);
+}
+.work-body p {
+  margin: var(--space-3) 0;
+}
+.work-body a {
+  color: var(--c-accent-text);
+}
+.work-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+.cover-input {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.cover-input input {
+  width: 100%;
+  min-width: 0;
+}
+.work-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+.work-filters label {
+  display: grid;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: min(100%, 220px);
+}
+.work-filters select,
+.personal-editor textarea {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-raised);
+}
+.personal-editor .work-treasure {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.personal-editor .work-treasure input {
+  width: auto;
+}
+.delivery-cover {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+}

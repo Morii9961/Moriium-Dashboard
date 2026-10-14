@@ -116,6 +116,7 @@ export interface ProjectDetail extends ProjectWithCurrent {
 }
 
 export interface OverviewData {
+  recentWorks: import('./Works.tsx').Work[];
   projects: ProjectWithCurrent[];
   pending: {
     projectId: string;

@@ -50,7 +50,7 @@ it('copies a source action on the server, deduplicates open tasks, and keeps sou
     null,
     { projectId: 'demo.beta', sourceSnapshotId: snapshotId, actionIndex: 0, title: 'spoofed' },
     now,
-  )!;
+  );
   expect(task.title).toBe(base.next_actions[0].title);
   expect(task.sourceSnapshotId).toBe(snapshotId);
   expect(() =>
@@ -70,7 +70,7 @@ it('marks disappeared actions without automatically closing tasks', async () => 
     null,
     { projectId: 'demo.beta', sourceSnapshotId: snapshotId, actionIndex: 0 },
     now,
-  )!;
+  );
   const next = structuredClone(base);
   next.snapshot_at = '2026-10-13T10:00:00+08:00';
   next.next_actions = [];

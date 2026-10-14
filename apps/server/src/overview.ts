@@ -1,9 +1,10 @@
 import type { Database } from './db.ts';
-import { reviewItems } from './items.ts';
+import { calendarDay, reviewItems } from './items.ts';
 import { manualMilestones } from './manual.ts';
 import { listProjects } from './projects.ts';
 import { acceptanceRecords } from './review.ts';
 import { currentSnapshots, getSnapshot, snapshotCounts } from './snapshots.ts';
+import { workRecords } from './works.ts';
 
 export function projectViews(db: Database, now: Date) {
   const current = currentSnapshots(db);
@@ -95,5 +96,13 @@ export function overview(db: Database, now: Date) {
     }))
     .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
     .slice(0, 6);
-  return { projects, pending, latestReports, recentDelivery };
+  const recentWorks = workRecords(db)
+    .filter(
+      (w) =>
+        !w.deletedAt &&
+        w.date <= calendarDay(now) &&
+        w.date >= calendarDay(new Date(now.getTime() - 13 * 86400000)),
+    )
+    .slice(0, 6);
+  return { projects, pending, latestReports, recentDelivery, recentWorks };
 }
