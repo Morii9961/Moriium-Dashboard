@@ -10,6 +10,7 @@ import { ProjectHistory } from './History.tsx';
 import { ItemReviewList } from './ItemReview.tsx';
 import { ManualProject } from './ManualProject.tsx';
 import { ProjectSettings } from './ProjectSettings.tsx';
+import { AddToFocus } from './Today.tsx';
 import type { AcceptanceRecord, ProjectDetail } from './types.ts';
 
 export function ReferenceList({ refs }: { refs: readonly string[] }) {
@@ -352,6 +353,7 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
                   <li key={a.id ?? a.title}>
                     <span className="prio">{a.priority ?? '—'}</span> <span lang="zh-Hans">{a.title}</span>
                     <p lang="zh-Hans">{a.result}</p>
+                    <AddToFocus title={a.title} />
                   </li>
                 ))}
             </ol>

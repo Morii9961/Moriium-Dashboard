@@ -32,16 +32,6 @@ export function StudioPage() {
   );
 }
 
-export function PlannerPage() {
-  const { t } = useI18n();
-  return (
-    <>
-      <PageHeader title={t('nav.planner')} />
-      <EmptyState title={t('planner.empty')} />
-    </>
-  );
-}
-
 export function SettingsPage() {
   const { t, locale, setLocale } = useI18n();
   const { state } = useService();

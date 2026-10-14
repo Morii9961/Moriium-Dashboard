@@ -8,6 +8,7 @@ export function Segmented<T extends string>({
   options,
   onChange,
   showLegend = false,
+  disabled = false,
 }: {
   legend: string;
   name: string;
@@ -15,9 +16,10 @@ export function Segmented<T extends string>({
   options: readonly (readonly [T, string])[];
   onChange: (v: T, e: ChangeEvent<HTMLInputElement>) => void;
   showLegend?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <fieldset className="seg-control">
+    <fieldset className="seg-control" disabled={disabled}>
       <legend className={showLegend ? 'seg-legend' : 'sr-only'}>{legend}</legend>
       <span className="seg-options">
         {options.map(([v, label]) => (
