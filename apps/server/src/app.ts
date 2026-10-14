@@ -17,6 +17,7 @@ import { historyRoutes } from './routes/history.ts';
 import { importRoutes } from './routes/imports.ts';
 import { projectRoutes } from './routes/projects.ts';
 import { reviewRoutes } from './routes/review.ts';
+import { taskRoutes } from './routes/tasks.ts';
 import { hostCheck, securityHeaders, writeGuard } from './security.ts';
 
 export interface AppContext {
@@ -67,6 +68,7 @@ export function createApp(ctx: AppContext) {
   app.get('/api/overview', (c) => c.json(overview(ctx.db, ctx.now?.() ?? new Date())));
   reviewRoutes(app, ctx);
   focusRoutes(app, ctx);
+  taskRoutes(app, ctx);
   importRoutes(app, ctx);
   historyRoutes(app, ctx);
   exportRoutes(app, ctx);

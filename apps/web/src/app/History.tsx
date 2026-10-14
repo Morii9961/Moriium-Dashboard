@@ -10,7 +10,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
-import type { CompareResult, HistoryItem } from './types.ts';
+import type { CompareResult, HistoryItem, SnapshotRecord } from './types.ts';
 
 function TimeBand({ items, now }: { items: HistoryItem[]; now: Date }) {
   const active = items.filter((s) => !s.deleted && !s.superseded);
@@ -271,6 +271,7 @@ export function ProjectHistory({ projectId }: { projectId: string }) {
         <span className="history-count">{t('history.count', { count: active.length })}</span>
       </header>
       <TimeBand items={all} now={now} />
+      <TaskSourceSnapshot projectId={projectId} />
       <ol className="hlist">{live.map(row)}</ol>
       {message ? (
         <p className="reg-status is-error" role="alert">
@@ -317,6 +318,35 @@ export function ProjectHistory({ projectId }: { projectId: string }) {
           </ol>
         </details>
       ) : null}
+    </section>
+  );
+}
+
+function TaskSourceSnapshot({ projectId }: { projectId: string }) {
+  const { t, snapshotTime } = useI18n();
+  const id = Number(new URLSearchParams(location.search).get('snapshot'));
+  const { data, error } = useResource<{ snapshot: SnapshotRecord }>(
+    Number.isSafeInteger(id) && id > 0 ? `/api/snapshots/${id}` : null,
+  );
+  if (!id) return null;
+  const s = data?.snapshot;
+  if (!s) return <p>{t(error ? 'projects.loadFailed' : 'common.loading')}</p>;
+  if (s.projectId !== projectId) return null;
+  return (
+    <section className="source-panel">
+      <h3>{t('tasks.source', { id: s.id })}</h3>
+      <time dateTime={s.snapshotAt}>{snapshotTime(s.utcMs, s.offsetMinutes)}</time>
+      <p lang="zh-Hans">{s.snapshot.summary}</p>
+      <ul>
+        {s.snapshot.next_actions.map((a, i) => (
+          <li key={a.id ?? `${a.title}:${i}`} lang="zh-Hans">
+            {a.title} · {a.result}
+          </li>
+        ))}
+      </ul>
+      <a href={`/api/snapshots/${s.id}/raw`} download>
+        {t('history.raw')}
+      </a>
     </section>
   );
 }

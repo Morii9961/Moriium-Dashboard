@@ -12,6 +12,7 @@ import { itemStates } from './items.ts';
 import { manualMilestones } from './manual.ts';
 import { listProjects } from './projects.ts';
 import { acceptanceRecords } from './review.ts';
+import { taskRecords } from './tasks.ts';
 import { createZip, type ZipEntry } from './zip.ts';
 
 export const EXPORT_FORMAT = 1;
@@ -97,6 +98,7 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
         data: json({
           projects,
           focus: readFocus(db, now),
+          tasks: taskRecords(db),
           snapshots,
           importBatches: batches,
           acceptances: acceptanceRecords(db),

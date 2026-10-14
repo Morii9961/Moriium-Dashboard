@@ -10,6 +10,7 @@ import { ProjectHistory } from './History.tsx';
 import { ItemReviewList } from './ItemReview.tsx';
 import { ManualProject } from './ManualProject.tsx';
 import { ProjectSettings } from './ProjectSettings.tsx';
+import { TaskFromAction, TasksPanel } from './Tasks.tsx';
 import { AddToFocus } from './Today.tsx';
 import type { AcceptanceRecord, ProjectDetail } from './types.ts';
 
@@ -206,7 +207,7 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
   const { data, error } = useResource<{ project: ProjectDetail }>(
     `/api/projects/${encodeURIComponent(projectId)}`,
   );
-  const [section, setSection] = useState('summary');
+  const [section, setSection] = useState(() => (location.hash === '#history' ? 'history' : 'summary'));
   useEffect(() => {
     if (!data || section !== 'summary' || !location.hash.startsWith('#milestone-')) return;
     const target = document.getElementById(location.hash.slice(1));
@@ -221,21 +222,24 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
       <Source project={p} />
       <fieldset className="list-filters detail-tabs">
         <legend className="sr-only">{t('detail.sections')}</legend>
-        {(p.tracking === 'manual' ? ['summary', 'settings'] : ['summary', 'history', 'settings']).map(
-          (key) => (
-            <button
-              type="button"
-              className="btn"
-              key={key}
-              aria-pressed={key === section}
-              onClick={() => setSection(key)}
-            >
-              {t(`detail.${key as 'summary' | 'history' | 'settings'}`)}
-            </button>
-          ),
-        )}
+        {(p.tracking === 'manual'
+          ? ['summary', 'tasks', 'settings']
+          : ['summary', 'history', 'tasks', 'settings']
+        ).map((key) => (
+          <button
+            type="button"
+            className="btn"
+            key={key}
+            aria-pressed={key === section}
+            onClick={() => setSection(key)}
+          >
+            {t(`detail.${key as 'summary' | 'history' | 'tasks' | 'settings'}`)}
+          </button>
+        ))}
       </fieldset>
-      {section === 'history' ? (
+      {section === 'tasks' ? (
+        <TasksPanel projectId={p.id} />
+      ) : section === 'history' ? (
         <ProjectHistory projectId={p.id} />
       ) : section === 'settings' ? (
         <ProjectSettings key={p.updatedAt} project={p} />
@@ -354,6 +358,11 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
                     <span className="prio">{a.priority ?? '—'}</span> <span lang="zh-Hans">{a.title}</span>
                     <p lang="zh-Hans">{a.result}</p>
                     <AddToFocus title={a.title} />
+                    <TaskFromAction
+                      projectId={p.id}
+                      snapshotId={p.current?.id ?? 0}
+                      index={s.next_actions.indexOf(a)}
+                    />
                   </li>
                 ))}
             </ol>

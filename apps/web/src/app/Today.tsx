@@ -10,6 +10,8 @@ export interface FocusEntry {
   title: string;
   lang: 'zh-Hans' | 'ja' | 'en';
   done: boolean;
+  taskId?: number;
+  taskRevision?: number;
 }
 export interface FocusDay {
   date: string;
@@ -44,9 +46,13 @@ export function PersonalMessage({ code }: { code: string | null }) {
                 ? 'today.changed'
                 : code === 'full'
                   ? 'today.full'
-                  : code === 'suspected_secret'
-                    ? 'detail.secret'
-                    : 'apiError.unknown',
+                  : code === 'exists'
+                    ? 'tasks.exists'
+                    : code === 'task_changed'
+                      ? 'tasks.changed'
+                      : code === 'suspected_secret'
+                        ? 'detail.secret'
+                        : 'apiError.unknown',
           )
         : ''}
     </p>
@@ -80,6 +86,27 @@ export function TodayPanel({ day }: { day: FocusDay }) {
       await save({ entries: [...day.entries, { id: crypto.randomUUID(), title, lang: locale, done: false }] })
     )
       setTitle('');
+  };
+  const toggle = async (entry: FocusEntry) => {
+    if (!entry.taskId) {
+      await save({ entries: day.entries.map((v) => (v.id === entry.id ? { ...v, done: !v.done } : v)) });
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      await api('PATCH', `/api/tasks/${entry.taskId}`, {
+        revision: entry.taskRevision,
+        status: entry.done ? 'todo' : 'done',
+      });
+      invalidate();
+      setMessage('saved');
+    } catch (e) {
+      setMessage(e instanceof ApiError ? e.code : 'unknown');
+      invalidate();
+    } finally {
+      setBusy(false);
+    }
   };
   const move = (index: number, delta: number) => {
     const next = [...day.entries];
@@ -117,11 +144,7 @@ export function TodayPanel({ day }: { day: FocusDay }) {
                 type="checkbox"
                 checked={entry.done}
                 disabled={busy}
-                onChange={() =>
-                  void save({
-                    entries: day.entries.map((v) => (v.id === entry.id ? { ...v, done: !v.done } : v)),
-                  })
-                }
+                onChange={() => void toggle(entry)}
               />
               <span lang={entry.lang}>{entry.title}</span>
             </label>
@@ -164,7 +187,7 @@ export function TodayPanel({ day }: { day: FocusDay }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            maxLength={500}
+            maxLength={2000}
             disabled={busy || day.entries.length >= 3}
           />
         </label>
@@ -177,7 +200,15 @@ export function TodayPanel({ day }: { day: FocusDay }) {
     </section>
   );
 }
-export function AddToFocus({ title, lang = 'zh-Hans' }: { title: string; lang?: FocusEntry['lang'] }) {
+export function AddToFocus({
+  title,
+  lang = 'zh-Hans',
+  taskId,
+}: {
+  title: string;
+  lang?: FocusEntry['lang'];
+  taskId?: number;
+}) {
   const { t } = useI18n();
   const invalidate = useInvalidate();
   const [busy, setBusy] = useState(false);
@@ -192,9 +223,16 @@ export function AddToFocus({ title, lang = 'zh-Hans' }: { title: string; lang?: 
         setMessage('full');
         return;
       }
+      if (taskId && day.entries.some((e) => e.taskId === taskId)) {
+        setMessage('exists');
+        return;
+      }
       await api('PUT', `/api/focus/${date}`, {
         ...day,
-        entries: [...day.entries, { id: crypto.randomUUID(), title, lang, done: false }],
+        entries: [
+          ...day.entries,
+          { id: crypto.randomUUID(), title, lang, done: false, ...(taskId ? { taskId } : {}) },
+        ],
       });
       invalidate();
       setMessage('saved');
