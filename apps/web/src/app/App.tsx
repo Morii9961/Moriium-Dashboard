@@ -1,15 +1,17 @@
 /** 路由表和页面标题。 */
-import { type ReactNode, useEffect } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { AgentsPage } from './Agents.tsx';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { InboxPage, OverviewPage } from './Overview.tsx';
 import { PlannerPage } from './Planner.tsx';
-import { NotFoundPage, SettingsPage, StudioPage } from './pages.tsx';
+import { NotFoundPage, SettingsPage } from './pages.tsx';
 import { ImportsPage, ProjectPage, ProjectsPage } from './projectPages.tsx';
 import { type Route, resolveRoute, usePath } from './router.tsx';
 import { Shell } from './Shell.tsx';
+
+const StudioPage = lazy(() => import('./Works.tsx').then((m) => ({ default: m.StudioPage })));
 
 type RouteName =
   | 'overview'
@@ -97,7 +99,9 @@ export function App() {
 
   return (
     <Shell>
-      <ErrorBoundary key={path}>{page}</ErrorBoundary>
+      <ErrorBoundary key={path}>
+        <Suspense fallback={<p>{t('common.loading')}</p>}>{page}</Suspense>
+      </ErrorBoundary>
     </Shell>
   );
 }

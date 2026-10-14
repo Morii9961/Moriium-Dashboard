@@ -1,5 +1,5 @@
 import type { Milestone } from '@moriium-dashboard/protocol';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, lazy, useEffect, useState } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
 import { EvidenceTag, LineMap, StatusMark } from '../components/parts.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
@@ -13,6 +13,8 @@ import { ProjectSettings } from './ProjectSettings.tsx';
 import { TaskFromAction, TasksPanel } from './Tasks.tsx';
 import { AddToFocus } from './Today.tsx';
 import type { AcceptanceRecord, ProjectDetail } from './types.ts';
+
+const WorksPanel = lazy(() => import('./Works.tsx').then((m) => ({ default: m.WorksPanel })));
 
 export function ReferenceList({ refs }: { refs: readonly string[] }) {
   const { t } = useI18n();
@@ -223,8 +225,8 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
       <fieldset className="list-filters detail-tabs">
         <legend className="sr-only">{t('detail.sections')}</legend>
         {(p.tracking === 'manual'
-          ? ['summary', 'tasks', 'settings']
-          : ['summary', 'history', 'tasks', 'settings']
+          ? ['summary', 'works', 'tasks', 'settings']
+          : ['summary', 'history', 'works', 'tasks', 'settings']
         ).map((key) => (
           <button
             type="button"
@@ -233,11 +235,13 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
             aria-pressed={key === section}
             onClick={() => setSection(key)}
           >
-            {t(`detail.${key as 'summary' | 'history' | 'tasks' | 'settings'}`)}
+            {t(`detail.${key as 'summary' | 'history' | 'works' | 'tasks' | 'settings'}`)}
           </button>
         ))}
       </fieldset>
-      {section === 'tasks' ? (
+      {section === 'works' ? (
+        <WorksPanel projectId={p.id} />
+      ) : section === 'tasks' ? (
         <TasksPanel projectId={p.id} />
       ) : section === 'history' ? (
         <ProjectHistory projectId={p.id} />

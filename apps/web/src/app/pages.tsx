@@ -22,16 +22,6 @@ export function InboxPage() {
   );
 }
 
-export function StudioPage() {
-  const { t } = useI18n();
-  return (
-    <>
-      <PageHeader title={t('nav.studio')} />
-      <EmptyState title={t('studio.empty')} />
-    </>
-  );
-}
-
 export function SettingsPage() {
   const { t, locale, setLocale } = useI18n();
   const { state } = useService();

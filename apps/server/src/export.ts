@@ -13,6 +13,7 @@ import { manualMilestones } from './manual.ts';
 import { listProjects } from './projects.ts';
 import { acceptanceRecords } from './review.ts';
 import { taskRecords } from './tasks.ts';
+import { workCover, workRecords } from './works.ts';
 import { createZip, type ZipEntry } from './zip.ts';
 
 export const EXPORT_FORMAT = 1;
@@ -57,6 +58,11 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
   const projects = listProjects(db);
   const batches = listBatches(db, 100_000);
   const files: ZipEntry[] = [];
+  const works = workRecords(db);
+  for (const w of works) {
+    const cover = workCover(db, w.id);
+    if (cover) files.push({ name: `media/${w.id}.webp`, data: new Uint8Array(cover) });
+  }
   const snapshots = rows.map((r) => {
     const active = r.deleted_at === null && r.superseded_by === null;
     const path = snapshotPath(active ? 'snapshots' : 'snapshots-archive', r);
@@ -99,6 +105,7 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
           projects,
           focus: readFocus(db, now),
           tasks: taskRecords(db),
+          works: works.map((w) => ({ ...w, coverFile: w.hasCover ? `media/${w.id}.webp` : null })),
           snapshots,
           importBatches: batches,
           acceptances: acceptanceRecords(db),
