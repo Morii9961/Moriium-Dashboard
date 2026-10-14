@@ -22,16 +22,6 @@ export function InboxPage() {
   );
 }
 
-export function AgentsPage({ agent }: { agent?: string }) {
-  const { t } = useI18n();
-  return (
-    <>
-      <PageHeader title={agent ?? t('nav.agents')} />
-      <EmptyState title={t('agents.empty')} />
-    </>
-  );
-}
-
 export function StudioPage() {
   const { t } = useI18n();
   return (
