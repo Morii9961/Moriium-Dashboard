@@ -138,6 +138,61 @@ try {
               2 - i,
             );
           }
+          if (phase === 'p5-3') {
+            await page.goto(`${base}/projects/demo.beta`, { waitUntil: 'networkidle' });
+            await page.locator('.task-transfer button').first().click();
+            await page
+              .locator('.task-transfer .save-status')
+              .filter({ hasText: /已保存|保存しました|Saved/ })
+              .first()
+              .waitFor();
+            await page.goto(`${base}/planner`, { waitUntil: 'networkidle' });
+            const openTasks = page.locator('.tasks-panel > .task-list .task-row');
+            await openTasks.first().waitFor();
+            await openTasks.first().locator('.focus-transfer button').click();
+            await page.locator('.focus-list li').waitFor();
+            await page.locator('.tasks-panel .section-heading button').click();
+            await page
+              .locator('.task-editor input')
+              .first()
+              .fill(`虚构任务 ${width}/${theme}/${locale} with a longer delivery description`);
+            await page.locator('.task-editor select').first().selectOption('demo.beta');
+            await page.locator('.task-editor input[type="date"]').fill('2026-10-30');
+            await page.locator('.task-editor select').last().selectOption('doing');
+            await page.locator('.task-editor button[type="submit"]').focus();
+            await page.keyboard.press('Enter');
+            await page.waitForFunction(() => !document.querySelector('.task-editor'));
+            if ((await openTasks.count()) !== 2) throw new Error('Task creation failed');
+            await page.screenshot({
+              path: `${out}/tasks-${width}-${theme}-${locale}-demo.png`,
+              fullPage: true,
+            });
+            if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+              throw new Error('Tasks overflow');
+            await page.locator('.focus-list input').click();
+            await page.waitForFunction(
+              () => document.querySelectorAll('.tasks-panel > .task-list .task-row').length === 1,
+            );
+            await page.locator('.closed-tasks summary').click();
+            const source = page.locator('.closed-tasks a[href*="snapshot="]').first();
+            await source.click();
+            await page.locator('.source-panel h3').waitFor();
+            if (
+              !(await page
+                .locator('.source-panel')
+                .last()
+                .textContent()
+                .then((s) => s?.includes(original.next_actions[0].title)))
+            )
+              throw new Error('Exact source snapshot not visible');
+            await page.goto(`${base}/planner`, { waitUntil: 'networkidle' });
+            await openTasks.first().locator('input[type="checkbox"]').click();
+            await page.waitForFunction(
+              () => document.querySelectorAll('.tasks-panel > .task-list .task-row').length === 0,
+            );
+            await page.locator('.focus-list li button').last().click();
+            await page.waitForFunction(() => !document.querySelector('.focus-list li'));
+          }
         }
         if (errors.length) throw new Error(errors.join('\n'));
         console.log(`${width}/${theme}/${locale}: rendered, keyboard, overflow, CSP and network passed`);

@@ -1,6 +1,7 @@
 import { audit } from './audit.ts';
 import { type Database, transaction } from './db.ts';
 import { reviewText } from './review.ts';
+import { getTask } from './tasks.ts';
 
 export const dayInShanghai = (now: Date) => new Date(now.getTime() + 480 * 60000).toISOString().slice(0, 10);
 export interface FocusEntry {
@@ -8,6 +9,8 @@ export interface FocusEntry {
   title: string;
   lang: 'zh-Hans' | 'ja' | 'en';
   done: boolean;
+  taskId?: number;
+  taskRevision?: number;
 }
 export interface FocusDay {
   date: string;
@@ -28,7 +31,21 @@ export function readFocus(db: Database, now: Date): FocusDay {
     | { date: string; energy: FocusDay['energy']; entries: string; revision: number }
     | undefined;
   return row?.date === date
-    ? { ...row, entries: JSON.parse(row.entries) as FocusEntry[] }
+    ? {
+        ...row,
+        entries: (JSON.parse(row.entries) as FocusEntry[]).map((entry) => {
+          const task = entry.taskId ? getTask(db, entry.taskId) : null;
+          return task
+            ? {
+                ...entry,
+                title: task.title,
+                lang: task.lang,
+                done: task.status === 'done',
+                taskRevision: task.revision,
+              }
+            : entry;
+        }),
+      }
     : { date, energy: null, entries: [], revision: 0 };
 }
 export function saveFocus(db: Database, date: string, body: Record<string, unknown>, now: Date) {
@@ -37,6 +54,7 @@ export function saveFocus(db: Database, date: string, body: Record<string, unkno
     throw new FocusError('invalid_field');
   if (!Array.isArray(body.entries) || body.entries.length > 3) throw new FocusError('invalid_field');
   const seen = new Set<string>();
+  const tasks = new Set<number>();
   const entries = body.entries.map((value: unknown): FocusEntry => {
     if (!value || typeof value !== 'object') throw new FocusError('invalid_field');
     const v = value as Record<string, unknown>;
@@ -48,9 +66,17 @@ export function saveFocus(db: Database, date: string, body: Record<string, unkno
       !['zh-Hans', 'ja', 'en'].includes(v.lang as string)
     )
       throw new FocusError('invalid_field');
-    const title = reviewText(v.title, 500);
+    const title = reviewText(v.title, 2000);
     if (!title) throw new FocusError('invalid_field');
     seen.add(v.id);
+    if (v.taskId !== undefined) {
+      if (typeof v.taskId !== 'number' || !Number.isSafeInteger(v.taskId) || tasks.has(v.taskId))
+        throw new FocusError('invalid_field');
+      const task = getTask(db, v.taskId);
+      if (!task) throw new FocusError('invalid_field');
+      tasks.add(v.taskId);
+      return { id: v.id, title: task.title, lang: task.lang, done: task.status === 'done', taskId: task.id };
+    }
     return { id: v.id, title, done: v.done, lang: v.lang as FocusEntry['lang'] };
   });
   return transaction(db, () => {
