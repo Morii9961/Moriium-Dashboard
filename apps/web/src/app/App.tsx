@@ -2,9 +2,10 @@
 import { type ReactNode, useEffect } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
+import { AgentsPage } from './Agents.tsx';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { InboxPage, OverviewPage } from './Overview.tsx';
-import { AgentsPage, NotFoundPage, PlannerPage, SettingsPage, StudioPage } from './pages.tsx';
+import { NotFoundPage, PlannerPage, SettingsPage, StudioPage } from './pages.tsx';
 import { ImportsPage, ProjectPage, ProjectsPage } from './projectPages.tsx';
 import { type Route, resolveRoute, usePath } from './router.tsx';
 import { Shell } from './Shell.tsx';

@@ -461,3 +461,50 @@
     grid-column: 1 / -1;
   }
 }
+/* Agents: quiet report records, with the same tokens as the workspace. */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-5);
+}
+.agent-card {
+  padding: var(--space-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  background: var(--c-surface);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.agent-card h2 {
+  font-size: var(--text-xl);
+}
+.agent-card a,
+.agent-reports a {
+  color: var(--c-accent-text);
+}
+.agent-card h3 {
+  font-size: var(--text-md);
+  margin-top: var(--space-5);
+}
+.agent-evidence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.agent-evidence div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.agent-evidence dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.agent-reports {
+  padding-left: var(--space-5);
+}
+.agent-reports li {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--c-border);
+  overflow-wrap: anywhere;
+}

@@ -7,7 +7,7 @@ import { exportAll, exportSnapshots } from '../export.ts';
 export function exportRoutes(app: Hono, ctx: AppContext) {
   const now = () => ctx.now?.() ?? new Date();
   const send = (body: Uint8Array, name: string) =>
-    new Response(body, {
+    new Response(new Uint8Array(body).buffer, {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': `attachment; filename="${name}"`,

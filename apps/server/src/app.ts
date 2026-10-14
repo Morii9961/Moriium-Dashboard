@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { agentReports } from './agents.ts';
 import { listBackups } from './backup.ts';
 import type { ServerConfig } from './config.ts';
 import { currentSchemaVersion, type Database } from './db.ts';
@@ -61,6 +62,7 @@ export function createApp(ctx: AppContext) {
   });
 
   projectRoutes(app, ctx);
+  app.get('/api/agents', (c) => c.json(agentReports(ctx.db, ctx.now?.() ?? new Date())));
   app.get('/api/overview', (c) => c.json(overview(ctx.db, ctx.now?.() ?? new Date())));
   reviewRoutes(app, ctx);
   importRoutes(app, ctx);
