@@ -1,8 +1,9 @@
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
-import { Link } from './router.tsx';
+import { restoreEditorFocus, useDraftGuard } from './drafts.ts';
+import { confirmDraftDiscard, Link } from './router.tsx';
 import { todayDate } from './Today.tsx';
 import { localizedName, type Project } from './types.ts';
 import { PageHeader } from './ui.tsx';
@@ -67,6 +68,12 @@ function WorkEditor({
     treasured: work?.treasured ?? false,
   });
   const [revision] = useState(work?.revision);
+  const [initial] = useState(draft);
+  const confirmClose = useDraftGuard(JSON.stringify(draft) !== JSON.stringify(initial));
+  const legend = useRef<HTMLLegendElement>(null);
+  useEffect(() => {
+    legend.current?.focus();
+  }, []);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const set = (key: keyof typeof draft, value: string | boolean) => setDraft((d) => ({ ...d, [key]: value }));
@@ -91,10 +98,14 @@ function WorkEditor({
   return (
     <form className="personal-editor work-editor" onSubmit={save}>
       <fieldset disabled={busy}>
-        <legend>{t(work ? 'works.edit' : 'works.new')}</legend>
+        <legend ref={legend} tabIndex={-1}>
+          {t(work ? 'works.edit' : 'works.new')}
+        </legend>
         <label>
           {t('tasks.title')}
           <input
+            name="work-title"
+            autoComplete="off"
             value={draft.title}
             onChange={(e) => set('title', e.target.value)}
             required
@@ -103,7 +114,7 @@ function WorkEditor({
         </label>
         <label>
           {t('works.kind')}
-          <select value={draft.kind} onChange={(e) => set('kind', e.target.value)}>
+          <select name="work-kind" value={draft.kind} onChange={(e) => set('kind', e.target.value)}>
             {WORK_KINDS.map((k) => (
               <option key={k} value={k}>
                 {t(`works.kind.${k}`)}
@@ -113,11 +124,22 @@ function WorkEditor({
         </label>
         <label>
           {t('works.date')}
-          <input type="date" value={draft.date} onChange={(e) => set('date', e.target.value)} required />
+          <input
+            name="work-date"
+            autoComplete="off"
+            type="date"
+            value={draft.date}
+            onChange={(e) => set('date', e.target.value)}
+            required
+          />
         </label>
         <label>
           {t('tasks.project')}
-          <select value={draft.projectId} onChange={(e) => set('projectId', e.target.value)}>
+          <select
+            name="work-project"
+            value={draft.projectId}
+            onChange={(e) => set('projectId', e.target.value)}
+          >
             <option value="">{t('tasks.noProject')}</option>
             {projects.map((p) => (
               <option value={p.id} key={p.id}>
@@ -129,6 +151,9 @@ function WorkEditor({
         <label>
           {t('works.link')}
           <input
+            name="work-link"
+            autoComplete="off"
+            spellCheck={false}
             type="url"
             value={draft.link}
             onChange={(e) => set('link', e.target.value)}
@@ -138,6 +163,8 @@ function WorkEditor({
         <label>
           {t('works.note')}
           <textarea
+            name="work-note"
+            autoComplete="off"
             value={draft.note}
             onChange={(e) => set('note', e.target.value)}
             maxLength={2000}
@@ -146,6 +173,7 @@ function WorkEditor({
         </label>
         <label className="work-treasure">
           <input
+            name="work-treasured"
             type="checkbox"
             checked={draft.treasured}
             onChange={(e) => set('treasured', e.target.checked)}
@@ -161,6 +189,7 @@ function WorkEditor({
             type="button"
             className="btn"
             onClick={() => {
+              if (!confirmClose()) return;
               invalidate();
               close();
             }}
@@ -174,7 +203,8 @@ function WorkEditor({
   );
 }
 function WorkCard({ work: w, projects }: { work: Work; projects: Project[] }) {
-  const { t, locale } = useI18n();
+  const { t, locale, calendarDate } = useI18n();
+  const editButton = useRef<HTMLButtonElement>(null);
   const invalidate = useInvalidate();
   const [edit, setEdit] = useState(false),
     [busy, setBusy] = useState(false),
@@ -232,7 +262,7 @@ function WorkCard({ work: w, projects }: { work: Work; projects: Project[] }) {
       <div className="work-body">
         <h3 lang={w.lang}>{w.title}</h3>
         <p>
-          {t(`works.kind.${w.kind}`)} · <time dateTime={w.date}>{w.date}</time>
+          {t(`works.kind.${w.kind}`)} · <time dateTime={w.date}>{calendarDate(w.date)}</time>
           {w.treasured ? <> · ★ {t('works.treasured')}</> : null}
         </p>
         {p ? <Link to={`/projects/${encodeURIComponent(p.id)}`}>{localizedName(p, locale)}</Link> : null}
@@ -248,25 +278,32 @@ function WorkCard({ work: w, projects }: { work: Work; projects: Project[] }) {
           <button
             type="button"
             className="btn"
-            disabled={busy}
+            disabled={busy || edit}
+            ref={editButton}
             aria-expanded={edit}
-            onClick={() => setEdit(!edit)}
+            onClick={() => setEdit(true)}
           >
             {t('works.edit')}
           </button>
-          <button type="button" className="btn" disabled={busy} onClick={() => void change('treasure')}>
+          <button
+            type="button"
+            className="btn"
+            disabled={busy || edit}
+            onClick={() => void change('treasure')}
+          >
             {t(w.treasured ? 'works.unTreasure' : 'works.treasure')}
           </button>
-          <button type="button" className="btn" disabled={busy} onClick={() => void change('trash')}>
+          <button type="button" className="btn" disabled={busy || edit} onClick={() => void change('trash')}>
             {t('works.trash')}
           </button>
         </div>
         <label className="cover-input">
           {t('works.cover')}
           <input
+            name={`work-cover-${w.id}`}
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            disabled={busy}
+            disabled={busy || edit}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) void cover(file);
@@ -276,18 +313,33 @@ function WorkCard({ work: w, projects }: { work: Work; projects: Project[] }) {
         </label>
         <p className="source-note">{t('works.coverNote')}</p>
         {w.hasCover ? (
-          <button type="button" className="btn" disabled={busy} onClick={() => void change('coverRemove')}>
+          <button
+            type="button"
+            className="btn"
+            disabled={busy || edit}
+            onClick={() => void change('coverRemove')}
+          >
             {t('works.removeCover')}
           </button>
         ) : null}
         <WorkMessage code={message} />
-        {edit ? <WorkEditor work={w} projects={projects} close={() => setEdit(false)} /> : null}
+        {edit ? (
+          <WorkEditor
+            work={w}
+            projects={projects}
+            close={() => {
+              setEdit(false);
+              restoreEditorFocus(editButton);
+            }}
+          />
+        ) : null}
       </div>
     </article>
   );
 }
 export function WorksPanel({ projectId }: { projectId?: string }) {
   const { t, locale } = useI18n();
+  const addButton = useRef<HTMLButtonElement>(null);
   const invalidate = useInvalidate();
   const { data, error } = useResource<{ works: Work[]; projects: Project[] }>('/api/works');
   const [adding, setAdding] = useState(false),
@@ -325,7 +377,14 @@ export function WorksPanel({ projectId }: { projectId?: string }) {
     <section className="works-panel">
       <div className="section-heading">
         <h2>{t('works.heading')}</h2>
-        <button className="btn" type="button" aria-expanded={adding} onClick={() => setAdding(!adding)}>
+        <button
+          ref={addButton}
+          className="btn"
+          type="button"
+          disabled={adding}
+          aria-expanded={adding}
+          onClick={() => setAdding(true)}
+        >
           {t('works.new')}
         </button>
       </div>
@@ -336,7 +395,13 @@ export function WorksPanel({ projectId }: { projectId?: string }) {
           <div className="work-filters">
             <label>
               {t('works.kind')}
-              <select value={kind} onChange={(e) => setKind(e.target.value)}>
+              <select
+                name="work-kind-filter"
+                value={kind}
+                onChange={(e) => {
+                  if (confirmDraftDiscard()) setKind(e.target.value);
+                }}
+              >
                 <option value="">{t('overview.all')}</option>
                 {WORK_KINDS.map((k) => (
                   <option key={k} value={k}>
@@ -348,7 +413,13 @@ export function WorksPanel({ projectId }: { projectId?: string }) {
             {!projectId ? (
               <label>
                 {t('tasks.project')}
-                <select value={project} onChange={(e) => setProject(e.target.value)}>
+                <select
+                  name="work-project-filter"
+                  value={project}
+                  onChange={(e) => {
+                    if (confirmDraftDiscard()) setProject(e.target.value);
+                  }}
+                >
                   <option value="">{t('overview.all')}</option>
                   {data.projects.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -363,7 +434,10 @@ export function WorksPanel({ projectId }: { projectId?: string }) {
             <WorkEditor
               projects={data.projects}
               {...(projectId ? { projectId } : {})}
-              close={() => setAdding(false)}
+              close={() => {
+                setAdding(false);
+                restoreEditorFocus(addButton);
+              }}
             />
           ) : null}
           <div className="work-grid">

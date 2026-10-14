@@ -228,3 +228,28 @@
   height: 120px;
   object-fit: cover;
 }
+.today-panel button,
+.personal-editor button,
+.task-row button,
+.work-card button {
+  touch-action: manipulation;
+}
+.task-row,
+.work-card,
+.agent-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-top: 88px;
+  }
+}
+@media (max-width: 767px) {
+  html {
+    scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+.main :where(.personal-editor, .task-filter, .focus-add, .work-filters) :is(input, textarea, select) {
+  border-color: var(--c-ink3);
+}

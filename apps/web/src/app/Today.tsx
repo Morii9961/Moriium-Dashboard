@@ -3,6 +3,7 @@ import { Segmented } from '../components/Segmented.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
+import { useDraftGuard } from './drafts.ts';
 
 export type Energy = 'high' | 'normal' | 'low' | 'rest';
 export interface FocusEntry {
@@ -58,17 +59,26 @@ export function PersonalMessage({ code }: { code: string | null }) {
     </p>
   );
 }
-export function TodayPanel({ day }: { day: FocusDay }) {
-  const { t, locale } = useI18n();
+export function TodayPanel({ day: reportedDay }: { day: FocusDay }) {
+  const { t, locale, calendarDate } = useI18n();
   const invalidate = useInvalidate();
+  const [confirmedDay, setConfirmedDay] = useState<FocusDay | null>(null);
+  // A confirmed write may arrive before the refreshed GET. Use its revision for the next edit.
+  // Prefer the read once it catches up, including current state of linked tasks.
+  const day =
+    confirmedDay?.date === reportedDay.date && confirmedDay.revision > reportedDay.revision
+      ? confirmedDay
+      : reportedDay;
   const [title, setTitle] = useState('');
+  useDraftGuard(!!title.trim());
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const save = async (patch: Partial<FocusDay>) => {
     setBusy(true);
     setMessage(null);
     try {
-      await api('PUT', `/api/focus/${day.date}`, { ...day, ...patch });
+      const confirmed = await api<FocusDay>('PUT', `/api/focus/${day.date}`, { ...day, ...patch });
+      setConfirmedDay(confirmed);
       invalidate();
       setMessage('saved');
       return true;
@@ -120,7 +130,7 @@ export function TodayPanel({ day }: { day: FocusDay }) {
   return (
     <section className="today-panel" aria-labelledby="today-title">
       <h2 id="today-title">
-        {t('today.title')} · <time dateTime={day.date}>{day.date}</time> (UTC+8)
+        {t('today.title')} · <time dateTime={day.date}>{calendarDate(day.date)}</time> (UTC+8)
       </h2>
       <Segmented
         name="energy"
@@ -184,6 +194,8 @@ export function TodayPanel({ day }: { day: FocusDay }) {
         <label>
           {t('today.add')}
           <input
+            name="focus-title"
+            autoComplete="off"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required

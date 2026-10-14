@@ -5,10 +5,46 @@
 import { type AnchorHTMLAttributes, type MouseEvent, useSyncExternalStore } from 'react';
 
 const listeners = new Set<() => void>();
+const draftPrompts = new Map<symbol, string>();
+const locationKey = () => location.pathname + location.search + location.hash;
+let currentUrl = locationKey();
+let currentIndex = typeof history.state?.dashboardIndex === 'number' ? history.state.dashboardIndex : 0;
+let restoring = false;
+history.replaceState({ ...history.state, dashboardIndex: currentIndex }, '', currentUrl);
+export const confirmDraftDiscard = () =>
+  !draftPrompts.size || window.confirm(draftPrompts.values().next().value);
+export function registerDraft(message: string) {
+  const key = Symbol();
+  draftPrompts.set(key, message);
+  return () => {
+    draftPrompts.delete(key);
+  };
+}
 const notify = () => {
   for (const l of listeners) l();
 };
-window.addEventListener('popstate', notify);
+window.addEventListener('beforeunload', (e) => {
+  if (draftPrompts.size) e.preventDefault();
+});
+window.addEventListener('popstate', () => {
+  if (restoring) {
+    restoring = false;
+    return;
+  }
+  const nextIndex =
+    typeof history.state?.dashboardIndex === 'number' ? history.state.dashboardIndex : currentIndex;
+  if (!confirmDraftDiscard()) {
+    const delta = currentIndex - nextIndex;
+    if (delta) {
+      restoring = true;
+      history.go(delta);
+    } else history.replaceState({ ...history.state, dashboardIndex: currentIndex }, '', currentUrl);
+    return;
+  }
+  currentIndex = nextIndex;
+  currentUrl = locationKey();
+  notify();
+});
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -17,8 +53,10 @@ function subscribe(listener: () => void) {
 
 export function navigate(to: string, { replace = false } = {}): void {
   if (to === window.location.pathname + window.location.search + window.location.hash) return;
-  if (replace) window.history.replaceState(null, '', to);
-  else window.history.pushState(null, '', to);
+  if (!confirmDraftDiscard()) return;
+  if (replace) window.history.replaceState({ ...history.state, dashboardIndex: currentIndex }, '', to);
+  else window.history.pushState({ dashboardIndex: ++currentIndex }, '', to);
+  currentUrl = locationKey();
   notify();
 }
 

@@ -495,6 +495,7 @@ export const zhHans = {
   'works.afterSave': '先保存记录，再在成果卡上选择封面。',
   'works.openLink': '打开作品链接',
   'works.recorded': '你记录的成果',
+  'personal.discard': '有尚未保存的输入。离开并放弃这些输入？',
 } as const;
 
 export type MessageKey = keyof typeof zhHans;

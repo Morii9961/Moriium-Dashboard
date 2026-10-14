@@ -10,6 +10,7 @@ import { ProjectHistory } from './History.tsx';
 import { ItemReviewList } from './ItemReview.tsx';
 import { ManualProject } from './ManualProject.tsx';
 import { ProjectSettings } from './ProjectSettings.tsx';
+import { confirmDraftDiscard } from './router.tsx';
 import { TaskFromAction, TasksPanel } from './Tasks.tsx';
 import { AddToFocus } from './Today.tsx';
 import type { AcceptanceRecord, ProjectDetail } from './types.ts';
@@ -233,7 +234,9 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
             className="btn"
             key={key}
             aria-pressed={key === section}
-            onClick={() => setSection(key)}
+            onClick={() => {
+              if (key !== section && confirmDraftDiscard()) setSection(key);
+            }}
           >
             {t(`detail.${key as 'summary' | 'history' | 'works' | 'tasks' | 'settings'}`)}
           </button>

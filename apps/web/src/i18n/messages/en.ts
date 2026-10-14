@@ -502,4 +502,5 @@ export const en: Messages = {
   'works.afterSave': 'Save the record, then choose a cover on its card.',
   'works.openLink': 'Open work link',
   'works.recorded': 'Work recorded by you',
+  'personal.discard': 'You have unsaved input. Leave and discard it?',
 };

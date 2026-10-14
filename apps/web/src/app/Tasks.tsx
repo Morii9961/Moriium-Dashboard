@@ -1,9 +1,10 @@
 import type { NextAction } from '@moriium-dashboard/protocol';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
-import { Link } from './router.tsx';
+import { restoreEditorFocus, useDraftGuard } from './drafts.ts';
+import { confirmDraftDiscard, Link } from './router.tsx';
 import { AddToFocus } from './Today.tsx';
 import { localizedName, type Project } from './types.ts';
 
@@ -59,6 +60,17 @@ function TaskEditor({
   const [project, setProject] = useState(task?.projectId ?? projectId ?? '');
   const [date, setDate] = useState(task?.dueDate ?? '');
   const [status, setStatus] = useState<Task['status']>(task?.status ?? 'todo');
+  const [initial] = useState({ title, project, date, status });
+  const confirmClose = useDraftGuard(
+    title !== initial.title ||
+      project !== initial.project ||
+      date !== initial.date ||
+      status !== initial.status,
+  );
+  const legend = useRef<HTMLLegendElement>(null);
+  useEffect(() => {
+    legend.current?.focus();
+  }, []);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const save = async (e: FormEvent) => {
@@ -85,14 +97,24 @@ function TaskEditor({
   return (
     <form className="personal-editor task-editor" onSubmit={save}>
       <fieldset disabled={busy}>
-        <legend>{t(task ? 'tasks.edit' : 'tasks.new')}</legend>
+        <legend ref={legend} tabIndex={-1}>
+          {t(task ? 'tasks.edit' : 'tasks.new')}
+        </legend>
         <label>
           {t('tasks.title')}
-          <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={2000} />
+          <input
+            name="task-title"
+            autoComplete="off"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            maxLength={2000}
+          />
         </label>
         <label>
           {t('tasks.project')}
           <select
+            name="task-project"
             value={project}
             disabled={!!task?.sourceSnapshotId}
             onChange={(e) => setProject(e.target.value)}
@@ -107,11 +129,21 @@ function TaskEditor({
         </label>
         <label>
           {t('tasks.due')}
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            name="task-due-date"
+            autoComplete="off"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </label>
         <label>
           {t('tasks.status')}
-          <select value={status} onChange={(e) => setStatus(e.target.value as Task['status'])}>
+          <select
+            name="task-status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as Task['status'])}
+          >
             {(['todo', 'doing', 'done', 'dropped'] as const).map((s) => (
               <option key={s} value={s}>
                 {t(`tasks.status.${s}`)}
@@ -127,6 +159,7 @@ function TaskEditor({
             type="button"
             className="btn"
             onClick={() => {
+              if (!confirmClose()) return;
               invalidate();
               close();
             }}
@@ -140,7 +173,8 @@ function TaskEditor({
   );
 }
 function TaskRow({ task, projects }: { task: Task; projects: Project[] }) {
-  const { t, locale } = useI18n();
+  const { t, locale, calendarDate } = useI18n();
+  const editButton = useRef<HTMLButtonElement>(null);
   const invalidate = useInvalidate();
   const [edit, setEdit] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -168,13 +202,13 @@ function TaskRow({ task, projects }: { task: Task; projects: Project[] }) {
         <input
           type="checkbox"
           checked={task.status === 'done'}
-          disabled={busy}
+          disabled={busy || edit}
           onChange={() => void change()}
         />
         <span lang={task.lang}>{task.title}</span>
       </label>
       <p>
-        {t(`tasks.status.${task.status}`)} · {task.dueDate ?? t('tasks.noDate')}
+        {t(`tasks.status.${task.status}`)} · {task.dueDate ? calendarDate(task.dueDate) : t('tasks.noDate')}
         {project ? (
           <>
             {' '}
@@ -194,7 +228,14 @@ function TaskRow({ task, projects }: { task: Task; projects: Project[] }) {
       ) : null}
       {task.gone ? <p className="source-note">{t('tasks.gone')}</p> : null}
       <div className="page-actions">
-        <button type="button" className="btn" aria-expanded={edit} onClick={() => setEdit(!edit)}>
+        <button
+          ref={editButton}
+          type="button"
+          className="btn"
+          disabled={edit}
+          aria-expanded={edit}
+          onClick={() => setEdit(true)}
+        >
           {t('tasks.edit')}
         </button>
         {task.status !== 'done' && task.status !== 'dropped' ? (
@@ -202,7 +243,16 @@ function TaskRow({ task, projects }: { task: Task; projects: Project[] }) {
         ) : null}
       </div>
       <TaskMessage code={message} />
-      {edit ? <TaskEditor task={task} projects={projects} close={() => setEdit(false)} /> : null}
+      {edit ? (
+        <TaskEditor
+          task={task}
+          projects={projects}
+          close={() => {
+            setEdit(false);
+            restoreEditorFocus(editButton);
+          }}
+        />
+      ) : null}
     </li>
   );
 }
@@ -210,6 +260,7 @@ export function TasksPanel({ projectId }: { projectId?: string }) {
   const { t, locale } = useI18n();
   const { data, error } = useResource<{ tasks: Task[]; projects: Project[] }>('/api/tasks');
   const [adding, setAdding] = useState(false);
+  const addButton = useRef<HTMLButtonElement>(null);
   const [filter, setFilter] = useState('');
   const tasks =
     data?.tasks.filter((task) => !(projectId ?? filter) || task.projectId === (projectId ?? filter)) ?? [];
@@ -219,7 +270,14 @@ export function TasksPanel({ projectId }: { projectId?: string }) {
     <section className="tasks-panel">
       <div className="section-heading">
         <h2>{t('tasks.heading')}</h2>
-        <button type="button" className="btn" aria-expanded={adding} onClick={() => setAdding(!adding)}>
+        <button
+          ref={addButton}
+          type="button"
+          className="btn"
+          disabled={adding}
+          aria-expanded={adding}
+          onClick={() => setAdding(true)}
+        >
           {t('tasks.new')}
         </button>
       </div>
@@ -230,7 +288,13 @@ export function TasksPanel({ projectId }: { projectId?: string }) {
           {!projectId ? (
             <label className="task-filter">
               {t('tasks.project')}
-              <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <select
+                name="task-project-filter"
+                value={filter}
+                onChange={(e) => {
+                  if (confirmDraftDiscard()) setFilter(e.target.value);
+                }}
+              >
                 <option value="">{t('overview.all')}</option>
                 {data.projects.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -244,7 +308,10 @@ export function TasksPanel({ projectId }: { projectId?: string }) {
             <TaskEditor
               projects={data.projects}
               {...(projectId ? { projectId } : {})}
-              close={() => setAdding(false)}
+              close={() => {
+                setAdding(false);
+                restoreEditorFocus(addButton);
+              }}
             />
           ) : null}
           {open.length ? (
