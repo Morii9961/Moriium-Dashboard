@@ -6,6 +6,7 @@
  * 不包含会话、口令、服务端配置和任何本机路径；快照只记文件名。
  */
 import type { Database } from './db.ts';
+import { readFocus } from './focus.ts';
 import { listBatches } from './imports.ts';
 import { itemStates } from './items.ts';
 import { manualMilestones } from './manual.ts';
@@ -95,6 +96,7 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
         name: 'data.json',
         data: json({
           projects,
+          focus: readFocus(db, now),
           snapshots,
           importBatches: batches,
           acceptances: acceptanceRecords(db),

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { figureOf, ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
 import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
@@ -9,6 +9,7 @@ import { ItemReview } from './ItemReview.tsx';
 import { ManualSummary } from './ManualProject.tsx';
 import { projectPath, ReportAge } from './ProjectList.tsx';
 import { Link } from './router.tsx';
+import { TodayPanel, useToday } from './Today.tsx';
 import type { OverviewData, ProjectWithCurrent } from './types.ts';
 import { localizedName } from './types.ts';
 import { PageHeader, SnapshotSteps } from './ui.tsx';
@@ -80,6 +81,7 @@ export function OverviewPage() {
   const { t, locale, fullDate, relative, snapshotTime } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useResource<OverviewData>('/api/overview');
+  const today = useToday();
   const projects = [
     ...(data?.projects.filter((p) => p.attention === 'active' || p.attention === 'waiting') ?? []),
   ].sort(
@@ -126,7 +128,9 @@ export function OverviewPage() {
       <PageHeader
         meta={<time dateTime={now.toISOString()}>{fullDate(now)}</time>}
         title={
-          data ? (
+          today.data?.energy === 'rest' ? (
+            t('nav.overview')
+          ) : data ? (
             items.length || projects.some((p) => p.tracking === 'manual') ? (
               <>
                 <span>{t('hero.projects', { projects: projects.length })}</span>
@@ -144,126 +148,152 @@ export function OverviewPage() {
         <p>{t(error ? 'projects.loadFailed' : 'common.loading')}</p>
       ) : (
         <>
-          <TransitMap lines={lines} />
-          {items.length === 0 && !projects.some((p) => p.tracking === 'manual') ? <SnapshotSteps /> : null}
-          <div className="overview-layout">
-            <div>
-              <section className="overview-section">
-                <div className="section-heading">
-                  <h2>
-                    {t('nav.inbox')} · {data.pending.length}
-                  </h2>
-                  <Link to="/inbox">{t('overview.all')}</Link>
-                </div>
-                <PendingList data={data} limit={5} />
-              </section>
-              <section className="overview-section">
-                <div className="section-heading">
-                  <h2>{t('nav.projects')}</h2>
-                  <Link to="/projects">{t('overview.all')}</Link>
-                </div>
-                <div className="strips">
-                  {items.map((item) => (
-                    <ProjectStrip key={item.anchor} item={item} now={now} />
-                  ))}
-                </div>
-                {projects
-                  .filter((p) => p.tracking === 'manual')
-                  .map((p) => (
-                    <article className="manual-overview" key={p.id}>
-                      <h3>
-                        <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
-                      </h3>
-                      <ManualSummary project={p} />
-                    </article>
-                  ))}
-                {projects
-                  .filter((p) => !p.current && p.tracking === 'protocol')
-                  .map((p) => (
-                    <p key={p.id}>
-                      <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link> · {t('map.noSnapshot')}
-                    </p>
-                  ))}
-                {data.projects.some((p) => p.attention === 'paused') ? (
-                  <details className="resting-projects">
-                    <summary>
-                      {t('overview.paused', {
-                        n: data.projects.filter((p) => p.attention === 'paused').length,
-                      })}
-                    </summary>
-                    {data.projects
-                      .filter((p) => p.attention === 'paused')
-                      .map((p) => (
-                        <p key={p.id}>
+          {today.data ? (
+            <TodayPanel key={today.data.date} day={today.data} />
+          ) : (
+            <p>{t(today.error ? 'projects.loadFailed' : 'common.loading')}</p>
+          )}
+          {today.data?.energy === 'low' ? (
+            <section className="overview-section">
+              <h2>{t('today.urgent')}</h2>
+              <PendingList data={{ ...data, pending: data.pending.filter((i) => i.item?.state?.dueDate) }} />
+            </section>
+          ) : null}
+          <EnergyContent energy={today.data?.energy ?? null}>
+            <TransitMap lines={lines} />
+            {items.length === 0 && !projects.some((p) => p.tracking === 'manual') ? <SnapshotSteps /> : null}
+            <div className="overview-layout">
+              <div>
+                <section className="overview-section">
+                  <div className="section-heading">
+                    <h2>
+                      {t('nav.inbox')} · {data.pending.length}
+                    </h2>
+                    <Link to="/inbox">{t('overview.all')}</Link>
+                  </div>
+                  <PendingList data={data} limit={5} />
+                </section>
+                <section className="overview-section">
+                  <div className="section-heading">
+                    <h2>{t('nav.projects')}</h2>
+                    <Link to="/projects">{t('overview.all')}</Link>
+                  </div>
+                  <div className="strips">
+                    {items.map((item) => (
+                      <ProjectStrip key={item.anchor} item={item} now={now} />
+                    ))}
+                  </div>
+                  {projects
+                    .filter((p) => p.tracking === 'manual')
+                    .map((p) => (
+                      <article className="manual-overview" key={p.id}>
+                        <h3>
                           <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
-                        </p>
+                        </h3>
+                        <ManualSummary project={p} />
+                      </article>
+                    ))}
+                  {projects
+                    .filter((p) => !p.current && p.tracking === 'protocol')
+                    .map((p) => (
+                      <p key={p.id}>
+                        <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link> · {t('map.noSnapshot')}
+                      </p>
+                    ))}
+                  {data.projects.some((p) => p.attention === 'paused') ? (
+                    <details className="resting-projects">
+                      <summary>
+                        {t('overview.paused', {
+                          n: data.projects.filter((p) => p.attention === 'paused').length,
+                        })}
+                      </summary>
+                      {data.projects
+                        .filter((p) => p.attention === 'paused')
+                        .map((p) => (
+                          <p key={p.id}>
+                            <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
+                          </p>
+                        ))}
+                    </details>
+                  ) : null}
+                </section>
+                <section className="overview-section">
+                  <h2>{t('overview.delivery')}</h2>
+                  {data.recentDelivery.length ? (
+                    <ul className="delivery-list">
+                      {data.recentDelivery.map((r) => (
+                        <li key={`${r.projectId}:${r.milestoneId}`}>
+                          <Link to={projectPath(r.projectId)}>
+                            {projectLabel(data, r.projectId, locale, r.projectName)}
+                          </Link>
+                          <p lang="zh-Hans">{r.title}</p>
+                          <time dateTime={r.at}>
+                            {t('evidence.accepted', { date: snapshotTime(Date.parse(r.at), 480) })}
+                          </time>
+                        </li>
                       ))}
-                  </details>
-                ) : null}
-              </section>
-              <section className="overview-section">
-                <h2>{t('overview.delivery')}</h2>
-                {data.recentDelivery.length ? (
-                  <ul className="delivery-list">
-                    {data.recentDelivery.map((r) => (
-                      <li key={`${r.projectId}:${r.milestoneId}`}>
+                    </ul>
+                  ) : (
+                    <p>{t('overview.noDelivery')}</p>
+                  )}
+                </section>
+              </div>
+              <aside className="overview-side">
+                <section className="overview-section">
+                  <h2>{t('overview.freshness')}</h2>
+                  <ul className="age-list">
+                    {[...projects]
+                      .filter((p) => p.tracking === 'protocol')
+                      .sort((a, b) => ageRank(b) - ageRank(a))
+                      .map((p) => (
+                        <li key={p.id}>
+                          <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
+                          <ReportAge project={p} now={now} />
+                          <button type="button" className="btn" onClick={() => open(p.id)}>
+                            {t('overview.update')}
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                </section>
+                <section className="overview-section">
+                  <h2>{t('overview.reports')}</h2>
+                  <ul className="age-list">
+                    {data.latestReports.map((r) => (
+                      <li key={r.agent ?? 'unknown'}>
+                        <strong>{t(r.agent ? `agent.${r.agent}` : 'agent.unknown')}</strong>
                         <Link to={projectPath(r.projectId)}>
                           {projectLabel(data, r.projectId, locale, r.projectName)}
                         </Link>
-                        <p lang="zh-Hans">{r.title}</p>
-                        <time dateTime={r.at}>
-                          {t('evidence.accepted', { date: snapshotTime(Date.parse(r.at), 480) })}
+                        <span>
+                          {t('more.snapshot')} · {relative(r.utcMs, now)}
+                        </span>
+                        <time dateTime={r.importedAt}>
+                          {t('detail.imported')} · {relative(Date.parse(r.importedAt), now)}
                         </time>
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p>{t('overview.noDelivery')}</p>
-                )}
-              </section>
+                  <p className="source-note">{t('detail.notOnline')}</p>
+                </section>
+              </aside>
             </div>
-            <aside className="overview-side">
-              <section className="overview-section">
-                <h2>{t('overview.freshness')}</h2>
-                <ul className="age-list">
-                  {[...projects]
-                    .filter((p) => p.tracking === 'protocol')
-                    .sort((a, b) => ageRank(b) - ageRank(a))
-                    .map((p) => (
-                      <li key={p.id}>
-                        <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
-                        <ReportAge project={p} now={now} />
-                        <button type="button" className="btn" onClick={() => open(p.id)}>
-                          {t('overview.update')}
-                        </button>
-                      </li>
-                    ))}
-                </ul>
-              </section>
-              <section className="overview-section">
-                <h2>{t('overview.reports')}</h2>
-                <ul className="age-list">
-                  {data.latestReports.map((r) => (
-                    <li key={r.agent ?? 'unknown'}>
-                      <strong>{t(r.agent ? `agent.${r.agent}` : 'agent.unknown')}</strong>
-                      <Link to={projectPath(r.projectId)}>
-                        {projectLabel(data, r.projectId, locale, r.projectName)}
-                      </Link>
-                      <span>
-                        {t('more.snapshot')} · {relative(r.utcMs, now)}
-                      </span>
-                      <time dateTime={r.importedAt}>
-                        {t('detail.imported')} · {relative(Date.parse(r.importedAt), now)}
-                      </time>
-                    </li>
-                  ))}
-                </ul>
-                <p className="source-note">{t('detail.notOnline')}</p>
-              </section>
-            </aside>
-          </div>
+          </EnergyContent>
         </>
       )}
     </>
   );
+}
+
+function EnergyContent({ energy, children }: { energy: string | null; children: ReactNode }) {
+  const { t } = useI18n();
+  if (energy === 'rest') return null;
+  if (energy === 'low')
+    return (
+      <details className="energy-collapsed">
+        <summary>{t('today.collapsed')}</summary>
+        {children}
+      </details>
+    );
+  return children;
 }

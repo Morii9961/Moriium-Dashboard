@@ -77,19 +77,68 @@ try {
         page.on('request', (r) => {
           if (!r.url().startsWith(base)) errors.push(`External request: ${r.url()}`);
         });
-        await page.goto(`${base}/agents`, { waitUntil: 'networkidle' });
-        await page.locator('.agent-card').first().waitFor();
-        if ((await page.locator('.agent-card').count()) !== 4) throw new Error('Agent groups missing');
-        if ((await page.locator('.agent-reports li').count()) !== 2)
-          throw new Error('Report records missing');
-        await page.screenshot({ path: `${out}/${width}-${theme}-${locale}-demo.png`, fullPage: true });
-        if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
-          throw new Error(`Overflow: ${width}/${theme}/${locale}`);
-        await page.locator('.agent-card a[href="/agents/codex"]').focus();
-        await page.keyboard.press('Enter');
-        await page.waitForURL('**/agents/codex');
-        await page.locator('.agent-reports li').waitFor();
-        if ((await page.locator('.agent-card').count()) !== 1) throw new Error('Agent filter failed');
+        if (phase === 'p5-1') {
+          await page.goto(`${base}/agents`, { waitUntil: 'networkidle' });
+          await page.locator('.agent-card').first().waitFor();
+          if ((await page.locator('.agent-card').count()) !== 4) throw new Error('Agent groups missing');
+          if ((await page.locator('.agent-reports li').count()) !== 2)
+            throw new Error('Report records missing');
+          await page.screenshot({ path: `${out}/${width}-${theme}-${locale}-demo.png`, fullPage: true });
+          if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+            throw new Error(`Overflow: ${width}/${theme}/${locale}`);
+          await page.locator('.agent-card a[href="/agents/codex"]').focus();
+          await page.keyboard.press('Enter');
+          await page.waitForURL('**/agents/codex');
+          await page.locator('.agent-reports li').waitFor();
+          if ((await page.locator('.agent-card').count()) !== 1) throw new Error('Agent filter failed');
+        } else {
+          await page.goto(`${base}/planner`, { waitUntil: 'networkidle' });
+          await page.locator('.today-panel').waitFor();
+          const input = page.locator('.focus-add input');
+          for (const title of [
+            '整理虚构照片集',
+            '確認用の書類を読む',
+            'Prepare a longer demonstration delivery note',
+          ]) {
+            await input.fill(title);
+            await page.locator('.focus-add button').focus();
+            await page.keyboard.press('Enter');
+            await page.waitForFunction(
+              () => document.querySelector<HTMLInputElement>('.focus-add input')?.value === '',
+            );
+          }
+          if ((await page.locator('.focus-list li').count()) !== 3) throw new Error('Focus list missing');
+          await page.locator('.focus-list li').last().locator('button').first().click();
+          await page.waitForFunction(() =>
+            document.querySelectorAll('.focus-list li')[1]?.textContent?.includes('Prepare a longer'),
+          );
+          await page.locator('.focus-list input[type="checkbox"]').first().click();
+          await page.locator('.focus-list input:checked').waitFor();
+          await page.reload({ waitUntil: 'networkidle' });
+          if (!(await page.locator('.focus-list input[type="checkbox"]').first().isChecked()))
+            throw new Error('Focus completion did not persist');
+          await page.screenshot({ path: `${out}/${width}-${theme}-${locale}-demo.png`, fullPage: true });
+          if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+            throw new Error('Focus overflow');
+          await page.goto(base, { waitUntil: 'networkidle' });
+          await page.locator('input[value="low"]').click();
+          await page.locator('.energy-collapsed').waitFor();
+          if ((await page.locator('.energy-collapsed').getAttribute('open')) !== null)
+            throw new Error('Low content was not collapsed');
+          await page.locator('input[value="rest"]').click();
+          await page.waitForFunction(() => !document.querySelector('.overview-layout'));
+          if (await page.locator('.age-list').count()) throw new Error('Rest shows freshness');
+          await page.screenshot({ path: `${out}/rest-${width}-${theme}-${locale}-demo.png`, fullPage: true });
+          await page.locator('input[value="normal"]').click();
+          await page.locator('.overview-layout').waitFor();
+          for (let i = 0; i < 3; i++) {
+            await page.locator('.focus-list li').last().locator('button').last().click();
+            await page.waitForFunction(
+              (n) => document.querySelectorAll('.focus-list li').length === n,
+              2 - i,
+            );
+          }
+        }
         if (errors.length) throw new Error(errors.join('\n'));
         console.log(`${width}/${theme}/${locale}: rendered, keyboard, overflow, CSP and network passed`);
         await page.close();

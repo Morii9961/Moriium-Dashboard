@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
 import { useInvalidate } from './data.tsx';
 import { ReviewMessage } from './ProjectDetail.tsx';
+import { AddToFocus } from './Today.tsx';
 import type { ItemState, ReviewItem } from './types.ts';
 
 export function ItemReview({
@@ -48,6 +49,7 @@ export function ItemReview({
       id={`item-${encodeURIComponent(projectId)}-${item.kind}-${encodeURIComponent(item.key)}`}
     >
       <p lang="zh-Hans">{item.text}</p>
+      {!item.gone && item.pending ? <AddToFocus title={item.text} /> : null}
       {item.impact ? (
         <p className="source-note" lang="zh-Hans">
           {item.impact}

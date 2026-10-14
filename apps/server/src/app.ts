@@ -12,6 +12,7 @@ import type { ServerConfig } from './config.ts';
 import { currentSchemaVersion, type Database } from './db.ts';
 import { overview } from './overview.ts';
 import { exportRoutes } from './routes/export.ts';
+import { focusRoutes } from './routes/focus.ts';
 import { historyRoutes } from './routes/history.ts';
 import { importRoutes } from './routes/imports.ts';
 import { projectRoutes } from './routes/projects.ts';
@@ -65,6 +66,7 @@ export function createApp(ctx: AppContext) {
   app.get('/api/agents', (c) => c.json(agentReports(ctx.db, ctx.now?.() ?? new Date())));
   app.get('/api/overview', (c) => c.json(overview(ctx.db, ctx.now?.() ?? new Date())));
   reviewRoutes(app, ctx);
+  focusRoutes(app, ctx);
   importRoutes(app, ctx);
   historyRoutes(app, ctx);
   exportRoutes(app, ctx);
