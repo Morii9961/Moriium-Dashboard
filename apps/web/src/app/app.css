@@ -907,6 +907,33 @@
   font-size: var(--text-sm);
   color: var(--c-warn-text);
 }
+.paste-snapshot form {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.paste-snapshot label {
+  font-weight: 600;
+}
+.paste-snapshot p {
+  color: var(--c-ink2);
+  font-size: var(--text-sm);
+}
+.paste-snapshot textarea {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--c-ink3);
+  border-radius: var(--radius-sm);
+  background: var(--c-raised);
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  resize: vertical;
+}
+.paste-snapshot button {
+  justify-self: start;
+}
 .idialog-actions {
   position: sticky;
   bottom: 0;
