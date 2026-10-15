@@ -34,6 +34,8 @@ import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
+import { useDraftGuard } from './drafts.ts';
+import { PasteSnapshot } from './PasteSnapshot.tsx';
 import { Link } from './router.tsx';
 import type { FileOutcome, FilePreview, ProjectWithCurrent, ReporterAgent, ShownIssue } from './types.ts';
 
@@ -67,8 +69,8 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-async function readEntry(file: File, index: number): Promise<Entry> {
-  const key = `${Date.now()}-${index}-${file.name}`;
+async function readEntry(file: File): Promise<Entry> {
+  const key = crypto.randomUUID();
   if (file.size > MAX_BYTES)
     return { key, name: file.name, base64: null, tooLargeKb: Math.ceil(file.size / 1024) };
   return { key, name: file.name, base64: toBase64(new Uint8Array(await file.arrayBuffer())) };
@@ -402,8 +404,13 @@ function ImportDialog({
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ batchId: number; results: FileOutcome[] } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [paste, setPaste] = useState('');
+  const [pasteTooLarge, setPasteTooLarge] = useState(false);
+  const [reading, setReading] = useState(false);
+  const confirmClose = useDraftGuard(paste.length > 0);
   const input = useRef<HTMLInputElement>(null);
   const seq = useRef(0);
+  const session = useRef(0);
 
   useEffect(() => setExpected(projectId), [projectId]);
 
@@ -412,8 +419,11 @@ function ImportDialog({
   const signature = JSON.stringify([expected, sendable.map((e) => [e.key, e.codeFence, e.conflict])]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: signature 概括了会影响预览的全部输入。
   useEffect(() => {
-    if (sendable.length === 0) return;
     const mine = ++seq.current;
+    if (sendable.length === 0) {
+      setChecking(false);
+      return;
+    }
     setChecking(true);
     setError(null);
     api<{ files: FilePreview[] }>('POST', '/api/imports/check', {
@@ -435,15 +445,48 @@ function ImportDialog({
         setError(err instanceof ApiError && err.code === 'offline' ? 'apiError.offline' : 'apiError.unknown');
       })
       .finally(() => mine === seq.current && setChecking(false));
+    return () => {
+      seq.current++;
+    };
   }, [signature]);
 
   const addFiles = async (list: FileList | File[]) => {
+    if (reading || submitting) return;
+    const currentSession = session.current;
+    setReading(true);
     const files = [...list];
     const room = MAX_FILES - entries.length;
     setNotice(files.length > room ? 'import.tooMany' : null);
-    const read = await Promise.all(files.slice(0, Math.max(0, room)).map(readEntry));
-    setResult(null);
-    setEntries((prev) => [...prev, ...read]);
+    try {
+      const read = await Promise.all(files.slice(0, Math.max(0, room)).map(readEntry));
+      if (currentSession !== session.current) return;
+      setResult(null);
+      setEntries((prev) => [...prev, ...read].slice(0, MAX_FILES));
+    } catch {
+      if (currentSession === session.current) setError('apiError.unknown');
+    } finally {
+      if (currentSession === session.current) setReading(false);
+    }
+  };
+
+  const previewPaste = () => {
+    if (reading || checking || submitting || !paste.trim()) return;
+    if (entries.length >= MAX_FILES) {
+      setNotice('import.tooMany');
+      return;
+    }
+    const bytes = new TextEncoder().encode(paste);
+    if (bytes.byteLength > MAX_BYTES) {
+      setPasteTooLarge(true);
+      return;
+    }
+    setEntries((prev) => [
+      ...prev,
+      { key: crypto.randomUUID(), name: 'pasted-snapshot.json', base64: toBase64(bytes) },
+    ]);
+    setPaste('');
+    setPasteTooLarge(false);
+    setNotice(null);
   };
 
   const onDrop = (e: DragEvent) => {
@@ -486,11 +529,20 @@ function ImportDialog({
   };
 
   const close = () => {
+    session.current++;
+    seq.current++;
     setEntries([]);
+    setPaste('');
+    setPasteTooLarge(false);
+    setReading(false);
+    setChecking(false);
     setResult(null);
     setNotice(null);
     setError(null);
     onClose();
+  };
+  const requestClose = () => {
+    if (!submitting && confirmClose()) dialog.current?.close();
   };
 
   const projectName = expected ? (data?.projects.find((p) => p.id === expected)?.name ?? expected) : null;
@@ -502,8 +554,12 @@ function ImportDialog({
       className="idialog"
       aria-labelledby="idialog-title"
       onClose={close}
+      onCancel={(e) => {
+        e.preventDefault();
+        requestClose();
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) dialog.current?.close();
+        if (e.target === e.currentTarget) requestClose();
       }}
     >
       <div className="idialog-inner">
@@ -511,12 +567,7 @@ function ImportDialog({
           <h2 id="idialog-title" className="idialog-title">
             {projectName ? t('import.titleFor', { name: projectName }) : t('import.title')}
           </h2>
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label={t('import.cancel')}
-            onClick={() => dialog.current?.close()}
-          >
+          <button type="button" className="icon-btn" aria-label={t('import.cancel')} onClick={requestClose}>
             <X size={18} aria-hidden="true" />
           </button>
         </header>
@@ -542,7 +593,12 @@ function ImportDialog({
               <FileArrowUp className="dropzone-icon" size={entries.length > 0 ? 22 : 36} aria-hidden="true" />
               <p className="dropzone-text">{t('import.drop')}</p>
               <p className="dropzone-sub">
-                <button type="button" className="btn" onClick={() => input.current?.click()}>
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={reading || submitting}
+                  onClick={() => input.current?.click()}
+                >
                   {t('import.choose')}
                 </button>
                 <span>{t('import.multi')}</span>
@@ -559,6 +615,17 @@ function ImportDialog({
                 }}
               />
             </div>
+
+            <PasteSnapshot
+              text={paste}
+              onChange={(text) => {
+                setPaste(text);
+                setPasteTooLarge(false);
+              }}
+              onPreview={previewPaste}
+              disabled={reading || checking || submitting}
+              tooLarge={pasteTooLarge}
+            />
 
             {notice ? <p className="idialog-notice">{t(notice)}</p> : null}
 
@@ -595,13 +662,13 @@ function ImportDialog({
             ) : null}
 
             <div className="idialog-actions">
-              <button type="button" className="btn btn-quiet" onClick={() => dialog.current?.close()}>
+              <button type="button" className="btn btn-quiet" disabled={submitting} onClick={requestClose}>
                 {t('import.cancel')}
               </button>
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={ready.length === 0 || checking || submitting}
+                disabled={ready.length === 0 || checking || submitting || reading || paste.length > 0}
                 onClick={submit}
               >
                 {ready.length > 0 ? t('import.submit', { count: ready.length }) : t('import.nothing')}
