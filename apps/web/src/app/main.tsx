@@ -9,6 +9,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nProvider } from '../i18n/i18n.tsx';
 import { App } from './App.tsx';
+import { CommandProvider } from './Commands.tsx';
 import { DataProvider } from './data.tsx';
 import { ImportProvider } from './ImportDialog.tsx';
 import { ServiceProvider } from './service.tsx';
@@ -21,7 +22,9 @@ if (root) {
         <ServiceProvider>
           <DataProvider>
             <ImportProvider>
-              <App />
+              <CommandProvider>
+                <App />
+              </CommandProvider>
             </ImportProvider>
           </DataProvider>
         </ServiceProvider>

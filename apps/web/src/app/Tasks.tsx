@@ -2,6 +2,7 @@ import type { NextAction } from '@moriium-dashboard/protocol';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
+import { useCreationCommand } from './creation.ts';
 import { useInvalidate, useResource } from './data.tsx';
 import { restoreEditorFocus, useDraftGuard } from './drafts.ts';
 import { confirmDraftDiscard, Link } from './router.tsx';
@@ -261,6 +262,20 @@ export function TasksPanel({ projectId }: { projectId?: string }) {
   const { data, error } = useResource<{ tasks: Task[]; projects: Project[] }>('/api/tasks');
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLButtonElement>(null);
+  useCreationCommand(
+    'task',
+    projectId
+      ? null
+      : () => {
+          setAdding(true);
+          requestAnimationFrame(() =>
+            addButton.current
+              ?.closest('section')
+              ?.querySelector<HTMLElement>(':scope > .task-editor legend')
+              ?.focus(),
+          );
+        },
+  );
   const [filter, setFilter] = useState('');
   const tasks =
     data?.tasks.filter((task) => !(projectId ?? filter) || task.projectId === (projectId ?? filter)) ?? [];

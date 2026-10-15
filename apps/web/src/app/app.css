@@ -859,6 +859,79 @@
 
 /* ---------- 导入对话框 ---------- */
 
+.command-dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(80dvh, 720px);
+  padding: 0;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  background: var(--c-canvas);
+  color: var(--c-ink1);
+}
+.command-dialog::backdrop {
+  background: oklch(0.15 0.01 250 / 0.45);
+}
+.command-inner {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+.command-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.command-heading h2 {
+  font-size: var(--text-xl);
+}
+.command-inner > input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--c-ink3);
+  border-radius: var(--radius-sm);
+  background: var(--c-raised);
+}
+.command-inner > p {
+  font-size: var(--text-sm);
+  color: var(--c-ink2);
+}
+.command-results {
+  display: grid;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.command-results button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--c-border-weak);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  text-align: start;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.command-results button:hover {
+  background: var(--c-raised);
+  border-color: var(--c-ink3);
+}
+.command-results .mono {
+  color: var(--c-ink3);
+  font-size: var(--text-sm);
+}
+.command-dialog :is(input, button) {
+  scroll-margin-block: var(--space-3);
+}
+
 .idialog {
   width: min(780px, calc(100vw - 32px));
   max-height: min(88dvh, 900px);
