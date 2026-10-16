@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import { ApiError, api } from './api.ts';
+import { useCreationCommand } from './creation.ts';
 import { useInvalidate, useResource } from './data.tsx';
 import { restoreEditorFocus, useDraftGuard } from './drafts.ts';
 import { confirmDraftDiscard, Link } from './router.tsx';
@@ -347,6 +348,20 @@ export function WorksPanel({ projectId }: { projectId?: string }) {
     [project, setProject] = useState(''),
     [message, setMessage] = useState<string | null>(null),
     [busy, setBusy] = useState(false);
+  useCreationCommand(
+    'work',
+    projectId
+      ? null
+      : () => {
+          setAdding(true);
+          requestAnimationFrame(() =>
+            addButton.current
+              ?.closest('section')
+              ?.querySelector<HTMLElement>(':scope > .work-editor legend')
+              ?.focus(),
+          );
+        },
+  );
   const selected =
     data?.works.filter(
       (w) =>

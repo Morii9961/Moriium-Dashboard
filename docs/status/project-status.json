@@ -2,35 +2,36 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-14T18:29:44+08:00",
+  "snapshot_at": "2026-10-15T22:41:57+08:00",
   "source": {
-    "branch": "codex/p5-5-accessibility",
-    "commit_sha": "cc89929940a6ec7c6e2eb542ba39f968f416149f",
+    "branch": "codex/p5-command-palette",
+    "commit_sha": "2154e297a77f48b675725cdbba3edf8e600a9235",
+    "tests_rerun": false,
     "basis": [
-      "docs/planning/01-product-vision-and-prd.md 第 8 节与 06-mvp-and-roadmap.md 的 P5 交付标准",
+      "docs/planning/06-mvp-and-roadmap.md 的 P5.5 可选收尾与产品验收边界",
       "docs/design-decisions.md",
-      "docs/verification/p5-1.md",
-      "docs/verification/p5-2.md",
-      "docs/verification/p5-3.md",
-      "docs/verification/p5-4.md",
       "docs/verification/p5-5.md",
-      "docs/handoff-2026-10-14-p5-trial.md",
+      "docs/verification/p5-paste-json.md",
+      "docs/verification/p5-command-palette.md",
+      "docs/handoff-2026-10-15-p5-extras.md",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/24",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/25",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/26",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/27",
-      "P5 PR #24 到 #27 已核实普通合并；P5.5 随本快照所在 PR 交付，最终 CI 与合并以 GitHub 为准",
-      "本机 pnpm verify：326 项测试、17 个测试文件、类型与公开树审计通过；生产构建通过；虚构数据库十二组桌面/375px、浅深与三语功能及草稿走查通过",
-      "P4 产品验收及 P5 一周真实试用尚未进行；本轮没有打开正式库或运行正式数据迁移"
-    ],
-    "tests_rerun": false
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/28",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/29",
+      "PR #24 到 #29 已核实普通合并；命令面板随本快照所在 PR 交付，最终 CI 与合并状态以 GitHub 为准",
+      "本机 pnpm verify：326 项测试、类型与公开树审计通过；独立生产构建通过；粘贴 JSON 与命令面板各十二组虚构数据界面流程通过",
+      "2026-10-15 Morii 明确授权原正式库备份、从结构 7 升至 10 并启动；启用时六项目十历史及其他旧表记录数量与内容指纹一致，原库与迁移前备份完整性通过",
+      "P4 产品验收与 P5 一周真实试用仍待 Morii；不代填结果，不打 v0.1.0，不进入 P6"
+    ]
   },
   "reporter": {
     "agent": "codex",
-    "note": "P5 核心工程与开发方界面评审完成；P4 产品验收及 P5 一周真实试用待 Morii"
+    "note": "P5 核心及可选粘贴 JSON、命令面板工程验证完成；原正式实例已获授权备份升级并启动，产品验收仍待 Morii"
   },
   "stage": "acceptance",
-  "summary": "P5 核心工程完成：Agents、今日焦点与精力、任务及确切来源、成果与受限封面、最近交付和界面评审已验证。P4 产品验收与 P5 一周真实试用待 Morii；正式实例尚未更新，未打 v0.1.0，P6 未开始。",
+  "summary": "P5 核心、粘贴 JSON 和命令面板已实现并验证。原正式库已获授权备份升级至结构 10 并启动，旧记录核对完整。P4 产品验收与 P5 一周真实使用待 Morii；未打 v0.1.0，P6 未开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -103,8 +104,11 @@
         "https://github.com/Morii9961/Moriium-Dashboard/pull/25",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/26",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/27",
-        "docs/verification/p5-5.md",
-        "docs/handoff-2026-10-14-p5-trial.md"
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/28",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/29",
+        "docs/verification/p5-paste-json.md",
+        "docs/verification/p5-command-palette.md",
+        "docs/handoff-2026-10-15-p5-extras.md"
       ],
       "human_acceptance": "pending"
     },

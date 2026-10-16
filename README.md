@@ -8,6 +8,8 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 P1 到 P3 已合并。P4 工程完成，产品验收待 Morii。P5 核心功能与界面评审已完成：Agents、今日焦点和精力、任务及来源、成果与封面，等待一周真实试用。未打 `v0.1.0` 标签，P6 未开始。启动与试用清单见 [P5 交接](./docs/handoff-2026-10-14-p5-trial.md)。
 
+P5 可选收尾已补齐粘贴 JSON 与命令面板（Ctrl / ⌘ K）；当前交接见 [2026-10-15 记录](./docs/handoff-2026-10-15-p5-extras.md)。
+
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
 - 设计决定：[`docs/design-decisions.md`](./docs/design-decisions.md)

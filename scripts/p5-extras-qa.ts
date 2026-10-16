@@ -10,6 +10,7 @@ import { applyMigrations, loadMigrations, openDatabase } from '../apps/server/sr
 import { en } from '../apps/web/src/i18n/messages/en.ts';
 import { ja } from '../apps/web/src/i18n/messages/ja.ts';
 import { zhHans } from '../apps/web/src/i18n/messages/zh-Hans.ts';
+import { auditCommands } from './p5-commands-qa.ts';
 
 const { serve } = createRequire(resolve('apps/server/package.json'))('@hono/node-server');
 const dir = mkdtempSync(join(tmpdir(), 'dashboard-p5-extras-'));
@@ -26,6 +27,15 @@ db.prepare('INSERT INTO projects(id,name,name_ja,name_en,created_at,updated_at) 
   at,
   at,
 );
+if (process.argv[2] === 'commands') {
+  for (let i = 0; i < 60; i++)
+    db.prepare('INSERT INTO projects(id,name,created_at,updated_at) VALUES(?,?,?,?)').run(
+      `demo.extra-${String(i).padStart(2, '0')}`,
+      `虚构项目 ${i} · Longer demonstration project`,
+      at,
+      at,
+    );
+}
 const port = 5192;
 const base = `http://127.0.0.1:${port}`;
 const app = createApp({
@@ -67,6 +77,8 @@ try {
         });
         page.on('request', (r) => {
           if (!r.url().startsWith(base)) errors.push('External request');
+          if (phase === 'commands' && !['GET', 'HEAD'].includes(r.method()))
+            errors.push('Unexpected command write request');
         });
         await page.goto(base, { waitUntil: 'networkidle' });
         if (phase === 'paste') {
@@ -146,6 +158,19 @@ try {
           if (!(await commit.isDisabled()) || count() !== before + 2)
             throw new Error('Duplicate paste can be imported');
           await dialog.getByRole('button', { name: messages['import.cancel'], exact: true }).last().click();
+        } else if (phase === 'commands') {
+          const before = {
+            snapshots: count(),
+            tasks: db.prepare('SELECT COUNT(*) AS n FROM tasks').get()?.n,
+            works: db.prepare('SELECT COUNT(*) AS n FROM works').get()?.n,
+          };
+          await auditCommands(page, messages, `${out}/${width}-${theme}-${locale}.png`);
+          if (
+            count() !== before.snapshots ||
+            db.prepare('SELECT COUNT(*) AS n FROM tasks').get()?.n !== before.tasks ||
+            db.prepare('SELECT COUNT(*) AS n FROM works').get()?.n !== before.works
+          )
+            throw new Error('Command wrote business data');
         } else throw new Error('Unknown QA phase');
         if (errors.length) throw new Error(errors.join('\n'));
         console.log(`${phase}: ${width}/${theme}/${locale} passed`);

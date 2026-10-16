@@ -27,6 +27,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { readThemePref, setThemePref, THEME_PREFS, type ThemePref } from '../theme/theme.ts';
+import { CommandButton } from './Commands.tsx';
 import { useImport } from './ImportDialog.tsx';
 import { Link, usePath } from './router.tsx';
 import { useService } from './service.tsx';
@@ -150,6 +151,7 @@ function SideActions({ path, onNavigate }: { path: string; onNavigate?: () => vo
   const { open: openImport } = useImport();
   return (
     <div className="side-actions">
+      <CommandButton beforeOpen={onNavigate} />
       <button
         type="button"
         className="side-action side-action-primary"
@@ -239,6 +241,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </button>
         <Brand />
         <div className="mobilebar-actions">
+          <CommandButton compact />
           <button
             type="button"
             className="icon-btn"
