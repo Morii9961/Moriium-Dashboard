@@ -31,6 +31,8 @@ interface SnapshotRow {
   reporter_source: string;
   imported_at: string;
   file_name: string;
+  batch_id: number | null;
+  reporter_note: string | null;
   superseded_by: number | null;
   deleted_at: string | null;
 }
@@ -45,7 +47,7 @@ function snapshotRows(db: Database): SnapshotRow[] {
   return db
     .prepare(
       `SELECT id, project_id, snapshot_at, snapshot_at_utc_ms, schema_version, content_fingerprint, raw_fingerprint, raw,
-              reporter_agent, reporter_source, imported_at, file_name, superseded_by, deleted_at
+              reporter_agent, reporter_source, reporter_note, batch_id, imported_at, file_name, superseded_by, deleted_at
        FROM status_snapshots ORDER BY project_id, snapshot_at_utc_ms, id`,
     )
     .all() as unknown as SnapshotRow[];
@@ -59,6 +61,7 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
   const batches = listBatches(db, 100_000);
   const files: ZipEntry[] = [];
   const works = workRecords(db);
+  const tasks = taskRecords(db);
   for (const w of works) {
     const cover = workCover(db, w.id);
     if (cover) files.push({ name: `media/${w.id}.webp`, data: new Uint8Array(cover) });
@@ -74,7 +77,8 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
       schemaVersion: r.schema_version,
       contentFingerprint: r.content_fingerprint,
       rawFingerprint: r.raw_fingerprint,
-      reporter: { agent: r.reporter_agent, source: r.reporter_source },
+      reporter: { agent: r.reporter_agent, source: r.reporter_source, note: r.reporter_note },
+      batchId: r.batch_id,
       importedAt: r.imported_at,
       fileName: r.file_name,
       supersededBy: r.superseded_by,
@@ -94,6 +98,8 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
       acceptances: acceptanceRecords(db).length,
       itemStates: itemStates(db).length,
       manualMilestones: manualMilestones(db).length,
+      tasks: tasks.length,
+      works: works.length,
     },
   };
   return createZip(
@@ -104,7 +110,7 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
         data: json({
           projects,
           focus: readFocus(db, now),
-          tasks: taskRecords(db),
+          tasks,
           works: works.map((w) => ({ ...w, coverFile: w.hasCover ? `media/${w.id}.webp` : null })),
           snapshots,
           importBatches: batches,

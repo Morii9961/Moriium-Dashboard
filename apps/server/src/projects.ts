@@ -123,7 +123,7 @@ const UNSAFE_CHARS = new RegExp(
   `[${[range(0, 0x1f), range(0x7f), range(0x200b, 0x200f), range(0x202a, 0x202e), range(0x2066, 0x2069), range(0xfeff)].join('')}]`,
 );
 
-function cleanName(value: unknown): string {
+export function cleanName(value: unknown): string {
   if (typeof value !== 'string') throw new ProjectError('invalid_name', 'name');
   const name = value.trim().replace(/\s+/g, ' ');
   if (scanSecrets(name).length) throw new ProjectError('suspected_secret');

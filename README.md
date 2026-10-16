@@ -6,7 +6,7 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 ## 当前状态
 
-P1 到 P3 已合并。P4 工程完成，产品验收待 Morii。P5 核心功能与界面评审已完成：Agents、今日焦点和精力、任务及来源、成果与封面，等待一周真实试用。未打 `v0.1.0` 标签，P6 未开始。启动与试用清单见 [P5 交接](./docs/handoff-2026-10-14-p5-trial.md)。
+P1 到 P3 已合并。P4 工程完成，产品验收待 Morii。P5 核心功能与界面评审已完成：Agents、今日焦点和精力、任务及来源、成果与封面，等待一周真实试用。未打 `v0.1.0` 标签。2026-10-16 已获准提前做 P6 工程准备，实际恢复、登录启用和 VPS 部署仍待对应授权。启动与试用清单见 [P5 交接](./docs/handoff-2026-10-14-p5-trial.md)。
 
 P5 可选收尾已补齐粘贴 JSON 与命令面板（Ctrl / ⌘ K）；当前交接见 [2026-10-15 记录](./docs/handoff-2026-10-15-p5-extras.md)。
 
@@ -66,6 +66,10 @@ pnpm status:check path/to/project-status.json
 
 输出和导入预览一致：能不能导入、错误和提醒（位置 · 问题 · 收到了什么 · 怎么改），无法导入时附一段可以直接粘贴回 Agent 会话的修复说明。只读取文件，不访问网络，不保存任何内容。可以一次检查多个文件；`pnpm status:check --help` 列出全部选项。退出码：0 可以导入，1 无法导入，2 需要先做选择（文件被代码块包着）。
 
+### 从完整导出包恢复
+
+`pnpm data:restore --check <export.zip>` 在内存检查；`pnpm data:restore --apply <export.zip> --target <NEW_ABSOLUTE_DIR>` 仅写入不存在的新目录，不覆盖已有实例或启动服务。用法、保留范围和核对步骤见 [恢复说明](./docs/operations/export-restore.md)。
+
 ## 数据与隐私
 
 数据库、备份、导出包和任何令牌都不进这个仓库。运行时数据放在环境变量 `MORIIUM_DASHBOARD_DATA` 指定的仓库外目录。仓库里的演示数据全部虚构。
@@ -76,7 +80,7 @@ pnpm status:check path/to/project-status.json
 
 Moriium Dashboard is a single-user workspace. Agents write project status snapshots in a shared JSON format. The dashboard imports them and shows each project's stage, remaining work, next action, and decisions for Morii. Agent reports, repository or test evidence, and Morii's acceptance stay separate. Progress uses a marked Agent estimate or the completion rate of known milestones. Daily focus, tasks, and works are implemented and await real use.
 
-**Status:** P1–P3 are merged. P4 product acceptance remains pending. P5 core implementation and local UI review are complete; a week of real use and Morii's acceptance remain pending. No `v0.1.0` tag has been created; P6 has not started. See the [P5 handoff](./docs/handoff-2026-10-14-p5-trial.md).
+**Status:** P1–P3 are merged. P4 product acceptance remains pending. P5 core implementation and local UI review are complete; a week of real use and Morii's acceptance remain pending. No `v0.1.0` tag has been created. P6 engineering preparation was authorized on 2026-10-16; live recovery, login activation and VPS deployment still need separate authorization. See the [P5 handoff](./docs/handoff-2026-10-14-p5-trial.md).
 
 **Protocol:** see [`docs/protocol/README.md`](./docs/protocol/README.md) (Chinese) and the JSON Schemas for [v1.0](./docs/protocol/schema/project-status.v1.0.schema.json) and [v1.1](./docs/protocol/schema/project-status.v1.1.schema.json). Run `pnpm status:check <file>` to check a snapshot.
 
