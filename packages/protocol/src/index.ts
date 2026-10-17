@@ -17,6 +17,7 @@ export {
   type SnapshotDiff,
 } from './diff.ts';
 export { canonicalize, contentFingerprint, sha256Hex } from './fingerprint.ts';
+export { extractCodeFence } from './json-syntax.ts';
 export {
   agentPath,
   displayValue,
