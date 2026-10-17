@@ -1645,3 +1645,31 @@
     transform: scale(0.4);
   }
 }
+
+/* ---------- 设置 → 本机仓库（P7 · L2） ---------- */
+
+.scan-roots {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border-top: 1px solid var(--c-border-weak);
+}
+.scan-root {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--c-border-weak);
+}
+.scan-path {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+.scan-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+}

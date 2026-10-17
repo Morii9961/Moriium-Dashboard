@@ -35,6 +35,7 @@ import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
 import { useDraftGuard } from './drafts.ts';
+import { useLocalScanRoots } from './localScan.tsx';
 import { PasteSnapshot } from './PasteSnapshot.tsx';
 import { Link } from './router.tsx';
 import type { FileOutcome, FilePreview, ProjectWithCurrent, ReporterAgent, ShownIssue } from './types.ts';
@@ -407,6 +408,9 @@ function ImportDialog({
   const [paste, setPaste] = useState('');
   const [pasteTooLarge, setPasteTooLarge] = useState(false);
   const [reading, setReading] = useState(false);
+  const scanRoots = useLocalScanRoots();
+  const [scanning, setScanning] = useState(false);
+  const [scanNote, setScanNote] = useState<{ key: MessageKey; count?: number } | null>(null);
   const confirmClose = useDraftGuard(paste.length > 0);
   const input = useRef<HTMLInputElement>(null);
   const seq = useRef(0);
@@ -466,6 +470,41 @@ function ImportDialog({
       if (currentSession === session.current) setError('apiError.unknown');
     } finally {
       if (currentSession === session.current) setReading(false);
+    }
+  };
+
+  // 本机仓库扫描：只把 Dashboard 还没有的快照加进来，之后和选择文件一样预览、确认。
+  const scanLocal = async () => {
+    if (scanning || reading || submitting) return;
+    const currentSession = session.current;
+    setScanning(true);
+    setScanNote(null);
+    setError(null);
+    try {
+      const r = await api<{ roots: number; files: { name: string; base64: string }[] }>(
+        'GET',
+        '/api/local-scan/snapshots',
+      );
+      if (currentSession !== session.current) return;
+      if (r.roots === 0) {
+        setScanNote({ key: 'import.scanNoRoots' });
+        return;
+      }
+      const names = new Set(entries.map((e) => e.name));
+      const fresh = r.files.filter((file) => !names.has(file.name));
+      const room = Math.max(0, MAX_FILES - entries.length);
+      const add = fresh.slice(0, room).map((file) => ({ key: crypto.randomUUID(), ...file }));
+      setNotice(fresh.length > room ? 'import.tooMany' : null);
+      setResult(null);
+      setEntries((prev) => [...prev, ...add]);
+      setScanNote(
+        add.length > 0 ? { key: 'import.scanFound', count: add.length } : { key: 'import.scanNone' },
+      );
+    } catch (err) {
+      if (currentSession === session.current)
+        setError(err instanceof ApiError && err.code === 'offline' ? 'apiError.offline' : 'apiError.unknown');
+    } finally {
+      if (currentSession === session.current) setScanning(false);
     }
   };
 
@@ -535,6 +574,8 @@ function ImportDialog({
     setPaste('');
     setPasteTooLarge(false);
     setReading(false);
+    setScanning(false);
+    setScanNote(null);
     setChecking(false);
     setResult(null);
     setNotice(null);
@@ -601,6 +642,16 @@ function ImportDialog({
                 >
                   {t('import.choose')}
                 </button>
+                {scanRoots ? (
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={scanning || reading || submitting}
+                    onClick={() => void scanLocal()}
+                  >
+                    {scanning ? t('import.scanning') : t('import.scan')}
+                  </button>
+                ) : null}
                 <span>{t('import.multi')}</span>
               </p>
               <input
@@ -628,6 +679,19 @@ function ImportDialog({
             />
 
             {notice ? <p className="idialog-notice">{t(notice)}</p> : null}
+            {scanNote ? (
+              <p className="idialog-notice" role="status">
+                {t(scanNote.key, scanNote.count === undefined ? undefined : { count: scanNote.count })}
+                {scanNote.key === 'import.scanNoRoots' ? (
+                  <>
+                    {' '}
+                    <Link to="/settings" onClick={() => dialog.current?.close()}>
+                      {t('import.scanSettings')}
+                    </Link>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
 
             {entries.length > 0 ? (
               <ul className="icards">

@@ -17,6 +17,7 @@ import {
   openDatabase,
   pendingMigrations,
 } from './db.ts';
+import { SCAN_FILE } from './localScan.ts';
 
 const VERSION = '0.0.0';
 const BACKUP_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -90,7 +91,7 @@ async function main() {
     webDir: join(REPO_ROOT, 'apps', 'web', 'dist'),
     ...(authDb && config.auth.mode === 'required'
       ? { auth: { db: authDb, trustProxy: config.auth.trustProxy } }
-      : {}),
+      : { localScan: { file: join(config.dataDir, SCAN_FILE) } }),
   });
   const server = serve({ fetch: app.fetch, hostname: config.hostname, port: config.port }, (info) => {
     console.log(`Moriium Dashboard 服务端：http://${config.hostname}:${info.port}`);

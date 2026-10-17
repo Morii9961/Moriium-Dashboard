@@ -16,6 +16,7 @@ import { exportRoutes } from './routes/export.ts';
 import { focusRoutes } from './routes/focus.ts';
 import { historyRoutes } from './routes/history.ts';
 import { importRoutes } from './routes/imports.ts';
+import { localScanRoutes } from './routes/localScan.ts';
 import { projectRoutes } from './routes/projects.ts';
 import { reviewRoutes } from './routes/review.ts';
 import { taskRoutes } from './routes/tasks.ts';
@@ -33,6 +34,8 @@ export interface AppContext {
   now?: () => Date;
   /** 开启认证时的认证库。不传表示只在本机使用、不要求登录。 */
   auth?: HttpAuth;
+  /** 本机仓库扫描的目录记录文件。只在本机实例（未开启认证）提供。 */
+  localScan?: { file: string };
 }
 
 export function createApp(ctx: AppContext) {
@@ -88,6 +91,7 @@ export function createApp(ctx: AppContext) {
   taskRoutes(app, ctx);
   workRoutes(app, ctx);
   importRoutes(app, ctx);
+  localScanRoutes(app, ctx);
   historyRoutes(app, ctx);
   exportRoutes(app, ctx);
 
