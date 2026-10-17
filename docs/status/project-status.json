@@ -2,10 +2,10 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-17T16:45:00+08:00",
+  "snapshot_at": "2026-10-17T16:50:00+08:00",
   "source": {
-    "branch": "codex/p6-auth-setup",
-    "commit_sha": "f09b368b20ceb570918282f579c0aba1eac82bfc",
+    "branch": "main",
+    "commit_sha": "bd4d9ed4de4014b3618c9f49565984a4c91411a5",
     "tests_rerun": false,
     "basis": [
       "docs/planning/06-mvp-and-roadmap.md 的 P5 验收与 P6 工程准备边界",
@@ -23,20 +23,18 @@
       "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/33",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/34",
-      "P5 已核实合并并更新本机前端；P6 PR #31/#32 双平台 CI 通过、未合并",
-      "PR #33 head 151048f 双平台 CI 通过（Linux 2026-10-17T16:26:57+08:00、Windows 16:27:37+08:00 完成），未合并",
-      "开发阶段 pnpm verify：377 项测试 / 21 个文件、类型检查及当时公开树审计通过，11 条既有提醒；一次 Windows 原生 TTY 虚构账户创建与登录通过、退出 0、临时数据已清理",
-      "P6.2b 代码 f09b368 与交付文档提交 22ee6bc 已由 Claude 推送，PR #34 基于 codex/p6-auth-core 创建、未合并、未开启自动合并；22ee6bc 的 Linux CI 因本快照 JSON 未按 Biome 格式失败，随后提交仅修正快照格式与发布状态，新 head 的 CI 结果以 PR 为准；按 Morii 要求不在本地重跑测试",
-      "原正式库此前另获授权备份、从结构 7 升至 10 并启动，六项目十历史及其他旧表核对完整；本轮未改动或复查正式进程",
-      "2026-10-16 Morii 允许先做 P6 工程准备；P4/P5 产品验收与一周真实使用仍待完成，不代填、不打 v0.1.0；实际恢复、正式认证启用、VPS 操作与 P6 合并仍需对应授权"
+      "PR #31–#34 于 2026-10-17 经 Morii 批准按依赖顺序普通合并入 main（2b0c4df、29b23e9、405e3f5、bd4d9ed）；合并前各 head 双平台 CI 通过，main 树与 #34 已测 head a3da2d3 一致",
+      "开发阶段 pnpm verify：377 项测试 / 21 个文件、类型检查及当时公开树审计通过；一次 Windows 原生 TTY 虚构账户创建与登录通过",
+      "2026-10-17 Morii 决定暂且搁置实际使用：P4 产品验收与 P5 一周真实使用推迟，不代填、不打 v0.1.0",
+      "2026-10-17 Morii 批准开始其余未进行的工作；登录底层与口令工具仍未接入正式服务，正式口令设置与 VPS 变更需 Morii 本人操作或另行决定"
     ]
   },
   "reporter": {
-    "agent": "codex",
-    "note": "Codex 完成口令工具工作包；Claude 接手完成发布收尾：提交交付文件、推送、创建堆叠 PR #34 并更新发布状态"
+    "agent": "claude",
+    "note": "P6.1 / P6.2a / P6.2b 合并后的状态；下一步开始 HTTP 接入"
   },
   "stage": "development",
-  "summary": "P5 及可选收尾已合并发布，P4/P5 真实验收待完成。P6.1 恢复、P6.2 登录底层与口令工具已验证并以 PR #31–#34 堆叠发布，均未合并，尚未接入正式服务。HTTP、登录界面与 VPS 部署未开始。",
+  "summary": "P5 及可选收尾已合并发布；P6.1 恢复、P6.2 登录底层与口令工具已合并入 main，尚未接入正式服务。实际使用与 P4/P5 产品验收暂且搁置。下一步 HTTP 接入与默认拒绝，随后登录界面和部署模板。",
   "overall_progress": null,
   "milestones": [
     {
@@ -122,7 +120,7 @@
       "id": "p6-vps-deploy",
       "title": "P6 VPS 部署：登录、部署、备份与恢复演练",
       "status": "in_progress",
-      "evidence_level": "existing_test",
+      "evidence_level": "repository",
       "evidence_refs": [
         "https://github.com/Morii9961/Moriium-Dashboard/pull/31",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
@@ -139,34 +137,36 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "p4-human-walkthrough",
-      "title": "进行 P4 的 30 秒概览测试、六项目各 10 秒走查与 10 个来源抽查",
+      "id": "p6-http-auth",
+      "title": "P6.2c HTTP 接入：显式启用认证、全部受保护路由默认拒绝、登录与退出接口、cookie、Origin / Host 策略",
       "priority": "P0",
-      "result": "补记 Morii 的 P4 产品验收与实际需要调整的地方；P5 开发授权不代替验收"
+      "result": "启用配置缺失或凭据损坏时拒绝启动或拒绝请求；未启用时本机行为不变；双平台 CI 通过"
     },
     {
-      "id": "p5-week-trial",
-      "title": "使用更新后的原有正式实例，进行一周真实试用并完成四项 MVP 产品验收",
-      "priority": "P0",
-      "result": "记录实际开始日期、各推进项目至少一次导入、30 秒测试、十个来源抽查、虚假进度检查和使用反馈；通过后再打 v0.1.0 标签"
+      "id": "p6-login-ui",
+      "title": "P6.2d 登录界面：三语、键盘可达、错误与锁定提示",
+      "priority": "P1",
+      "result": "沿用已有 S1 / S3 设计决定，浅深色与窄屏检查通过"
+    },
+    {
+      "id": "p6-deploy-templates",
+      "title": "P6.3–6.5 部署模板：systemd、Nginx、发布与回滚脚本、备份拉回、验收清单",
+      "priority": "P1",
+      "result": "只准备仓库内模板与文档，不改动任何服务器"
     }
   ],
   "needs_morii": [
     {
       "id": "p4-acceptance",
-      "decision": "P4 的概览、六项目进度展示与来源抽查是否通过？工程检查已完成，验收由 Morii 记录。"
+      "decision": "P4 的概览、六项目进度展示与来源抽查是否通过？已暂且搁置，恢复使用后由 Morii 记录。"
     },
     {
       "id": "p5-week-trial",
-      "decision": "P5 一周真实使用是否顺手，四项 MVP 产品验收是否通过？请记录实际日期与问题；开发方不代填验收。"
+      "decision": "P5 一周真实使用与四项 MVP 产品验收是否通过？已暂且搁置，恢复后记录实际日期与问题；开发方不代填。"
     },
     {
       "id": "vps-access",
-      "decision": "正式部署采用私网还是公网子域名加登录？工程准备已获授权，访问方式、正式认证启用、实际恢复和 VPS 变更仍在对应步骤单独决定。"
-    },
-    {
-      "id": "p6-merge-authorization",
-      "decision": "P6 堆叠 PR 验证与双平台 CI 通过后是否允许按依赖顺序合并？当前没有 P6 合并授权，P5 的授权不自动沿用。"
+      "decision": "正式部署采用私网还是公网子域名加登录？模板会两种都准备；正式口令由 Morii 在隐藏终端自行设置。"
     }
   ]
 }
