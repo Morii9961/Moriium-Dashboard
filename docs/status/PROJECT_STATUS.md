@@ -1,7 +1,7 @@
 # Moriium Dashboard · 项目状态
 
 > 与 [project-status.json](./project-status.json) 同步，供手动导入。
-> 快照时间：2026-10-17T16:45:00+08:00 · 协议 v1.1 · 项目 ID morii.dashboard · Claude（接手 Codex 分支完成发布收尾）。
+> 快照时间：2026-10-17T16:45:00+08:00 · 协议 v1.1 · 项目 ID morii.dashboard · Codex（Claude 接手完成发布收尾）。
 > 分支 codex/p6-auth-setup · 已验证代码 f09b368b20ceb570918282f579c0aba1eac82bfc。
 > tests_rerun: false：复用开发阶段证据，按 Morii 要求不在本地重跑测试。交付文件已提交 22ee6bc，并随 PR #34 发布。
 
