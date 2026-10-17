@@ -131,7 +131,7 @@ Skill 给的是建议，不是权威。风格类 Skill 是顾问，不是项目�
 - 项目名称与用途：Moriium Dashboard，一个独立的 Dashboard 项目。与 Moriium 公开站无关，Moriium 的设计规范只作参考，不是约束，后续希望做出更新的设计。
 - 技术栈（2026-10-12 定）：前端 React + Vite + TypeScript；服务端单进程 Hono + SQLite，本机阶段只监听 `127.0.0.1`；pnpm workspace（`apps/web`、`apps/server`、`packages/protocol`）。详见 [`docs/planning/05-architecture-and-data.md`](./docs/planning/05-architecture-and-data.md) 第 4、5 节，版本按 `source-driven-development` 核实。
 - 规划（2026-10-12 获批）：[`docs/planning/README.md`](./docs/planning/README.md)。阶段、交付标准和 Morii 的参与点见 [`06-mvp-and-roadmap.md`](./docs/planning/06-mvp-and-roadmap.md)；开发启动提示词见 [`docs/handoff-2026-10-12-development-kickoff.md`](./docs/handoff-2026-10-12-development-kickoff.md)。
-- 当前进度（2026-10-16）：P1 到 P3 已完成，P4 工程完成待 Morii 产品验收。P5 核心、界面评审、粘贴 JSON / 命令面板均已验证并合并，正式本机前端已更新。原正式库已另获授权备份升级至结构 10 并启动，待一周真实使用。接手先读 [`docs/handoff-2026-10-15-p5-extras.md`](./docs/handoff-2026-10-15-p5-extras.md)，核对远端合并、前端发布与验收记录。Morii 于 2026-10-16 明确允许先做 P6 工程准备（导出包恢复、登录与部署准备），真实试用和产品验收仍待完成；未获真实验收前不打 `v0.1.0`。实际恢复原数据、VPS 部署、访问方式和正式登录启用仍按对应步骤取得授权。P5 的顺序普通合并授权不自动扩展为 P6 合并授权。可选 5.6 未加入。
+- 当前进度（2026-10-17）：P1 到 P3 已完成，P4 工程完成待 Morii 产品验收。P5 核心、界面评审、粘贴 JSON / 命令面板均已验证并合并，正式本机前端已更新。原正式库已另获授权备份升级至结构 10 并启动，待一周真实使用。P6.1 容器校验与离线恢复 PR #31 / #32 已通过双平台 CI，未合并；P6.2a 登录底层已实现并通过本地联合验证，尚未连接正式服务。接手先读 [`docs/handoff-2026-10-17-p6-auth.md`](./docs/handoff-2026-10-17-p6-auth.md)，核对实际 PR 与验收状态。Morii 于 2026-10-16 明确允许先做 P6 工程准备，真实试用和产品验收仍待完成；未获真实验收前不打 `v0.1.0`。实际恢复原数据、VPS 部署、访问方式和正式登录启用仍按对应步骤取得授权。P5 的顺序普通合并授权不自动扩展为 P6 合并授权。可选 5.6 未加入。
 - 项目状态快照：[`docs/status/`](./docs/status/)，遵循 Project Status Protocol v1.1，`project_id` 为 `morii.dashboard`。
 - 仓库：`Morii9961/Moriium-Dashboard`，公开，代码 MIT。数据、备份、导出包、令牌永远不进仓库。
 - 界面语言：中文、日文、英文。
