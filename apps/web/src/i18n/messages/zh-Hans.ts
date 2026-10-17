@@ -524,6 +524,18 @@ export const zhHans = {
   'settings.account': '账户',
   'settings.signedInAs': '当前账户',
   'settings.sessionEnds': '本次登录到期',
+  'settings.localRepos': '本机仓库',
+  'localScan.pathLabel': '目录（绝对路径）',
+  'localScan.add': '添加',
+  'localScan.remove': '移除 {path}',
+  'localScan.invalidRoot': '这个目录不存在，或不是绝对路径。',
+  'localScan.tooMany': '最多 {max} 个目录。',
+  'import.scan': '从本机仓库查找',
+  'import.scanning': '正在查找',
+  'import.scanFound': '找到 {count} 份新快照。',
+  'import.scanNone': '本机仓库里没有新的快照。',
+  'import.scanNoRoots': '还没有设置本机仓库目录。',
+  'import.scanSettings': '在设置里添加',
 } as const;
 
 export type MessageKey = keyof typeof zhHans;

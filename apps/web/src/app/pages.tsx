@@ -8,6 +8,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import { readThemePref, setThemePref, THEME_PREFS, type ThemePref } from '../theme/theme.ts';
 import { useAuth } from './auth.tsx';
+import { LocalRepositories } from './localScan.tsx';
 import { ProjectRegistry } from './registry.tsx';
 import { Link } from './router.tsx';
 import { useService } from './service.tsx';
@@ -70,6 +71,8 @@ export function SettingsPage() {
       </section>
 
       <ProjectRegistry />
+
+      <LocalRepositories />
 
       <section className="settings-group" aria-labelledby="set-data">
         <h2 id="set-data" className="settings-title">
