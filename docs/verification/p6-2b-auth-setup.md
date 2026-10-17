@@ -16,8 +16,8 @@ Windows 原生 TTY 另完成一次代表性检查：独立临时目录、两次�
 
 设置入口没有参数、环境变量或重定向口令通道；两次隐藏输入确认后才打开固定文件。重置采用凭据修订与哈希的事务内再检查，一次撤销会话和清除限速；没有暴露匿名 HTTP 重置路由。没有新增依赖、业务迁移或服务启动路径。操作说明见 [本地口令工具](../operations/auth-setup.md)。
 
-P6.2b 尚未推送、尚未创建 PR，也没有双平台 CI 结果。推送与创建 PR 的调用在执行前被自动审批服务账户限额拦下，不能将本地通过写成远端通过。
+P6.2b 交付时推送曾被自动审批服务账户限额拦下；随后由 Claude 推送并创建 [PR #34](https://github.com/Morii9961/Moriium-Dashboard/pull/34)，双平台 CI 结果以 PR 为准，不把本地通过写成远端通过。
 
-依赖的 [PR #33](https://github.com/Morii9961/Moriium-Dashboard/pull/33) 初次 CI 因测试使用被忽略的截图目录而失败；修复提交 `151048f` 改用干净 checkout 中存在的路径。最后核对时间为 2026-10-17 16:27:12（上海时间）：Linux 通过、Windows 仍在运行。本记录不推断其最终状态。
+依赖的 [PR #33](https://github.com/Morii9961/Moriium-Dashboard/pull/33) 初次 CI 因测试使用被忽略的截图目录而失败；修复提交 `151048f` 改用干净 checkout 中存在的路径。随后核实 head `151048f` 的 Linux 与 Windows CI 均通过。
 
 HTTP 接入、全路径保护、CSRF、登录界面、TLS、可信代理、真实 ACL、正式认证启用与部署恢复验收仍未完成。本轮没有改动真实业务数据、正式服务或 VPS，没有代填 P4/P5 产品验收。

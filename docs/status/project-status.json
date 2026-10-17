@@ -2,7 +2,7 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-17T16:31:35+08:00",
+  "snapshot_at": "2026-10-17T16:45:00+08:00",
   "source": {
     "branch": "codex/p6-auth-setup",
     "commit_sha": "f09b368b20ceb570918282f579c0aba1eac82bfc",
@@ -22,20 +22,21 @@
       "https://github.com/Morii9961/Moriium-Dashboard/pull/31",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
       "https://github.com/Morii9961/Moriium-Dashboard/pull/33",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/34",
       "P5 已核实合并并更新本机前端；P6 PR #31/#32 双平台 CI 通过、未合并",
-      "PR #33 修复 head 151048f 于 2026-10-17T16:27:12+08:00 最后核实 Linux 通过、Windows 运行中，最终结果未复查",
+      "PR #33 head 151048f 双平台 CI 通过（Linux 2026-10-17T16:26:57+08:00、Windows 16:27:37+08:00 完成），未合并",
       "开发阶段 pnpm verify：377 项测试 / 21 个文件、类型检查及当时公开树审计通过，11 条既有提醒；一次 Windows 原生 TTY 虚构账户创建与登录通过、退出 0、临时数据已清理",
-      "P6.2b 代码 f09b368 仅在本地，推送与建 PR 因自动审批服务账户限额在执行前被阻止；交付文档及快照未提交，按 Morii 最后要求不另行运行测试或快照校验",
+      "P6.2b 代码 f09b368 与交付文档提交 22ee6bc 已由 Claude 推送，PR #34 基于 codex/p6-auth-core 创建、未合并、未开启自动合并；22ee6bc 的 Linux CI 因本快照 JSON 未按 Biome 格式失败，随后提交仅修正快照格式与发布状态，新 head 的 CI 结果以 PR 为准；按 Morii 要求不在本地重跑测试",
       "原正式库此前另获授权备份、从结构 7 升至 10 并启动，六项目十历史及其他旧表核对完整；本轮未改动或复查正式进程",
       "2026-10-16 Morii 允许先做 P6 工程准备；P4/P5 产品验收与一周真实使用仍待完成，不代填、不打 v0.1.0；实际恢复、正式认证启用、VPS 操作与 P6 合并仍需对应授权"
     ]
   },
   "reporter": {
-    "agent": "codex",
-    "note": "当前口令工具代码完成，交付 Claude 文档与手动快照后停下；本地未发布与真实验收待完成分开记录"
+    "agent": "claude",
+    "note": "接手 Codex 分支完成发布收尾：提交交付文件、推送、创建堆叠 PR #34 并更新发布状态；未合并、未开启下一工作包"
   },
   "stage": "development",
-  "summary": "P5 及可选收尾已合并发布，P4/P5 真实验收待完成。P6.1 恢复、P6.2 登录底层与口令工具已验证，尚未接入正式服务；口令工具仅本地提交，推送受审批限额阻挡。HTTP、登录界面与 VPS 部署未完成。",
+  "summary": "P5 及可选收尾已合并发布，P4/P5 真实验收待完成。P6.1 恢复、P6.2 登录底层与口令工具已验证并以 PR #31–#34 堆叠发布，均未合并，尚未接入正式服务。HTTP、登录界面与 VPS 部署未开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -43,9 +44,7 @@
       "title": "P0 规划获批：产品、协议、界面、架构与路线图",
       "status": "done",
       "evidence_level": "morii_accepted",
-      "evidence_refs": [
-        "docs/design-decisions.md"
-      ],
+      "evidence_refs": ["docs/design-decisions.md"],
       "human_acceptance": "accepted"
     },
     {
@@ -53,9 +52,7 @@
       "title": "P1 仓库与协议：Git 仓库、协议包、校验与样本测试",
       "status": "done",
       "evidence_level": "repository",
-      "evidence_refs": [
-        "https://github.com/Morii9961/Moriium-Dashboard/pull/6"
-      ],
+      "evidence_refs": ["https://github.com/Morii9961/Moriium-Dashboard/pull/6"],
       "human_acceptance": "pending"
     },
     {
@@ -130,28 +127,17 @@
         "https://github.com/Morii9961/Moriium-Dashboard/pull/31",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
         "https://github.com/Morii9961/Moriium-Dashboard/pull/33",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/34",
         "docs/verification/p6-1b-restore.md",
         "docs/verification/p6-2a-auth-core.md",
         "docs/verification/p6-2b-auth-setup.md",
-        "本地代码 f09b368；离线与内部函数证据不代表 HTTP、正式登录或 VPS 已部署"
+        "离线与内部函数证据不代表 HTTP、正式登录或 VPS 已部署"
       ],
       "human_acceptance": "pending"
     }
   ],
-  "blockers": [
-    {
-      "id": "p6-publish-limit",
-      "title": "自动审批服务账户限额阻挡口令工具分支发布",
-      "impact": "推送与创建 PR 在执行前被阻止；代码提交与新增交付文档仅在当前本地工作区。需在审批服务可用后由接手者保留文件、提交文档、推送并建 PR，再核对 CI。"
-    }
-  ],
+  "blockers": [],
   "next_actions": [
-    {
-      "id": "p6-claude-publication",
-      "title": "交由 Claude 完成本地交付文件提交、口令工具分支推送与堆叠 PR 创建",
-      "priority": "P0",
-      "result": "保留现有工作区与代码证据；审批可用后发布，核对 PR #33 和新 PR 的准确 head 与双平台 CI；不自行合并或开始下一工作包"
-    },
     {
       "id": "p4-human-walkthrough",
       "title": "进行 P4 的 30 秒概览测试、六项目各 10 秒走查与 10 个来源抽查",

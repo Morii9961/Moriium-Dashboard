@@ -13,8 +13,8 @@
 | P5 与两项可选收尾 | main `0dca65b599c334e4c3632861ec58a794ec2f877a` | 已合并，本机前端已于此前更新；此轮未重新核对正式进程健康 |
 | P6.1a 容器校验 | `2de276f`，基于 main | [PR #31](https://github.com/Morii9961/Moriium-Dashboard/pull/31) 开放，Windows / Linux CI 通过，未合并 |
 | P6.1b 离线恢复 | `6dba1ea`，PR head `a71c7fd`，基于 #31 | [PR #32](https://github.com/Morii9961/Moriium-Dashboard/pull/32) 开放，Windows / Linux CI 通过，未合并 |
-| P6.2a 登录底层 | `ef7eee6`，文档 `b9913d8`，CI 修复 head `151048f`，基于 #32 | [PR #33](https://github.com/Morii9961/Moriium-Dashboard/pull/33) 开放；16:27:12 上海时间最后核实为 Linux 通过、Windows 运行中，最终结果未复查 |
-| P6.2b 隐藏口令工具 | 本地 `f09b368`，基于 `151048f` | 未推送、未创建 PR、没有该工作包的 CI 结果 |
+| P6.2a 登录底层 | `ef7eee6`，文档 `b9913d8`，CI 修复 head `151048f`，基于 #32 | [PR #33](https://github.com/Morii9961/Moriium-Dashboard/pull/33) 开放，Windows / Linux CI 通过，未合并 |
+| P6.2b 隐藏口令工具 | `f09b368`，交付文档 `22ee6bc`，基于 `151048f` | [PR #34](https://github.com/Morii9961/Moriium-Dashboard/pull/34) 开放，由 Claude 发布；CI 以 PR 为准，未合并 |
 
 最后推送与建 PR 的组合调用在进程创建前被自动审批服务的账户限额拦下，两个命令均未执行。这是审批服务不可用，不是代码不安全的判定；没有改用其他通道绕过。当前代码提交已在本地保留，交付文档也只在此工作区，不能假定远端或新 clone 中存在。
 
