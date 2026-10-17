@@ -7,6 +7,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { serve } from '@hono/node-server';
 import { createApp } from './app.ts';
+import { authStartupMessage, openConfiguredAuth } from './auth/http.ts';
 import { createBackup, runDailyBackupIfDue } from './backup.ts';
 import { ConfigError, REPO_ROOT, resolveConfig } from './config.ts';
 import {
@@ -44,6 +45,18 @@ async function main() {
     config.allowedOrigins.push(...DEV_ORIGINS.filter((o) => !config.allowedOrigins.includes(o)));
   }
 
+  // 开启认证时先确认认证库可用；不可用就不启动，绝不退回免登录。
+  let authDb: ReturnType<typeof openConfiguredAuth> | undefined;
+  if (config.auth.mode === 'required') {
+    try {
+      authDb = openConfiguredAuth(config.auth.dbPath);
+    } catch (error) {
+      console.error(authStartupMessage(error));
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   for (const dir of [config.dataDir, config.backupDir, config.mediaDir]) mkdirSync(dir, { recursive: true });
   const existed = existsSync(config.dbPath);
   const db = openDatabase(config.dbPath);
@@ -75,16 +88,25 @@ async function main() {
     startedAt: new Date(),
     version: VERSION,
     webDir: join(REPO_ROOT, 'apps', 'web', 'dist'),
+    ...(authDb && config.auth.mode === 'required'
+      ? { auth: { db: authDb, trustProxy: config.auth.trustProxy } }
+      : {}),
   });
   const server = serve({ fetch: app.fetch, hostname: config.hostname, port: config.port }, (info) => {
     console.log(`Moriium Dashboard 服务端：http://${config.hostname}:${info.port}`);
     console.log(`数据目录：${config.dataDir}`);
+    console.log(
+      authDb
+        ? `已开启登录认证${config.publicOrigin ? `，对外地址 ${config.publicOrigin}` : ''}`
+        : '未开启登录认证，只在本机使用',
+    );
   });
 
   const shutdown = () => {
     clearInterval(timer);
     server.close(() => {
       db.close();
+      authDb?.close();
       process.exit(0);
     });
   };

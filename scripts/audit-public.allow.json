@@ -8,5 +8,10 @@
     "path": "apps/server/test/server.test.ts",
     "rule": "local-path",
     "reason": "服务端测试：验证数据目录的默认位置、仓库内与同步盘的拒绝规则。路径是虚构的 demo 用户，不对应任何真实机器。"
+  },
+  {
+    "path": "apps/server/test/auth-http.test.ts",
+    "rule": "email",
+    "reason": "服务端测试：验证对外来源拒绝在 https 地址里写用户名和口令的写法，匹配到的是这种测试地址，不是邮箱。"
   }
 ]

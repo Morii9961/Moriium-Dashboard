@@ -7,6 +7,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { agentReports } from './agents.ts';
+import { authRoutes, type HttpAuth, hasSession, requireSession } from './auth/http.ts';
 import { listBackups } from './backup.ts';
 import type { ServerConfig } from './config.ts';
 import { currentSchemaVersion, type Database } from './db.ts';
@@ -30,6 +31,8 @@ export interface AppContext {
   webDir?: string;
   /** 测试里固定当前时间。 */
   now?: () => Date;
+  /** 开启认证时的认证库。不传表示只在本机使用、不要求登录。 */
+  auth?: HttpAuth;
 }
 
 export function createApp(ctx: AppContext) {
@@ -38,6 +41,11 @@ export function createApp(ctx: AppContext) {
   app.use('*', securityHeaders());
   app.use('*', hostCheck(ctx.config.allowedHosts));
   app.use('/api/*', writeGuard(ctx.config.allowedOrigins));
+  if (ctx.auth)
+    app.use(
+      '*',
+      requireSession(ctx.auth, () => ctx.now?.() ?? new Date()),
+    );
   // 普通接口的请求体很小；导入接口另设上限（20 个文件 × 1 MiB，base64 之后约 28 MiB）。
   app.use('/api/*', async (c, next) => {
     if (c.req.path.startsWith('/api/imports')) return next();
@@ -54,6 +62,8 @@ export function createApp(ctx: AppContext) {
 
   app.get('/api/health', (c) => {
     // 不返回任何路径：以后部署到 VPS 时这个接口也不该泄露服务器信息。
+    // 开启认证时，未登录只能知道服务在运行。
+    if (ctx.auth && !hasSession(c, ctx.auth, ctx.now?.() ?? new Date())) return c.json({ status: 'ok' });
     try {
       const schemaVersion = currentSchemaVersion(ctx.db);
       const lastBackup = listBackups(ctx.config.backupDir).find((b) => b.kind === 'daily');
@@ -69,6 +79,7 @@ export function createApp(ctx: AppContext) {
     }
   });
 
+  authRoutes(app, ctx.auth, () => ctx.now?.() ?? new Date());
   projectRoutes(app, ctx);
   app.get('/api/agents', (c) => c.json(agentReports(ctx.db, ctx.now?.() ?? new Date())));
   app.get('/api/overview', (c) => c.json(overview(ctx.db, ctx.now?.() ?? new Date())));
