@@ -91,3 +91,28 @@ export async function createAccount(db: Database, login: unknown, value: unknown
     recordAuthEvent(db, 'setup', at);
   });
 }
+
+/** Explicit local recovery operation; never exposed as an unauthenticated web route. */
+export async function resetAccount(db: Database, login: unknown, value: unknown, now: Date) {
+  const name = accountName(login),
+    at = authTime(now),
+    old = readAccount(db);
+  authRequire(name === old.login, 'invalid_account');
+  const encoded = await hashPassphrase(value);
+  transaction(db, () => {
+    const current = readAccount(db);
+    authRequire(
+      current.revision === old.revision &&
+        current.credential === old.credential &&
+        current.login === old.login,
+      'credentials_changed',
+    );
+    db.prepare('UPDATE auth_account SET credential=?,revision=revision+1,updated_ms=? WHERE id=1').run(
+      encoded,
+      at,
+    );
+    db.exec('DELETE FROM auth_sessions; DELETE FROM auth_limits');
+    recordAuthEvent(db, 'setup', at);
+    recordAuthEvent(db, 'revoke', at);
+  });
+}

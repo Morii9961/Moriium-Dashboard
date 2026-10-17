@@ -68,6 +68,9 @@ export async function hashPassphrase(value: unknown): Promise<string> {
     key.fill(0);
   }
 }
+export function validatePassphrase(value: unknown): void {
+  passphrase(value);
+}
 export async function verifyPassphrase(value: unknown, serialized: string): Promise<boolean> {
   const input = passphrase(value),
     stored = credential(serialized);

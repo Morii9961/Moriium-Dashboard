@@ -2,36 +2,41 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-15T22:41:57+08:00",
+  "snapshot_at": "2026-10-17T16:45:00+08:00",
   "source": {
-    "branch": "codex/p5-command-palette",
-    "commit_sha": "2154e297a77f48b675725cdbba3edf8e600a9235",
+    "branch": "codex/p6-auth-setup",
+    "commit_sha": "f09b368b20ceb570918282f579c0aba1eac82bfc",
     "tests_rerun": false,
     "basis": [
-      "docs/planning/06-mvp-and-roadmap.md 的 P5.5 可选收尾与产品验收边界",
+      "docs/planning/06-mvp-and-roadmap.md 的 P5 验收与 P6 工程准备边界",
       "docs/design-decisions.md",
-      "docs/verification/p5-5.md",
+      "docs/handoff-2026-10-15-p5-extras.md",
+      "docs/handoff-2026-10-17-claude-p6.md",
       "docs/verification/p5-paste-json.md",
       "docs/verification/p5-command-palette.md",
-      "docs/handoff-2026-10-15-p5-extras.md",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/24",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/25",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/26",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/27",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/28",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/29",
-      "PR #24 到 #29 已核实普通合并；命令面板随本快照所在 PR 交付，最终 CI 与合并状态以 GitHub 为准",
-      "本机 pnpm verify：326 项测试、类型与公开树审计通过；独立生产构建通过；粘贴 JSON 与命令面板各十二组虚构数据界面流程通过",
-      "2026-10-15 Morii 明确授权原正式库备份、从结构 7 升至 10 并启动；启用时六项目十历史及其他旧表记录数量与内容指纹一致，原库与迁移前备份完整性通过",
-      "P4 产品验收与 P5 一周真实试用仍待 Morii；不代填结果，不打 v0.1.0，不进入 P6"
+      "docs/verification/p6-1a-archive.md",
+      "docs/verification/p6-1b-restore.md",
+      "docs/verification/p6-2a-auth-core.md",
+      "docs/verification/p6-2b-auth-setup.md",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/30",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/31",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/33",
+      "https://github.com/Morii9961/Moriium-Dashboard/pull/34",
+      "P5 已核实合并并更新本机前端；P6 PR #31/#32 双平台 CI 通过、未合并",
+      "PR #33 head 151048f 双平台 CI 通过（Linux 2026-10-17T16:26:57+08:00、Windows 16:27:37+08:00 完成），未合并",
+      "开发阶段 pnpm verify：377 项测试 / 21 个文件、类型检查及当时公开树审计通过，11 条既有提醒；一次 Windows 原生 TTY 虚构账户创建与登录通过、退出 0、临时数据已清理",
+      "P6.2b 代码 f09b368 与交付文档提交 22ee6bc 已由 Claude 推送，PR #34 基于 codex/p6-auth-core 创建、未合并、未开启自动合并；22ee6bc 的 Linux CI 因本快照 JSON 未按 Biome 格式失败，随后提交仅修正快照格式与发布状态，新 head 的 CI 结果以 PR 为准；按 Morii 要求不在本地重跑测试",
+      "原正式库此前另获授权备份、从结构 7 升至 10 并启动，六项目十历史及其他旧表核对完整；本轮未改动或复查正式进程",
+      "2026-10-16 Morii 允许先做 P6 工程准备；P4/P5 产品验收与一周真实使用仍待完成，不代填、不打 v0.1.0；实际恢复、正式认证启用、VPS 操作与 P6 合并仍需对应授权"
     ]
   },
   "reporter": {
     "agent": "codex",
-    "note": "P5 核心及可选粘贴 JSON、命令面板工程验证完成；原正式实例已获授权备份升级并启动，产品验收仍待 Morii"
+    "note": "Codex 完成口令工具工作包；Claude 接手完成发布收尾：提交交付文件、推送、创建堆叠 PR #34 并更新发布状态"
   },
-  "stage": "acceptance",
-  "summary": "P5 核心、粘贴 JSON 和命令面板已实现并验证。原正式库已获授权备份升级至结构 10 并启动，旧记录核对完整。P4 产品验收与 P5 一周真实使用待 Morii；未打 v0.1.0，P6 未开始。",
+  "stage": "development",
+  "summary": "P5 及可选收尾已合并发布，P4/P5 真实验收待完成。P6.1 恢复、P6.2 登录底层与口令工具已验证并以 PR #31–#34 堆叠发布，均未合并，尚未接入正式服务。HTTP、登录界面与 VPS 部署未开始。",
   "overall_progress": null,
   "milestones": [
     {
@@ -108,16 +113,26 @@
         "https://github.com/Morii9961/Moriium-Dashboard/pull/29",
         "docs/verification/p5-paste-json.md",
         "docs/verification/p5-command-palette.md",
-        "docs/handoff-2026-10-15-p5-extras.md"
+        "docs/handoff-2026-10-15-p5-extras.md",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/30"
       ],
       "human_acceptance": "pending"
     },
     {
       "id": "p6-vps-deploy",
       "title": "P6 VPS 部署：登录、部署、备份与恢复演练",
-      "status": "not_started",
-      "evidence_level": "self_report",
-      "evidence_refs": [],
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/31",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/33",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/34",
+        "docs/verification/p6-1b-restore.md",
+        "docs/verification/p6-2a-auth-core.md",
+        "docs/verification/p6-2b-auth-setup.md",
+        "离线与内部函数证据不代表 HTTP、正式登录或 VPS 已部署"
+      ],
       "human_acceptance": "pending"
     }
   ],
@@ -146,12 +161,12 @@
       "decision": "P5 一周真实使用是否顺手，四项 MVP 产品验收是否通过？请记录实际日期与问题；开发方不代填验收。"
     },
     {
-      "id": "enable-snapshots",
-      "decision": "建议现在就把「生成项目状态快照」的指令（docs/protocol/agent-snapshot-prompt.md）放进其他五个项目的 AGENTS.md。这一步改的是其他仓库，需要 Morii 自己做，或另行明确授权。"
+      "id": "vps-access",
+      "decision": "正式部署采用私网还是公网子域名加登录？工程准备已获授权，访问方式、正式认证启用、实际恢复和 VPS 变更仍在对应步骤单独决定。"
     },
     {
-      "id": "vps-access",
-      "decision": "部署到 VPS 后用私网访问，还是公网子域名加登录？最晚在 P6 开始前定。"
+      "id": "p6-merge-authorization",
+      "decision": "P6 堆叠 PR 验证与双平台 CI 通过后是否允许按依赖顺序合并？当前没有 P6 合并授权，P5 的授权不自动沿用。"
     }
   ]
 }
