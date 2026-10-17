@@ -507,6 +507,23 @@ export const zhHans = {
   'works.openLink': '打开作品链接',
   'works.recorded': '你记录的成果',
   'personal.discard': '有尚未保存的输入。离开并放弃这些输入？',
+  'auth.heading': '登录',
+  'auth.account': '账户',
+  'auth.passphrase': '口令',
+  'auth.submit': '登录',
+  'auth.checking': '正在核验',
+  'auth.invalid': '账户或口令不正确。',
+  'auth.limited': '尝试次数过多，{minutes} 分钟后可以再试。',
+  'auth.busy': '上一次登录还在核验，稍后再试。',
+  'auth.changed': '口令刚刚重置过，用新口令再登录一次。',
+  'auth.unavailable': '登录服务暂时不可用。查看服务端日志后再试。',
+  'auth.offline': '连不上服务。确认服务在运行后再试。',
+  'auth.expired': '登录已结束，重新登录后继续。',
+  'auth.logout': '退出登录',
+  'auth.logoutAll': '退出所有设备',
+  'settings.account': '账户',
+  'settings.signedInAs': '当前账户',
+  'settings.sessionEnds': '本次登录到期',
 } as const;
 
 export type MessageKey = keyof typeof zhHans;

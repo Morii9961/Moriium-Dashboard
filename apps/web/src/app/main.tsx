@@ -9,6 +9,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nProvider } from '../i18n/i18n.tsx';
 import { App } from './App.tsx';
+import { AuthGate } from './auth.tsx';
 import { CommandProvider } from './Commands.tsx';
 import { DataProvider } from './data.tsx';
 import { ImportProvider } from './ImportDialog.tsx';
@@ -19,15 +20,17 @@ if (root) {
   createRoot(root).render(
     <StrictMode>
       <I18nProvider>
-        <ServiceProvider>
-          <DataProvider>
-            <ImportProvider>
-              <CommandProvider>
-                <App />
-              </CommandProvider>
-            </ImportProvider>
-          </DataProvider>
-        </ServiceProvider>
+        <AuthGate>
+          <ServiceProvider>
+            <DataProvider>
+              <ImportProvider>
+                <CommandProvider>
+                  <App />
+                </CommandProvider>
+              </ImportProvider>
+            </DataProvider>
+          </ServiceProvider>
+        </AuthGate>
       </I18nProvider>
     </StrictMode>,
   );
