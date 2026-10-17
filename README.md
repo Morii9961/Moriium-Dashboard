@@ -8,7 +8,7 @@ Morii 一个人用的工作台。各项目的 Agent 按统一协议写出「项�
 
 P1 到 P3 已合并。P4 工程完成，产品验收待 Morii。P5 核心功能与界面评审已完成：Agents、今日焦点和精力、任务及来源、成果与封面，等待一周真实试用。未打 `v0.1.0` 标签。2026-10-16 已获准提前做 P6 工程准备，实际恢复、登录启用和 VPS 部署仍待对应授权。启动与试用清单见 [P5 交接](./docs/handoff-2026-10-14-p5-trial.md)。
 
-P5 可选收尾已补齐粘贴 JSON 与命令面板（Ctrl / ⌘ K）；当前交接见 [2026-10-15 记录](./docs/handoff-2026-10-15-p5-extras.md)。
+P5 可选收尾已补齐粘贴 JSON 与命令面板（Ctrl / ⌘ K）。P6.1 恢复与 P6.2 登录底层、隐藏口令工具已完成本地工程验证，尚未接入正式服务；P6 PR 未合并，口令工具提交尚未推送。当前进展与发布阻塞见 [Claude 交接](./docs/handoff-2026-10-17-claude-p6.md)，另有 [可复制启动提示词](./docs/claude-start-2026-10-17-p6.md) 和 [口令工具说明](./docs/operations/auth-setup.md)。
 
 - 规划：[`docs/planning/`](./docs/planning/README.md)
 - 当前进度：[`docs/status/PROJECT_STATUS.md`](./docs/status/PROJECT_STATUS.md)
