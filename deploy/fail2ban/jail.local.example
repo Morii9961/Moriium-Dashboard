@@ -1,0 +1,10 @@
+# 追加到 /etc/fail2ban/jail.local。应用已有 15 分钟 10 次的账户限速，这里封的是来源 IP。
+[moriium-dashboard]
+enabled  = true
+backend  = systemd
+journalmatch = _SYSTEMD_UNIT=moriium-dashboard.service
+filter   = moriium-dashboard
+port     = http,https
+maxretry = 8
+findtime = 15m
+bantime  = 1h
