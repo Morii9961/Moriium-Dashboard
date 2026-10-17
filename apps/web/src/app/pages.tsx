@@ -7,6 +7,7 @@ import { Segmented } from '../components/Segmented.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import { readThemePref, setThemePref, THEME_PREFS, type ThemePref } from '../theme/theme.ts';
+import { useAuth } from './auth.tsx';
 import { ProjectRegistry } from './registry.tsx';
 import { Link } from './router.tsx';
 import { useService } from './service.tsx';
@@ -25,6 +26,7 @@ export function InboxPage() {
 export function SettingsPage() {
   const { t, locale, setLocale } = useI18n();
   const { state } = useService();
+  const { account, logout } = useAuth();
   const [pref, setPref] = useState<ThemePref>(readThemePref);
   const onTheme = (p: ThemePref, e: ChangeEvent<HTMLInputElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -105,6 +107,32 @@ export function SettingsPage() {
           ) : null}
         </dl>
       </section>
+
+      {account ? (
+        <section className="settings-group" aria-labelledby="set-account">
+          <h2 id="set-account" className="settings-title">
+            {t('settings.account')}
+          </h2>
+          <dl className="settings-dl">
+            <dt>{t('settings.signedInAs')}</dt>
+            <dd className="mono">{account.login}</dd>
+            <dt>{t('settings.sessionEnds')}</dt>
+            <dd>
+              {new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
+                new Date(account.expiresAt),
+              )}
+            </dd>
+          </dl>
+          <div className="page-actions settings-actions">
+            <button type="button" className="btn" onClick={() => void logout()}>
+              {t('auth.logout')}
+            </button>
+            <button type="button" className="btn btn-quiet" onClick={() => void logout(true)}>
+              {t('auth.logoutAll')}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <section className="settings-group" aria-labelledby="set-about">
         <h2 id="set-about" className="settings-title">

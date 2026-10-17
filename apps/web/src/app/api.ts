@@ -6,13 +6,19 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly field: string | undefined;
-  constructor(status: number, code: string, field?: string) {
+  /** 登录被限速时，服务端给出的等待秒数。 */
+  readonly retryAfter: number | undefined;
+  constructor(status: number, code: string, field?: string, retryAfter?: number) {
     super(code);
     this.status = status;
     this.code = code;
     this.field = field;
+    this.retryAfter = retryAfter;
   }
 }
+
+/** 开启登录后，会话失效时任何接口都会返回 unauthenticated；登录门据此回到登录页。 */
+export const UNAUTHENTICATED_EVENT = 'moriium:unauthenticated';
 
 export async function api<T>(
   method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
@@ -40,11 +46,15 @@ export async function api<T>(
     // 非 JSON 响应（例如代理报错页）按出错处理。
   }
   if (!res.ok) {
-    const err = (data ?? {}) as { error?: unknown; field?: unknown };
+    const err = (data ?? {}) as { error?: unknown; field?: unknown; retryAfter?: unknown };
+    if (res.status === 401 && err.error === 'unauthenticated') {
+      window.dispatchEvent(new Event(UNAUTHENTICATED_EVENT));
+    }
     throw new ApiError(
       res.status,
       typeof err.error === 'string' ? err.error : res.status === 502 ? 'offline' : 'unknown',
       typeof err.field === 'string' ? err.field : undefined,
+      typeof err.retryAfter === 'number' ? err.retryAfter : undefined,
     );
   }
   return data as T;
