@@ -162,7 +162,7 @@ it('bounds simultaneous memory-hard verification and refuses a session if creden
 
 describe('persistent limits and database boundaries', () => {
   it('refuses repository, sync-folder and directory targets before creating an authentication file', () => {
-    const repository = join(REPO_ROOT, 'screenshots', 'auth-rejected.sqlite');
+    const repository = join(REPO_ROOT, 'auth-rejected.sqlite');
     expect(existsSync(repository)).toBe(false);
     expect(() => openAuthDatabase(repository)).toThrow('auth_database');
     expect(existsSync(repository)).toBe(false);
