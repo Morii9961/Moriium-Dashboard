@@ -2,10 +2,10 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-17T17:07:00+08:00",
+  "snapshot_at": "2026-10-17T17:19:39+08:00",
   "source": {
-    "branch": "claude/p6-deploy-templates",
-    "commit_sha": "8453271fdf79eb1cad5c47b495ef41b28721c7c5",
+    "branch": "claude/p7-local-scan",
+    "commit_sha": "5c56c0519365758544026785d899c31d11b98ef3",
     "tests_rerun": false,
     "basis": [
       "docs/planning/06-mvp-and-roadmap.md 的 P5 验收与 P6 工程准备边界",
@@ -35,7 +35,9 @@
       "https://github.com/Morii9961/Moriium-Dashboard/pull/38",
       "2026-10-17 Morii 批准开始其余未进行的工作；Claude 依次完成 P6.2c HTTP 接入（#36）、P6.2d 登录页（#37）、P6.3–6.5 部署模板（#38），堆叠于 #35，均未合并：自行合并被权限检查拦下，等 Morii 合并",
       "P6.2c / P6.2d 分支本地 pnpm verify：387 项测试 / 22 个文件、类型检查、公开树审计通过；登录页在临时虚构实例实测深浅色、375px、中日英与键盘流程；#35–#37 双平台 CI 通过",
-      "部署模板只在仓库内，没有连接任何服务器；访问方式、口令设置、数据迁移和 VPS 变更仍待 Morii"
+      "部署模板只在仓库内，没有连接任何服务器；访问方式、口令设置、数据迁移和 VPS 变更仍待 Morii",
+      "docs/verification/p7-local-scan.md",
+      "2026-10-17 Morii 要求继续做 P7 的 L2 本机仓库扫描；分支 claude/p7-local-scan 本地 pnpm verify 392 项测试 / 23 个文件与公开树审计通过，并在临时虚构实例上完成浏览器检查，PR 待合并"
     ]
   },
   "reporter": {
@@ -43,7 +45,7 @@
     "note": "P6 剩余工程完成，等待合并与部署授权"
   },
   "stage": "development",
-  "summary": "P6 工程部分完成：恢复、登录底层与口令工具已合并；HTTP 接入、登录页、部署模板在 PR #35–#38 中待合并。实际使用与 P4/P5 验收暂且搁置。剩下的都要在 VPS 上由 Morii 授权或亲自操作。",
+  "summary": "P6 工程部分完成，HTTP 接入、登录页、部署模板在 PR #35–#38 中待合并；P7 的 L2 本机仓库扫描已完成，PR 待合并。实际使用与 P4/P5 验收暂且搁置。部署需要 Morii 授权或亲自操作。",
   "overall_progress": null,
   "milestones": [
     {
@@ -152,6 +154,12 @@
   "blockers": [],
   "next_actions": [
     {
+      "id": "p7-local-scan",
+      "title": "合并 L2 本机仓库扫描 PR（在 #35–#38 之后）",
+      "priority": "P1",
+      "result": "本机实例可以在设置里登记仓库目录，导入时一键找出新快照，仍走预览和确认"
+    },
+    {
       "id": "p6-merge-stack",
       "title": "合并 PR #35–#38（依次，先 #35）",
       "priority": "P0",
@@ -167,7 +175,7 @@
   "needs_morii": [
     {
       "id": "p6-merge-stack",
-      "decision": "是否合并 PR #35–#38？开发方自行合并被权限检查拦下。"
+      "decision": "是否依次合并 PR #35–#38 和 L2 本机仓库扫描的 PR？开发方自行合并被权限检查拦下。"
     },
     {
       "id": "vps-access",
