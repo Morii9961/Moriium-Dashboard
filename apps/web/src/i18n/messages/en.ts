@@ -221,6 +221,7 @@ export const en: Messages = {
   'zone.progress': 'Progress',
   'zone.update': 'Update snapshot',
   'zone.inProgress': 'In progress',
+  'zone.registered': 'Registered',
   'zone.recent': 'Recent',
   'zone.deliveries': 'Deliveries',
   'zone.reports': 'Reports',

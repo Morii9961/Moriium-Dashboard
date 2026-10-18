@@ -220,6 +220,7 @@ export const ja: Messages = {
   'zone.progress': '進捗',
   'zone.update': 'スナップショットを更新',
   'zone.inProgress': '進行中',
+  'zone.registered': '登録済み',
   'zone.recent': '最近',
   'zone.deliveries': '成果',
   'zone.reports': '報告',

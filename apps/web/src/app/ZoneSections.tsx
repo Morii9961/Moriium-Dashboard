@@ -14,6 +14,7 @@ import {
   zoneStyle,
 } from '../components/Zone.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
+import { headlineNextAction } from '../progress.ts';
 import { useImport } from './ImportDialog.tsx';
 import { ItemReview } from './ItemReview.tsx';
 import { ManualSummary } from './ManualProject.tsx';
@@ -294,10 +295,13 @@ export function ProjectRow({
   project: p,
   pending,
   now,
+  detailed = false,
 }: {
   project: ProjectWithCurrent;
   pending: number;
   now: Date;
+  /** 项目列表：用「还差什么 · 下一步」代替摘要，并显示关注状态。 */
+  detailed?: boolean;
 }) {
   const { t, locale, relative } = useI18n();
   const { open } = useImport();
@@ -346,7 +350,25 @@ export function ProjectRow({
   const s = c.snapshot;
   const z = zoneOf(s.stage);
   const done = s.milestones.filter((m) => m.status === 'done').length;
-  const f = figureOf(s, t, p.acceptances);
+  const f = figureOf(
+    s,
+    t,
+    p.acceptances,
+    p.reviewItems.filter((i) => i.kind === 'needs_morii' && i.pending && !i.gone).length,
+  );
+  const next = detailed ? headlineNextAction(s) : null;
+  const gap = t(
+    f.p.mature && ['launch_preparation', 'live', 'maintenance'].includes(s.stage)
+      ? `mature.${s.stage as 'live' | 'maintenance' | 'launch_preparation'}`
+      : f.p.remaining > 0
+        ? 'gap.remaining'
+        : f.p.total === 0
+          ? 'gap.noMilestones'
+          : f.p.unknown > 0
+            ? 'gap.allKnownDone'
+            : 'gap.allDone',
+    { n: f.p.remaining },
+  );
   const firstSentence = (() => {
     const i = s.summary.indexOf('。');
     return i < 0 ? s.summary : s.summary.slice(0, i + 1);
@@ -359,6 +381,7 @@ export function ProjectRow({
       <div className="main">
         <p className="kicker">
           {t(`stage.${s.stage}`)}
+          {detailed && p.attention !== 'active' ? <span>{t(`attention.${p.attention}`)}</span> : null}
           <span>
             {t(c.reporter.agent ? `agent.${c.reporter.agent}` : 'agent.unknown')} ·{' '}
             <time dateTime={c.snapshotAt}>{relative(c.utcMs, now)}</time>
@@ -369,9 +392,30 @@ export function ProjectRow({
             {name}
           </Link>
         </h3>
-        <p className="sum" lang="zh-Hans">
-          {firstSentence}
-        </p>
+        {detailed ? (
+          <>
+            <p className="gapline">
+              {gap}
+              {f.p.blockers > 0 ? <span>{t('gap.blockers', { n: f.p.blockers })}</span> : null}
+              {f.p.unknown > 0 ? <span>{t('gap.unknown', { n: f.p.unknown })}</span> : null}
+            </p>
+            {next ? (
+              <p className="nextline">
+                <span className="prio">{next.priority}</span>
+                <span lang="zh-Hans">{next.title}</span>
+              </p>
+            ) : null}
+            {p.attention === 'paused' && p.attentionNote ? (
+              <p className="sum" lang="zh-Hans">
+                {p.attentionNote}
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <p className="sum" lang="zh-Hans">
+            {firstSentence}
+          </p>
+        )}
       </div>
       <div className="rail">
         <dl className="quad">
@@ -380,7 +424,16 @@ export function ProjectRow({
             <i>/</i>
             {s.milestones.length}
           </RailRow>
-          <RailRow k={t('more.pending')}>{pending}</RailRow>
+          <RailRow k={t('more.pending')}>
+            <span
+              title={t('more.pendingDetail', {
+                decisions: f.p.decisions,
+                acceptances: f.p.awaitingAcceptance,
+              })}
+            >
+              {pending}
+            </span>
+          </RailRow>
           <RailRow k={t('more.blockers')}>{s.blockers.length}</RailRow>
           <RailRow k={t('zone.progress')}>
             <span title={f.label}>{f.text}</span>

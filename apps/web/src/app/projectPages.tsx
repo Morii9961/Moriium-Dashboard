@@ -2,7 +2,6 @@
  * 和快照有关的页面：概览、项目列表、项目详情、导入记录（P3）。
  * 概览和项目页的完整内容（需要你决定、新鲜度、历史、验收）在 P4；这里先让导入的快照显示出来。
  */
-import { DownloadSimple } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
 import { ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
@@ -15,6 +14,7 @@ import { ProjectList } from './ProjectList.tsx';
 import { Link } from './router.tsx';
 import { type BatchView, type FileOutcome, localizedName, type ProjectWithCurrent } from './types.ts';
 import { EmptyState, PageHeader, SNAPSHOT_PHRASE, SnapshotSteps } from './ui.tsx';
+import { BandHead } from './ZoneSections.tsx';
 
 const projectPath = (id: string) => `/projects/${encodeURIComponent(id)}`;
 
@@ -53,7 +53,6 @@ function ImportButton({ projectId }: { projectId?: string }) {
   const { open } = useImport();
   return (
     <button type="button" className="btn btn-primary" onClick={() => open(projectId)}>
-      <DownloadSimple size={16} aria-hidden="true" />
       {t('action.import')}
     </button>
   );
@@ -63,25 +62,35 @@ export function ProjectsPage() {
   const { t } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useProjects();
+  if (!data)
+    return (
+      <>
+        <PageHeader title={t('nav.projects')} />
+        <RegistryPending failed={!!error} />
+      </>
+    );
+  const active = data.projects.filter((p) => p.attention !== 'paused' && p.attention !== 'archived');
   return (
-    <>
-      <PageHeader
-        title={t('nav.projects')}
-        lede={data ? t('projects.registered', { count: data.projects.length }) : undefined}
-      />
-      {data ? (
-        <>
-          <div className="page-actions">
-            <Link to="/settings#set-projects" className="btn">
+    <div className="page">
+      <section className="block" aria-labelledby="h-projects">
+        <BandHead
+          title={t('nav.projects')}
+          level={1}
+          id="h-projects"
+          numbers={[
+            [t('zone.registered'), data.projects.length],
+            [t('zone.inProgress'), active.length],
+          ]}
+        >
+          <div className="head-actions">
+            <Link to="/settings#set-projects" className="btn btn-quiet">
               {t('manual.register')}
             </Link>
           </div>
-          <ProjectList projects={data.projects} now={now} />
-        </>
-      ) : (
-        <RegistryPending failed={!!error} />
-      )}
-    </>
+        </BandHead>
+        <ProjectList projects={data.projects} now={now} />
+      </section>
+    </div>
   );
 }
 
