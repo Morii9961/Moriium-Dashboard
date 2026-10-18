@@ -222,7 +222,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <div className="main-col">
         <ServiceBanner />
-        <main id="main" className="main">
+        <main id="main" className="app-main">
           {children}
         </main>
       </div>

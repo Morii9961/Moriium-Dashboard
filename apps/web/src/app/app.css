@@ -136,10 +136,10 @@
 .main-col {
   min-width: 0;
 }
-.main {
+.app-main {
   padding: 48px var(--pad) 128px var(--x);
 }
-.main:focus {
+.app-main:focus {
   outline: none;
 }
 
@@ -381,7 +381,7 @@
     flex-direction: row;
     gap: 8px;
   }
-  .main {
+  .app-main {
     padding-top: var(--space-6);
     padding-bottom: calc(88px + env(safe-area-inset-bottom));
   }
