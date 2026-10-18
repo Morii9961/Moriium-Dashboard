@@ -133,7 +133,7 @@
   display: flex;
   flex-direction: column;
   /* 首屏横贯全宽：从左边距到右边距，压过导航栏位 */
-  margin: -48px calc(-1 * var(--pad)) 0 calc(var(--pad) - var(--x));
+  margin: -48px calc(-1 * var(--pad)) 0 calc(-1 * var(--x));
   padding: 48px var(--pad) 40px;
 }
 .first > .dateline,
