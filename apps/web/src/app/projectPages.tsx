@@ -4,15 +4,14 @@
  */
 import { useMemo } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
-import { ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { useResource } from './data.tsx';
 import { useImport } from './ImportDialog.tsx';
-import { ProjectDetailView } from './ProjectDetail.tsx';
+import { DetailHead, ProjectDetailView } from './ProjectDetail.tsx';
 import { ProjectList } from './ProjectList.tsx';
 import { Link } from './router.tsx';
-import { type BatchView, type FileOutcome, localizedName, type ProjectWithCurrent } from './types.ts';
+import type { BatchView, FileOutcome, ProjectWithCurrent } from './types.ts';
 import { EmptyState, PageHeader, SNAPSHOT_PHRASE, SnapshotSteps } from './ui.tsx';
 import { BandHead } from './ZoneSections.tsx';
 
@@ -20,26 +19,6 @@ const projectPath = (id: string) => `/projects/${encodeURIComponent(id)}`;
 
 function useProjects() {
   return useResource<{ projects: ProjectWithCurrent[] }>('/api/projects');
-}
-
-function stripItem(p: ProjectWithCurrent, locale: string): StripItem | null {
-  const c = p.current;
-  if (!c) return null;
-  return {
-    anchor: `p-${p.id.replace(/[^a-z0-9]+/g, '-')}`,
-    name: localizedName(p, locale),
-    snapshot: c.snapshot,
-    utcMs: c.utcMs,
-    offsetMinutes: c.offsetMinutes,
-    agent: c.reporter.agent,
-    agentInferred: c.reporter.source === 'branch',
-    staleAfterDays: p.freshnessDays,
-    projectPaused: p.attention === 'paused',
-    acceptances: p.acceptances,
-    coreMilestones: p.coreMilestones,
-    href: projectPath(p.id),
-    pendingDecisions: p.reviewItems.filter((i) => i.kind === 'needs_morii' && i.pending && !i.gone).length,
-  };
 }
 
 /** 还没读到登记表时的占位：读取中，或连不上服务时说明会自动重试。 */
@@ -95,7 +74,7 @@ export function ProjectsPage() {
 }
 
 export function ProjectPage({ id }: { id: string }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useProjects();
   if (!data) {
@@ -119,26 +98,25 @@ export function ProjectPage({ id }: { id: string }) {
       </>
     );
   }
-  const item = stripItem(project, locale);
   return (
-    <>
-      <PageHeader meta={<span className="mono">{project.id}</span>} title={localizedName(project, locale)} />
-      <div className="page-actions">
-        {project.tracking === 'protocol' ? <ImportButton projectId={project.id} /> : null}
-      </div>
-      {item ? (
-        <div className="strips">
-          <ProjectStrip item={item} now={now} />
+    <div className="page detail">
+      <DetailHead
+        project={project}
+        now={now}
+        actions={project.tracking === 'protocol' ? <ImportButton projectId={project.id} /> : null}
+      />
+      {project.current || project.tracking === 'manual' ? null : (
+        <div className="g">
+          <div className="main">
+            <EmptyState title={t('project.empty')}>
+              <p className="empty-body">{t('project.emptyHint')}</p>
+              <CopyLine text={SNAPSHOT_PHRASE} lang="zh-Hans" />
+            </EmptyState>
+          </div>
         </div>
-      ) : null}
-      {item || project.tracking === 'manual' ? null : (
-        <EmptyState title={t('project.empty')}>
-          <p className="empty-body">{t('project.emptyHint')}</p>
-          <CopyLine text={SNAPSHOT_PHRASE} lang="zh-Hans" />
-        </EmptyState>
       )}
       <ProjectDetailView key={project.id} projectId={project.id} />
-    </>
+    </div>
   );
 }
 

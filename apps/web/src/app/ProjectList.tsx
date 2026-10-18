@@ -3,7 +3,6 @@ import { figureOf } from '../components/ProjectStrip.tsx';
 import { StaleIcon } from '../components/parts.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { freshness } from '../progress.ts';
-import { Link } from './router.tsx';
 import { CATEGORIES, localizedName, type ProjectWithCurrent } from './types.ts';
 import { ProjectRow } from './ZoneSections.tsx';
 

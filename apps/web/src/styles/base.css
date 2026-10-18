@@ -159,3 +159,102 @@ a {
 :root[data-theme="dark"] body {
   font-weight: 300;
 }
+
+/* 状态与证据的小图形（parts.tsx） */
+.icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  stroke: currentColor;
+  fill: currentColor;
+}
+.icon path[fill="none"],
+.icon circle[fill="none"] {
+  fill: none;
+}
+
+/* 表单控件：方块复选、下划线输入与选择、无框分组（DESIGN.md 第 10 节） */
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  vertical-align: -2px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--c-ink1);
+  cursor: pointer;
+}
+input[type="checkbox"]:checked {
+  background: var(--c-ink1);
+}
+input[type="radio"]:checked {
+  background: var(--c-ink1);
+  box-shadow:
+    inset 0 0 0 1px var(--c-ink1),
+    inset 0 0 0 4px var(--c-canvas);
+}
+input:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+legend {
+  padding: 0;
+}
+select {
+  appearance: none;
+  min-height: 44px;
+  padding: 0 24px 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--c-ink1);
+  background-color: transparent;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(-45deg, transparent 50%, currentColor 50%);
+  background-position:
+    calc(100% - 10px) 50%,
+    calc(100% - 5px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--c-ink1);
+  cursor: pointer;
+}
+input:is(
+  [type="text"],
+  [type="search"],
+  [type="date"],
+  [type="number"],
+  [type="url"],
+  [type="password"],
+  :not([type])
+),
+textarea {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--c-ink1);
+  background: transparent;
+  color: var(--c-ink1);
+}
+textarea {
+  padding: 8px 0;
+}
+:is(select, input, textarea):focus {
+  outline: none;
+  border-bottom-width: 2px;
+}
+:is(select, input, textarea):focus-visible {
+  outline: none;
+}
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
