@@ -282,7 +282,8 @@ export const zhHans = {
   'settings.lastBackup': '最近一次备份',
   'settings.noBackup': '还没有备份',
   'settings.about': '关于',
-  'settings.fonts': '本产品使用了 MiSans 字体。其他字体与代码库的许可见仓库里的 THIRD_PARTY_NOTICES.md。',
+  'settings.fonts':
+    '字体：Archivo、Noto Sans SC、Noto Sans JP（SIL Open Font License 1.1）。字体与代码库的许可见仓库里的 THIRD_PARTY_NOTICES.md。',
 
   'common.loading': '正在读取',
   'settings.projects': '项目登记',

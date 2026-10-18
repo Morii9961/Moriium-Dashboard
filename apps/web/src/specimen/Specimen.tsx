@@ -4,7 +4,7 @@
  * 主题和界面语言可以在顶栏切换，用的是正式的主题模块和三语框架。
  */
 import { type CheckResult, checkSnapshot, PRESET_PROJECTS } from '@moriium-dashboard/protocol';
-import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dashboardSnapshot from '../../../../docs/status/project-status.json?raw';
 import { figureOf, type Origin, ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
 import { EvidenceTag, MilestoneGrid, StatusMark } from '../components/parts.tsx';
@@ -96,21 +96,21 @@ const SWATCH_GROUPS: [MessageKey, (keyof ColorTokens)[]][] = [
 const TYPE_SAMPLES = [
   {
     lang: 'zh-Hans',
-    label: '中文 · MiSans + 霞鹜文楷',
+    label: '中文 · Archivo + Noto Sans SC',
     heading: 'Moriium 主站 · 功能成熟，等待上线',
     body: '快照是证词，不是事实本身。Dashboard 展示时始终带着谁说的、什么时候说的、依据是什么。还差 3 个里程碑，其中 1 个受阻。',
     small: 'main @ fd48f88 · 10月11日 22:45',
   },
   {
     lang: 'ja',
-    label: '日本語 · Murecho + Klee One',
+    label: '日本語 · Archivo + Noto Sans JP',
     heading: 'Enouia Runtime · 統合中',
     body: 'スナップショットは証言であり、事実そのものではありません。表示しているのは取り込んだ時刻で、稼働状況ではありません。',
     small: '報告から 16 日 · 自己申告',
   },
   {
     lang: 'en',
-    label: 'English · IBM Plex Sans + Source Serif 4',
+    label: 'English · Archivo',
     heading: 'MoriMeta · in acceptance',
     body: 'A snapshot is testimony, not fact. Every number says who reported it, when, and on what evidence. Five milestones to go, two of them blocked.',
     small: 'main @ 9170cd8 · Oct 12, 13:12',
@@ -147,9 +147,8 @@ export function Specimen() {
     new Date(2026, 9, 9),
   );
 
-  const onTheme = (pref: ThemePref, e: ChangeEvent<HTMLInputElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    setThemePref(pref, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  const onTheme = (pref: ThemePref) => {
+    setThemePref(pref);
     setPref(pref);
   };
 

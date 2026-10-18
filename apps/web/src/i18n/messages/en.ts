@@ -285,7 +285,7 @@ export const en: Messages = {
   'settings.noBackup': 'No backup yet',
   'settings.about': 'About',
   'settings.fonts':
-    'This product uses the MiSans typeface. Licenses for other fonts and libraries are in THIRD_PARTY_NOTICES.md in the repository.',
+    'Fonts: Archivo, Noto Sans SC and Noto Sans JP (SIL Open Font License 1.1). Licenses for fonts and libraries are in THIRD_PARTY_NOTICES.md in the repository.',
 
   'common.loading': 'Loading',
   'settings.projects': 'Project registry',

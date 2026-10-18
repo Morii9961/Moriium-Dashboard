@@ -285,7 +285,7 @@ export const ja: Messages = {
   'settings.noBackup': 'バックアップはまだありません',
   'settings.about': 'このアプリについて',
   'settings.fonts':
-    '本製品は MiSans フォントを使用しています。ほかのフォントとライブラリのライセンスは、リポジトリの THIRD_PARTY_NOTICES.md にあります。',
+    'フォント：Archivo、Noto Sans SC、Noto Sans JP（SIL Open Font License 1.1）。フォントとライブラリのライセンスは、リポジトリの THIRD_PARTY_NOTICES.md にあります。',
 
   'common.loading': '読み込み中',
   'settings.projects': 'プロジェクトの登録',

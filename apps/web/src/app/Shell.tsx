@@ -22,7 +22,7 @@ import {
   Sun,
   X,
 } from '@phosphor-icons/react';
-import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
@@ -112,9 +112,8 @@ function ThemeButton() {
   const [pref, setPref] = useState<ThemePref>(readThemePref);
   const next = THEME_PREFS[(THEME_PREFS.indexOf(pref) + 1) % THEME_PREFS.length] ?? 'system';
   const ThemeIcon = THEME_ICON[pref];
-  const onClick = (e: MouseEvent<HTMLButtonElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    setThemePref(next, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  const onClick = () => {
+    setThemePref(next);
     setPref(next);
   };
   return (

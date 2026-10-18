@@ -41,19 +41,13 @@ importers:
 
   apps/web:
     dependencies:
-      '@fontsource-variable/ibm-plex-sans':
+      '@fontsource-variable/archivo':
         specifier: 5.3.0
         version: 5.3.0
-      '@fontsource-variable/murecho':
+      '@fontsource-variable/noto-sans-jp':
         specifier: 5.3.1
         version: 5.3.1
-      '@fontsource-variable/source-serif-4':
-        specifier: 5.3.1
-        version: 5.3.1
-      '@fontsource/ibm-plex-mono':
-        specifier: 5.3.0
-        version: 5.3.0
-      '@fontsource/klee-one':
+      '@fontsource-variable/noto-sans-sc':
         specifier: 5.3.1
         version: 5.3.1
       '@moriium-dashboard/protocol':
@@ -65,12 +59,6 @@ importers:
       intl-messageformat:
         specifier: 12.1.2
         version: 12.1.2
-      lxgw-wenkai-screen-webfont:
-        specifier: 1.7.0
-        version: 1.7.0
-      misans:
-        specifier: 5.0.0
-        version: 5.0.0
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -156,20 +144,14 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@fontsource-variable/ibm-plex-sans@5.3.0':
-    resolution: {integrity: sha512-agG8tXFEo0hD9+J7npa4vbbWult52eMLVaQ6WQRlhs/iCAojrMAoejru85W9HTVXHfyUj96KM7gp/KGAS87XaQ==}
+  '@fontsource-variable/archivo@5.3.0':
+    resolution: {integrity: sha512-HogK8FJelrD1o7TlZlkIVtHgc20bO5PZRWE7mUeUTdMN055alznQV6/00J00IBeu8FQAH4s3zW9UJNvKExXf+g==}
 
-  '@fontsource-variable/murecho@5.3.1':
-    resolution: {integrity: sha512-wjIOewtCBmJrniMLnc5f+IFPSkZWukwaGyeRTUabl5VF4lkevkWkRurvUstaxSG8FxHHFGHaz2oTwD0R9dUceg==}
+  '@fontsource-variable/noto-sans-jp@5.3.1':
+    resolution: {integrity: sha512-/anGvJFc5y36f8DJ+3TSh2+KAvaRLA9PaLUMvneeY5s4j8m+8X4F3lE/sjTuG9YI5BX4sykvCk4TuJMG7ecMRQ==}
 
-  '@fontsource-variable/source-serif-4@5.3.1':
-    resolution: {integrity: sha512-4Rtay22SC4lMvw11r/+9kxANB6P3M0X8s1NudBC2v0J1KU2y3DcMoNcT3lBoZ/CqLirzf+StlO6UlJilyrvaUg==}
-
-  '@fontsource/ibm-plex-mono@5.3.0':
-    resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
-
-  '@fontsource/klee-one@5.3.1':
-    resolution: {integrity: sha512-TWW1hZylfNSpsKAIxKlCUY02gSiRhulJgfVIOlpDMZhBbssXvKBnbUREFkZuB0Hefe2xiso07JWKDxOENKwu1w==}
+  '@fontsource-variable/noto-sans-sc@5.3.1':
+    resolution: {integrity: sha512-UB96JJ17HyD5ehEU7Em0hDdh7fvTMB4B4Hzmq5c4QaNwwSLqTrdM2S+coySeBqCkXwh0DxqXT0b0wMrmzorFpQ==}
 
   '@formatjs/fast-memoize@3.1.7':
     resolution: {integrity: sha512-zXfhLpvA6T7+efdt9JLbBwZ00tT7NsBMDVnDu8rpHeNNv8KfRZAMo2gkG0k9lK/Nzc//3kJ9pImsfuJxk3KhUA==}
@@ -612,14 +594,8 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
-  lxgw-wenkai-screen-webfont@1.7.0:
-    resolution: {integrity: sha512-xvfF4V26Mb335xKg3uxljz+V2nq4F5ek0ku9pmyKgT0Dzo/d2rHi7WpnqgvM9mlXAcAKOrxrcDmUZiIs/ZQ9bQ==}
-
   magic-string@1.4.3:
     resolution: {integrity: sha512-z12OxmaPGE0F4xlpGdjuAUckipLpQlTAuAmyGhNoD7ODpYUzvDfvtxUbjM/jwznyP178oju/KDdyi220wNJ0RQ==}
-
-  misans@5.0.0:
-    resolution: {integrity: sha512-8cNqn0n0f+NCuXFT9VMVcfO2/zPp3DA89AQKGJOVWdTM8qkYW7NT0+qGyn1j3PmXeGAc1sVJY6+unBWz01b1+g==}
 
   nanoid@3.3.20:
     resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
@@ -825,15 +801,11 @@ snapshots:
   '@biomejs/cli-win32-x64@2.5.15':
     optional: true
 
-  '@fontsource-variable/ibm-plex-sans@5.3.0': {}
+  '@fontsource-variable/archivo@5.3.0': {}
 
-  '@fontsource-variable/murecho@5.3.1': {}
+  '@fontsource-variable/noto-sans-jp@5.3.1': {}
 
-  '@fontsource-variable/source-serif-4@5.3.1': {}
-
-  '@fontsource/ibm-plex-mono@5.3.0': {}
-
-  '@fontsource/klee-one@5.3.1': {}
+  '@fontsource-variable/noto-sans-sc@5.3.1': {}
 
   '@formatjs/fast-memoize@3.1.7': {}
 
@@ -1103,13 +1075,9 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
 
-  lxgw-wenkai-screen-webfont@1.7.0: {}
-
   magic-string@1.4.3:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
-
-  misans@5.0.0: {}
 
   nanoid@3.3.20: {}
 
