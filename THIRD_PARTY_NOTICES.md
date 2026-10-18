@@ -7,7 +7,7 @@ Moriium Dashboard 的代码使用 MIT 许可（见 `LICENSE`）。下面这些�
 | 字体 | 用途 | 来源（npm 包） | 许可 |
 | --- | --- | --- | --- |
 | Archivo | 拉丁字母：标题、正文、数字（可变字体，字重与宽度两轴） | `@fontsource-variable/archivo` | SIL Open Font License 1.1 |
-| Noto Sans SC | 中文 | `@fontsource-variable/noto-sans-sc` | SIL Open Font License 1.1 |
+| Noto Sans SC | 中文 | `@fontsource/noto-sans-sc` | SIL Open Font License 1.1 |
 | Noto Sans JP | 日文 | `@fontsource-variable/noto-sans-jp` | SIL Open Font License 1.1 |
 
 ## 代码库

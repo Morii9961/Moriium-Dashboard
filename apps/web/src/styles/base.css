@@ -10,7 +10,7 @@
 :root,
 [lang="zh-Hans"],
 [lang="en"] {
-  --font-ui: "Archivo Variable", "Noto Sans SC Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-ui: "Archivo Variable", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-heading: var(--font-ui);
   --font-data: var(--font-ui);
 }
