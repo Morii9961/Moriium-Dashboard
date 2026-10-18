@@ -238,6 +238,8 @@ export const en: Messages = {
   'nav.import': 'Import',
   'nav.settings': 'Settings',
   'nav.menu': 'Open menu',
+  'nav.contents': 'Contents',
+  'common.close': 'Close',
   'nav.close': 'Close menu',
   'commands.open': 'Command menu',
   'commands.search': 'Search projects or actions',

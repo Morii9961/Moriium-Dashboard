@@ -236,6 +236,8 @@ export const zhHans = {
   'nav.import': '导入',
   'nav.settings': '设置',
   'nav.menu': '打开导航',
+  'nav.contents': '目录',
+  'common.close': '关闭',
   'nav.close': '关闭导航',
   'commands.open': '命令面板',
   'commands.search': '搜索项目或操作',

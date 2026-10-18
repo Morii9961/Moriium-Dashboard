@@ -237,6 +237,8 @@ export const ja: Messages = {
   'nav.import': '取り込み',
   'nav.settings': '設定',
   'nav.menu': 'メニューを開く',
+  'nav.contents': '目次',
+  'common.close': '閉じる',
   'nav.close': 'メニューを閉じる',
   'commands.open': 'コマンドメニュー',
   'commands.search': 'プロジェクトや操作を検索',
