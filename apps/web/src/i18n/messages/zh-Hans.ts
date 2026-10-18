@@ -220,6 +220,7 @@ export const zhHans = {
   'zone.update': '更新快照',
   'zone.inProgress': '在推进',
   'zone.registered': '已登记',
+  'zone.batches': '批次',
   'zone.recent': '最近',
   'zone.deliveries': '交付',
   'zone.reports': '报告',

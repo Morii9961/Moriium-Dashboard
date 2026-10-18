@@ -131,47 +131,57 @@ export function ImportsPage() {
   const { data } = useResource<{ batches: BatchView[] }>('/api/imports');
   const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
   return (
-    <>
-      <PageHeader title={t('imports.title')} />
-      <div className="page-actions">
-        <ImportButton />
+    <div className="page imports-page">
+      <BandHead
+        title={t('imports.title')}
+        level={1}
+        id="h-imports"
+        numbers={[[t('zone.batches'), data?.batches.length ?? 0]]}
+      >
+        <div className="head-actions">
+          <ImportButton />
+        </div>
+      </BandHead>
+      <div className="g">
+        <div className="main wide">
+          {data && data.batches.length > 0 ? (
+            <ol className="batch-list">
+              {data.batches.map((b) => (
+                <li key={b.id} className={`batch${b.undoneAt ? ' is-undone' : ''}`}>
+                  <details>
+                    <summary>
+                      <time dateTime={b.at}>{fmt.format(new Date(b.at))}</time>
+                      <span>
+                        {t('imports.batchLine', { imported: b.importedCount, skipped: b.skippedCount })}
+                      </span>
+                      {b.undoneAt ? <span className="batch-tag">{t('imports.undoneTag')}</span> : null}
+                    </summary>
+                    <ul className="iresult-list">
+                      {b.results.map((r, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: 导入记录里的结果不会重排，同名文件只能靠位置区分。
+                        <li key={`${r.fileName}-${i}`} className={`iresult-row is-${r.outcome}`}>
+                          <span className="mono">{r.fileName}</span>
+                          <span>{t(outcomeKey(r))}</span>
+                          {'projectId' in r ? (
+                            <Link to={projectPath(r.projectId)} className="iresult-link">
+                              {r.projectId}
+                            </Link>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <>
+              <EmptyState title={t('imports.empty')} />
+              <SnapshotSteps importAction={false} />
+            </>
+          )}
+        </div>
       </div>
-      {data && data.batches.length > 0 ? (
-        <ol className="batch-list">
-          {data.batches.map((b) => (
-            <li key={b.id} className={`batch${b.undoneAt ? ' is-undone' : ''}`}>
-              <details>
-                <summary>
-                  <time dateTime={b.at}>{fmt.format(new Date(b.at))}</time>
-                  <span>
-                    {t('imports.batchLine', { imported: b.importedCount, skipped: b.skippedCount })}
-                  </span>
-                  {b.undoneAt ? <span className="batch-tag">{t('imports.undoneTag')}</span> : null}
-                </summary>
-                <ul className="iresult-list">
-                  {b.results.map((r, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: 导入记录里的结果不会重排，同名文件只能靠位置区分。
-                    <li key={`${r.fileName}-${i}`} className={`iresult-row is-${r.outcome}`}>
-                      <span className="mono">{r.fileName}</span>
-                      <span>{t(outcomeKey(r))}</span>
-                      {'projectId' in r ? (
-                        <Link to={projectPath(r.projectId)} className="iresult-link">
-                          {r.projectId}
-                        </Link>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <>
-          <EmptyState title={t('imports.empty')} />
-          <SnapshotSteps importAction={false} />
-        </>
-      )}
-    </>
+    </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react';
 import { Segmented } from '../components/Segmented.tsx';
+import { RulerCells } from '../components/Zone.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
@@ -130,15 +131,6 @@ function LoginPage({ notice, onSignedIn }: { notice: MessageKey | null; onSigned
 
   return (
     <main className="auth" aria-labelledby="auth-title">
-      <div className="auth-rail" aria-hidden="true">
-        <span className="auth-run" />
-        <span className="auth-stops">
-          <span />
-          <span />
-          <span />
-        </span>
-        <span className="auth-here" />
-      </div>
       <div className="auth-panel">
         <p className="auth-brand">Moriium Dashboard</p>
         <h1 id="auth-title" className="auth-title">
@@ -194,6 +186,9 @@ function LoginPage({ notice, onSignedIn }: { notice: MessageKey | null; onSigned
           onChange={(l: Locale) => setLocale(l)}
           options={LOCALES.map((l) => [l, LOCALE_NAMES[l]] as const)}
         />
+      </div>
+      <div className="auth-ruler" aria-hidden="true">
+        <RulerCells blank />
       </div>
     </main>
   );
