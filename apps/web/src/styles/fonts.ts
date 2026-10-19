@@ -3,11 +3,10 @@
  * 中日文字体按 unicode-range 分片，浏览器只下载页面用到的字。许可见仓库根目录 THIRD_PARTY_NOTICES.md。
  *
  * 灰阶尺（DESIGN.md 第 3 节）：拉丁只用 Archivo（可变字体，字重 + 宽度两轴）；
- * 中文 Noto Sans SC 只打包 300（展示）与 400（正文）两档静态字重：可变字体的首屏分片实测 817–869KB，
- * 两档静态 543–705KB（2026-10-18，DESIGN.md 第 3 节）。中文强调靠墨色和字号，不用 500。
- * 日文 Noto Sans JP 用可变字体，只在 :lang(ja) 下加载。
+ * 中文 Noto Sans SC、日文 Noto Sans JP 都用可变字体，CSS 里写的 200–500 每个字重都按原样渲染：
+ * 64px 中文标题 200 与 Archivo 极细数字对齐，正文 300 / 400，12px 标签 500。
+ * 体积不作为约束（Morii，2026-10-19）：以视觉效果为准。日文只在 :lang(ja) 下才会下载。
  */
 import '@fontsource-variable/archivo/wdth.css';
-import '@fontsource/noto-sans-sc/300.css';
-import '@fontsource/noto-sans-sc/400.css';
+import '@fontsource-variable/noto-sans-sc';
 import '@fontsource-variable/noto-sans-jp';

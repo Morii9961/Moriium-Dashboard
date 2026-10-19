@@ -50,7 +50,7 @@
 | 展示 / 标题（拉丁） | Archivo Variable | OFL-1.1（`@fontsource-variable/archivo` 5.3.0） | wght 100–300，wdth 125 | 自托管，`wdth.css`（含 wght + wdth 两轴） |
 | 正文（拉丁） | Archivo Variable | 同上 | wght 400 / 500，wdth 100 | 同一文件 |
 | 数据 / 元数据 | Archivo Variable，`tabular-nums` | 同上 | 数字 wght 200 wdth 112–125；12px 标签 wght 500 wdth 62，字距 .1em | 同一文件 |
-| 中文（标题与正文） | Noto Sans SC | OFL-1.1（`@fontsource/noto-sans-sc` 5.3.1） | 300（展示）/ 400（正文），静态两档；不用 500 | 自托管，按 unicode-range 分片 |
+| 中文（标题与正文） | Noto Sans SC Variable | OFL-1.1（`@fontsource-variable/noto-sans-sc` 5.3.1） | 可变字重：64px 标题 200、28px 标题 300、正文 400（负片 300）、12px 标签 500 | 自托管，按 unicode-range 分片 |
 | 日文 | Noto Sans JP | OFL-1.1（`@fontsource-variable/noto-sans-jp` 5.3.1） | 可变字重 | 自托管，只在 `:lang(ja)` 下才会下载 |
 | 点缀 | 无 | — | — | — |
 
@@ -59,7 +59,7 @@
 - 行高：中文正文 1.75（17px）/ 1.7（15px）；标题 1.05–1.3；12px 元数据 1.5；主数字 0.8–0.9。
 - 数字：`font-variant-numeric: tabular-nums` 已在 Archivo 上实测可用，全站默认开启。
 - 中文：`:lang(zh-Hans)` 单独写字体栈（Archivo 在前、Noto Sans SC 在后），`font-synthesis: none`，不对中文用斜体，`text-autospace: normal`。
-- 字体预算（实测 1440 宽，开发服务器，2026-10-18）：拉丁 88KB（≤ 150KB，通过）。中文：三档静态 689–950KB → 可变字体 817–869KB（更大）→ **静态 300 + 400 两档 543–705KB（采用）**。仍高于 500KB 的目标：再降只能只留 400（64px 中文细标题会变成常规字重，与 Archivo 极细数字不匹配）或自建子集，留待以后决定。中文强调用墨色与字号，不用 500。
+- 字体体积：**不作为约束**（Morii，2026-10-19：以视觉效果为准）。实测首屏（1440 宽，开发服务器）拉丁 88KB，中文可变字体 817–869KB。用可变字体是为了让每个字重按原样渲染：静态两档时 200 会退到 300（中文细标题比 Archivo 极细数字明显更重），500 会退到 400。
 
 ## 4. 形状、材质、间距
 

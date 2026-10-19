@@ -47,7 +47,7 @@ importers:
       '@fontsource-variable/noto-sans-jp':
         specifier: 5.3.1
         version: 5.3.1
-      '@fontsource/noto-sans-sc':
+      '@fontsource-variable/noto-sans-sc':
         specifier: 5.3.1
         version: 5.3.1
       '@moriium-dashboard/protocol':
@@ -147,8 +147,8 @@ packages:
   '@fontsource-variable/noto-sans-jp@5.3.1':
     resolution: {integrity: sha512-/anGvJFc5y36f8DJ+3TSh2+KAvaRLA9PaLUMvneeY5s4j8m+8X4F3lE/sjTuG9YI5BX4sykvCk4TuJMG7ecMRQ==}
 
-  '@fontsource/noto-sans-sc@5.3.1':
-    resolution: {integrity: sha512-YxZ/VWAWo9FWzH08Q6fGTzIW6vYNP2TMhUFCnfhlimbhdXnWrxJLrzX3KWt2FKnV0s8XiM5vjpGHQiyFRlTj0w==}
+  '@fontsource-variable/noto-sans-sc@5.3.1':
+    resolution: {integrity: sha512-UB96JJ17HyD5ehEU7Em0hDdh7fvTMB4B4Hzmq5c4QaNwwSLqTrdM2S+coySeBqCkXwh0DxqXT0b0wMrmzorFpQ==}
 
   '@formatjs/fast-memoize@3.1.7':
     resolution: {integrity: sha512-zXfhLpvA6T7+efdt9JLbBwZ00tT7NsBMDVnDu8rpHeNNv8KfRZAMo2gkG0k9lK/Nzc//3kJ9pImsfuJxk3KhUA==}
@@ -795,7 +795,7 @@ snapshots:
 
   '@fontsource-variable/noto-sans-jp@5.3.1': {}
 
-  '@fontsource/noto-sans-sc@5.3.1': {}
+  '@fontsource-variable/noto-sans-sc@5.3.1': {}
 
   '@formatjs/fast-memoize@3.1.7': {}
 
