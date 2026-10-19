@@ -1,5 +1,4 @@
 /** 一行可复制的文字（例如给 Agent 的指令）。复制结果用 live region 播报。 */
-import { Check, Copy } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 
@@ -28,7 +27,6 @@ export function CopyLine({ text, lang }: { text: string; lang?: string }) {
         {text}
       </code>
       <button type="button" className="copyline-btn" onClick={copy}>
-        {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
         <span>{copied ? t('action.copied') : t('action.copy')}</span>
       </button>
       <span className="sr-only" aria-live="polite">

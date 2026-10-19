@@ -4,7 +4,6 @@
  * 时间带每份快照一个刻度，只表达报告的疏密，不表达好坏（S2 小图，自己画的 SVG，对读屏隐藏；
  * 下面的列表就是它的文字版）。默认对比「当前」和「上一份」。
  */
-import { ArrowRight, DownloadSimple, Minus, Plus, Trash } from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
@@ -133,13 +132,13 @@ function CompareView({ a, b }: { a: number; b: number }) {
   if (src.length) blocks.push({ title: t('compare.source'), rows: src });
 
   const signLabel = { '+': t('compare.added'), '-': t('compare.removed'), '→': t('compare.changed') };
-  const SignIcon = { '+': Plus, '-': Minus, '→': ArrowRight };
+  const signGlyph = { '+': '+', '-': '−', '→': '→' };
 
   return (
     <section className="compare" aria-live="polite">
       <p className="compare-title">
         <span>{snapshotTime(data.before.utcMs, data.before.offsetMinutes)}</span>
-        <ArrowRight size={16} aria-hidden="true" />
+        <span aria-hidden="true">→</span>
         <span>{snapshotTime(data.after.utcMs, data.after.offsetMinutes)}</span>
       </p>
       {blocks.length === 0 ? <p className="settings-note">{t('compare.none')}</p> : null}
@@ -148,13 +147,14 @@ function CompareView({ a, b }: { a: number; b: number }) {
           <h4 className="compare-block-title">{block.title}</h4>
           <ul className="compare-rows">
             {block.rows.map((r) => {
-              const Icon = SignIcon[r.sign];
               return (
                 <li
                   key={`${r.sign}:${r.text}`}
                   className={`compare-row sign-${r.sign === '+' ? 'add' : r.sign === '-' ? 'remove' : 'change'}`}
                 >
-                  <Icon size={14} aria-hidden="true" />
+                  <span className="sign" aria-hidden="true">
+                    {signGlyph[r.sign]}
+                  </span>
                   <span className="sr-only">{signLabel[r.sign]}</span>
                   <span lang={r.zh ? 'zh-Hans' : undefined}>{r.text}</span>
                 </li>
@@ -240,14 +240,9 @@ export function ProjectHistory({ projectId }: { projectId: string }) {
         {s.superseded ? <span className="htag">{t('history.superseded')}</span> : null}
       </span>
       <span className="hrow-actions">
-        <a
-          className="icon-btn"
-          href={`/api/snapshots/${s.id}/raw`}
-          download
-          aria-label={`${t('history.raw')} · ${s.fileName}`}
-          title={t('history.raw')}
-        >
-          <DownloadSimple size={16} aria-hidden="true" />
+        <a className="icon-btn" href={`/api/snapshots/${s.id}/raw`} download title={t('history.raw')}>
+          <span aria-hidden="true">↓</span>
+          <span className="sr-only">{`${t('history.raw')} · ${s.fileName}`}</span>
         </a>
         <button
           type="button"
@@ -256,7 +251,7 @@ export function ProjectHistory({ projectId }: { projectId: string }) {
           title={t('history.delete')}
           onClick={() => act('DELETE', `/api/snapshots/${s.id}`)}
         >
-          <Trash size={16} aria-hidden="true" />
+          <span aria-hidden="true">×</span>
         </button>
       </span>
     </li>

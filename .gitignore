@@ -52,3 +52,6 @@ desktop.ini
 
 # 截图（可能含本机真实快照，不进仓库）
 screenshots/
+
+# design-kit 探索产物（fixtures、截图、变体，不进仓库）
+.design/

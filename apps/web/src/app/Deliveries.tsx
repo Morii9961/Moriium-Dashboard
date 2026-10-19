@@ -18,11 +18,7 @@ export function RecentDeliveries({ data }: { data: OverviewData }) {
     return p ? localizedName(p, locale) : id;
   };
   return (
-    <section className="overview-section">
-      <div className="section-heading">
-        <h2>{t('overview.delivery')}</h2>
-        <Link to="/studio">{t('works.new')}</Link>
-      </div>
+    <div className="deliveries">
       {entries.length ? (
         <ul className="delivery-list">
           {entries.map((entry) =>
@@ -62,8 +58,11 @@ export function RecentDeliveries({ data }: { data: OverviewData }) {
           )}
         </ul>
       ) : (
-        <p>{t('overview.noDelivery')}</p>
+        <p className="muted">{t('overview.noDelivery')}</p>
       )}
-    </section>
+      <p className="go">
+        <Link to="/studio">{t('works.new')}</Link>
+      </p>
+    </div>
   );
 }

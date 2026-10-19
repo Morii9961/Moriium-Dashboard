@@ -13,7 +13,8 @@
       "!docs/protocol/schema",
       "!packages/protocol/src/generated",
       "!fixtures/protocol",
-      "!apps/web/src/styles/tokens.css"
+      "!apps/web/src/styles/tokens.css",
+      "!tools/shot.mjs"
     ]
   },
   "formatter": {

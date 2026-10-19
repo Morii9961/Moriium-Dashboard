@@ -6,17 +6,6 @@
  * 快照里的文字（问题说明、修复说明）由协议包生成，是中文，标 lang="zh-Hans"。
  */
 import {
-  CheckCircle,
-  ClockCounterClockwise,
-  Equals,
-  FileArrowUp,
-  type Icon,
-  Question,
-  WarningCircle,
-  X,
-  XCircle,
-} from '@phosphor-icons/react';
-import {
   createContext,
   type DragEvent,
   type ReactNode,
@@ -30,6 +19,7 @@ import {
   useState,
 } from 'react';
 import { CopyLine } from '../components/CopyLine.tsx';
+import { RulerCells } from '../components/Zone.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { ApiError, api } from './api.ts';
@@ -83,26 +73,27 @@ const importable = (e: Entry) =>
     e.preview.placement.kind === 'history' ||
     (e.preview.placement.kind === 'conflict' && e.conflict === 'replace'));
 
-function statusOf(e: Entry): { icon: Icon; tone: string; label: MessageKey; count?: number } {
+/** 状态用字形 + 文字（灰阶尺不用图标，DESIGN.md 第 11 节）。 */
+function statusOf(e: Entry): { icon: string; tone: string; label: MessageKey; count?: number } {
   if (e.tooLargeKb !== undefined || e.preview?.status === 'rejected')
     return {
-      icon: XCircle,
+      icon: '×',
       tone: 'bad',
       label: 'import.outcome.rejected',
       count: e.preview?.status === 'rejected' ? e.preview.errors.length : 1,
     };
-  if (!e.preview) return { icon: Question, tone: 'muted', label: 'import.checking' };
+  if (!e.preview) return { icon: '…', tone: 'muted', label: 'import.checking' };
   if (e.preview.status === 'needs_choice')
-    return { icon: Question, tone: 'warn', label: 'import.outcome.needs_choice' };
+    return { icon: '?', tone: 'warn', label: 'import.outcome.needs_choice' };
   switch (e.preview.placement.kind) {
     case 'latest':
-      return { icon: CheckCircle, tone: 'good', label: 'import.placement.latest' };
+      return { icon: '✓', tone: 'good', label: 'import.placement.latest' };
     case 'history':
-      return { icon: ClockCounterClockwise, tone: 'muted', label: 'import.outcome.history' };
+      return { icon: '↺', tone: 'muted', label: 'import.outcome.history' };
     case 'duplicate':
-      return { icon: Equals, tone: 'muted', label: 'import.outcome.duplicate' };
+      return { icon: '=', tone: 'muted', label: 'import.outcome.duplicate' };
     case 'conflict':
-      return { icon: WarningCircle, tone: 'warn', label: 'import.conflict.legend' };
+      return { icon: '!', tone: 'warn', label: 'import.conflict.legend' };
   }
 }
 
@@ -139,7 +130,7 @@ function FileCard({
   const { t, locale, relative, snapshotTime } = useI18n();
   const id = useId();
   const now = useMemo(() => new Date(), []);
-  const { icon: StatusIcon, tone, label, count } = statusOf(entry);
+  const { icon: glyph, tone, label, count } = statusOf(entry);
   const p = entry.preview;
   const dateOf = (iso: string) =>
     new Intl.DateTimeFormat(locale, {
@@ -211,7 +202,7 @@ function FileCard({
   return (
     <li className={`icard tone-${tone}`} aria-labelledby={`${id}-title`}>
       <span className="icard-icon" aria-hidden="true">
-        <StatusIcon size={22} weight={tone === 'good' ? 'fill' : 'regular'} />
+        {glyph}
       </span>
       <div className="icard-body">
         <p className="icard-title" id={`${id}-title`}>
@@ -310,7 +301,7 @@ function FileCard({
         aria-label={t('import.remove', { name: entry.name })}
         onClick={onRemove}
       >
-        <X size={16} aria-hidden="true" />
+        <span aria-hidden="true">×</span>
       </button>
     </li>
   );
@@ -609,7 +600,7 @@ function ImportDialog({
             {projectName ? t('import.titleFor', { name: projectName }) : t('import.title')}
           </h2>
           <button type="button" className="icon-btn" aria-label={t('import.cancel')} onClick={requestClose}>
-            <X size={18} aria-hidden="true" />
+            <span aria-hidden="true">×</span>
           </button>
         </header>
 
@@ -631,7 +622,7 @@ function ImportDialog({
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
             >
-              <FileArrowUp className="dropzone-icon" size={entries.length > 0 ? 22 : 36} aria-hidden="true" />
+              <RulerCells blank />
               <p className="dropzone-text">{t('import.drop')}</p>
               <p className="dropzone-sub">
                 <button
