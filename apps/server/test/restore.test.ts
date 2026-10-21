@@ -266,6 +266,7 @@ it('checks without touching disk and applies once into a new directory without s
   expect(readdirSync(empty)).toEqual([]);
 });
 
+// Four cold Node processes exceed Vitest's 5s default on Windows CI (observed 6.7s).
 it('runs the documented CLI entry and returns stable exit codes without leaking bad package contents', () => {
   const zip = join(dir, 'export.zip');
   writeFileSync(zip, pack());
@@ -295,7 +296,7 @@ it('runs the documented CLI entry and returns stable exit codes without leaking 
   expect(rejected.stderr).not.toContain('private synthetic');
   expect(rejected.stderr).not.toContain(dir);
   expect(command('--apply', zip).status).toBe(1);
-});
+}, 15_000);
 
 it('refuses invalid mode, relative, repository and sync-folder targets, and corrupt packages create no destination', async () => {
   const zip = join(dir, 'export.zip');
