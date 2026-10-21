@@ -266,37 +266,59 @@ it('checks without touching disk and applies once into a new directory without s
   expect(readdirSync(empty)).toEqual([]);
 });
 
-// Four cold Node processes exceed Vitest's 5s default on Windows CI (observed 6.7s).
-it('runs the documented CLI entry and returns stable exit codes without leaking bad package contents', () => {
-  const zip = join(dir, 'export.zip');
-  writeFileSync(zip, pack());
-  const command = (...args: string[]) =>
-    spawnSync(process.execPath, ['apps/server/src/restore/command.ts', ...args], {
+// Keep each native process independently bounded; do not accumulate four cold starts
+// under a single Vitest deadline. CI diagnostics contain fixed labels and numbers only.
+it.each(['check', 'apply', 'invalid_archive', 'missing_target'] as const)(
+  'documented restore CLI: %s returns stable codes without leaking package contents',
+  (scenario) => {
+    const zip = join(dir, 'export.zip');
+    writeFileSync(zip, scenario === 'invalid_archive' ? 'private synthetic invalid package' : pack());
+    const args =
+      scenario === 'apply'
+        ? ['--apply', zip, '--target', join(dir, 'cli-instance')]
+        : scenario === 'missing_target'
+          ? ['--apply', zip]
+          : ['--check', zip];
+    const started = performance.now();
+    const result = spawnSync(process.execPath, ['apps/server/src/restore/command.ts', ...args], {
       cwd: REPO_ROOT,
       encoding: 'utf8',
       timeout: 15_000,
     });
-  const checked = command('--check', zip);
-  expect(checked.status).toBe(0);
-  expect(JSON.parse(checked.stdout.trim())).toMatchObject({
-    status: 'checked',
-    counts: { projects: 2, snapshots: 3 },
-  });
-  const target = join(dir, 'cli-instance');
-  const applied = command('--apply', zip, '--target', target);
-  expect(applied.status).toBe(0);
-  expect(JSON.parse(applied.stdout.trim().split('\n').at(-1) ?? '{}')).toMatchObject({
-    status: 'restored',
-    serviceStarted: false,
-  });
-  writeFileSync(zip, 'private synthetic invalid package');
-  const rejected = command('--check', zip);
-  expect(rejected.status).toBe(1);
-  expect(rejected.stderr).toContain('zip_end');
-  expect(rejected.stderr).not.toContain('private synthetic');
-  expect(rejected.stderr).not.toContain(dir);
-  expect(command('--apply', zip).status).toBe(1);
-}, 15_000);
+    if (process.env.CI)
+      console.info(
+        JSON.stringify({
+          check: 'synthetic_restore_cli',
+          scenario,
+          elapsed_ms: Math.round(performance.now() - started),
+          status: result.status,
+          error: (result.error as NodeJS.ErrnoException | undefined)?.code ?? null,
+        }),
+      );
+    expect(result.error).toBeUndefined();
+    if (scenario === 'check') {
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout.trim())).toMatchObject({
+        status: 'checked',
+        counts: { projects: 2, snapshots: 3 },
+      });
+    } else if (scenario === 'apply') {
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout.trim().split('\n').at(-1) ?? '{}')).toMatchObject({
+        status: 'restored',
+        serviceStarted: false,
+      });
+    } else {
+      expect(result.status).toBe(1);
+      if (scenario === 'invalid_archive') {
+        expect(result.stderr).toContain('zip_end');
+        expect(result.stderr).not.toContain('private synthetic');
+        expect(result.stderr).not.toContain(dir);
+      }
+    }
+  },
+  20_000,
+);
 
 it('refuses invalid mode, relative, repository and sync-folder targets, and corrupt packages create no destination', async () => {
   const zip = join(dir, 'export.zip');
