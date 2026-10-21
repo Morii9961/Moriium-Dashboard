@@ -13,10 +13,11 @@ import { manualMilestones } from './manual.ts';
 import { listProjects } from './projects.ts';
 import { acceptanceRecords } from './review.ts';
 import { taskRecords } from './tasks.ts';
+import { exportUsage } from './usage/archive.ts';
 import { workCover, workRecords } from './works.ts';
 import { createZip, type ZipEntry } from './zip.ts';
 
-export const EXPORT_FORMAT = 1;
+export const EXPORT_FORMAT = 2;
 
 interface SnapshotRow {
   id: number;
@@ -62,6 +63,8 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
   const files: ZipEntry[] = [];
   const works = workRecords(db);
   const tasks = taskRecords(db);
+  const usage = exportUsage(db);
+  files.push({ name: 'usage.json', data: json(usage) });
   for (const w of works) {
     const cover = workCover(db, w.id);
     if (cover) files.push({ name: `media/${w.id}.webp`, data: new Uint8Array(cover) });
@@ -100,6 +103,8 @@ export function exportAll(db: Database, now: Date, appVersion: string): Uint8Arr
       manualMilestones: manualMilestones(db).length,
       tasks: tasks.length,
       works: works.length,
+      usageImports: usage.imports.length,
+      usageBills: usage.bills.length,
     },
   };
   return createZip(

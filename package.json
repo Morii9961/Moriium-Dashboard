@@ -24,7 +24,8 @@
     "specimen": "pnpm --filter @moriium-dashboard/web dev",
     "tokens": "node apps/web/scripts/gen-tokens.ts",
     "screenshots": "node scripts/screenshots.ts",
-    "status:check": "node packages/protocol/src/cli/status-check.ts"
+    "status:check": "node packages/protocol/src/cli/status-check.ts",
+    "usage:check": "node packages/protocol/src/cli/usage-check.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

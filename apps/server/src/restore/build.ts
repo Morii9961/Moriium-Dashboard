@@ -11,6 +11,7 @@ import { dayInShanghai, saveFocus } from '../focus.ts';
 import { safeFileName } from '../imports.ts';
 import { stateKey } from '../items.ts';
 import { registry } from '../projects.ts';
+import { restoreUsage } from '../usage/archive.ts';
 import { parseExportJson, RestoreError, readArchive, requireRestore } from './archive.ts';
 import {
   array,
@@ -40,7 +41,8 @@ export async function buildRestoredDatabase(bytes: Uint8Array, now = new Date())
     ),
   );
   requireRestore(
-    manifest.app === 'moriium-dashboard' && manifest.exportFormat === EXPORT_FORMAT,
+    manifest.app === 'moriium-dashboard' &&
+      (manifest.exportFormat === 1 || manifest.exportFormat === EXPORT_FORMAT),
     'export_version',
   );
   text(100, true)(manifest.appVersion);
@@ -65,10 +67,13 @@ export async function buildRestoredDatabase(bytes: Uint8Array, now = new Date())
   ) as Record<Collection, RecordValue[]>;
   const snapshots = array(data.snapshots).map(object);
   const counts = object(manifest.counts);
-  const expected: Record<Collection | 'snapshots', number> = {
+  const usage = manifest.exportFormat === 2 ? object(parseExportJson(take('usage.json'))) : null;
+  const expected: Record<Collection | 'snapshots' | 'usageImports' | 'usageBills', number> = {
     ...Object.fromEntries(collections.map((key) => [key, rows[key].length])),
     snapshots: snapshots.length,
-  } as Record<Collection | 'snapshots', number>;
+    usageImports: usage ? array(usage.imports).length : 0,
+    usageBills: usage ? array(usage.bills).length : 0,
+  } as Record<Collection | 'snapshots' | 'usageImports' | 'usageBills', number>;
   requireRestore(Object.keys(counts).every((key) => Object.hasOwn(expected, key)));
   for (const key of [
     'projects',
@@ -81,6 +86,8 @@ export async function buildRestoredDatabase(bytes: Uint8Array, now = new Date())
     requireRestore(counts[key] === expected[key as keyof typeof expected], 'count_mismatch');
   for (const key of ['tasks', 'works'])
     if (key in counts) requireRestore(counts[key] === rows[key as Collection].length, 'count_mismatch');
+  for (const key of ['usageImports', 'usageBills'] as const)
+    if (manifest.exportFormat === 2) requireRestore(counts[key] === expected[key], 'count_mismatch');
 
   const db = openDatabase(':memory:');
   try {
@@ -308,6 +315,7 @@ export async function buildRestoredDatabase(bytes: Uint8Array, now = new Date())
         db.prepare('INSERT INTO work_covers(work_id,bytes) VALUES(?,?)').run(w.id as number, cover);
       }
     }
+    if (usage) restoreUsage(db, usage);
     db.exec('COMMIT');
     if (data.focus !== undefined) {
       const f = object(data.focus);

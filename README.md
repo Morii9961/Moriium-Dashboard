@@ -16,6 +16,8 @@ P5 可选收尾已补齐粘贴 JSON 与命令面板（Ctrl / ⌘ K）。P6.1 恢
 
 ## Project Status Protocol
 
+本分支新增独立的手动[算力账本](./docs/operations/usage-ledger.md)：导入聚合 UsageSnapshot JSON、版本化价格/汇率、查看上海周的 Token 与 **API 等价值**、保留冻结账单和重计价修订。默认没有用量或价格，不读取个人日志、不自动同步。协议和合成证据见 [UsageSnapshot 1.0](./packages/protocol/usage/README.md) 与[验证记录](./docs/verification/usage-ledger.md)。正式私人库升级仍需另行授权，P4/P5 验收状态不受此功能影响。
+
 快照的格式。v1.0 与 v1.1 同时支持。
 
 - 协议说明：[`docs/protocol/README.md`](./docs/protocol/README.md)
