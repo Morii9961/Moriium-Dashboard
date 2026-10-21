@@ -1,4 +1,18 @@
-import type { CoverageState, FxSnapshot, PriceCatalog, UsageRow, UsageSource } from './usage-types.ts';
+import type {
+  CoverageState,
+  FxSnapshot,
+  PriceCatalog,
+  UnallocatedUsageRow,
+  UsageQuality,
+  UsageRow,
+  UsageSource,
+} from './usage-types.ts';
+export interface UsageDatasetObservations {
+  import_hash: string | null;
+  unallocated_state: 'reported' | 'not_reported';
+  quality?: UsageQuality;
+  unallocated: UnallocatedUsageRow[];
+}
 export interface UsageSelection {
   id: number;
   dataset_id: string;
@@ -24,6 +38,10 @@ export interface UsageDataset {
   recent_selections: UsageSelection[];
 }
 export interface UsagePreview {
+  schema_version?: '1.0' | '1.1';
+  quality?: UsageQuality;
+  unallocated?: UnallocatedUsageRow[];
+  row_quality?: { date: string; model: string; effort: string; quality?: UsageQuality }[];
   daily_totals: { date: string; previous_tokens: string | null; new_tokens: string | null }[];
   hash: string;
   duplicate: boolean;
@@ -32,9 +50,11 @@ export interface UsagePreview {
   range: { start: string; end_exclusive: string };
   source: UsageSource;
   rows: number;
-  days: { date: string; state: CoverageState }[];
+  days: { date: string; state: CoverageState; quality?: UsageQuality }[];
 }
 export interface UsageWeek {
+  dataset_observations?: UsageDatasetObservations;
+  snapshot_quality?: { import_hash: string; quality?: UsageQuality }[];
   basis_bill_id?: number | null;
   calculator_version: string;
   dataset_id: string;
@@ -46,8 +66,9 @@ export interface UsageWeek {
   fx: FxSnapshot | null;
   source_snapshot_hashes: string[];
   selections: UsageSelection[];
-  days: { date: string; state: string; tokens: string | null }[];
+  days: { date: string; state: string; tokens: string | null; quality?: UsageQuality }[];
   rows: {
+    quality?: UsageQuality;
     date: string;
     source: string;
     model: string;

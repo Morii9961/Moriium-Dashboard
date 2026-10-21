@@ -5,9 +5,17 @@ const require = createRequire(import.meta.url);
 const { Ajv2020 } = require('ajv/dist/2020.js') as typeof import('ajv/dist/2020.js');
 const standalone = require('ajv/dist/standalone/index.js')
   .default as typeof import('ajv/dist/standalone/index.js').default;
-export function usageValidatorSource() {
+export function usageValidatorSource(version: '1.0' | '1.1' = '1.0') {
   const schema = JSON.parse(
-    readFileSync(new URL('../usage/usage-snapshot.v1.schema.json', import.meta.url), 'utf8'),
+    readFileSync(
+      new URL(
+        version === '1.0'
+          ? '../usage/usage-snapshot.v1.schema.json'
+          : '../usage/v1.1/usage-snapshot.v1.1.schema.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   const ajv = new Ajv2020({
     strict: true,
@@ -15,10 +23,9 @@ export function usageValidatorSource() {
     code: { source: true, esm: true },
     schemas: [schema],
   });
-  const code = standalone(ajv, { validateUsage: schema.$id }).replaceAll(
-    'require("ajv/dist/runtime/ucs2length")',
-    '__ucs2length',
-  );
+  const code = standalone(ajv, {
+    [version === '1.0' ? 'validateUsage' : 'validateUsage11']: schema.$id,
+  }).replaceAll('require("ajv/dist/runtime/ucs2length")', '__ucs2length');
   if (/\brequire\(|new Function|\beval\(/.test(code)) throw new Error('unexpected dynamic runtime');
   return `// biome-ignore-all lint: generated\nimport { ucs2lengthModule as __ucs2length } from '../ajv-runtime.ts';\n${code}`;
 }
@@ -27,5 +34,13 @@ if (process.argv[1] === import.meta.filename) {
   writeFileSync(
     new URL('../src/generated/usage-validator.d.ts', import.meta.url),
     "import type { CompiledValidator } from './validators.js';\nexport declare const validateUsage: CompiledValidator;\n",
+  );
+  writeFileSync(
+    new URL('../src/generated/usage-validator-v1-1.js', import.meta.url),
+    usageValidatorSource('1.1'),
+  );
+  writeFileSync(
+    new URL('../src/generated/usage-validator-v1-1.d.ts', import.meta.url),
+    "import type { CompiledValidator } from './validators.js';\nexport declare const validateUsage11: CompiledValidator;\n",
   );
 }

@@ -40,7 +40,7 @@ export interface UsageRow {
   cache_detail: 'complete' | 'missing';
   counts: Record<CountKey, string | null>;
 }
-export interface UsageSnapshot {
+export interface UsageSnapshotV10 {
   kind: 'ai_usage_snapshot';
   schema_version: '1.0';
   mode: 'range_replacement';
@@ -55,6 +55,61 @@ export interface UsageSnapshot {
   days: { date: string; state: CoverageState }[];
   rows: UsageRow[];
 }
+export const USAGE_QUALITY_CODES = [
+  'counter_reset',
+  'session_copy_conflict',
+  'source_missing',
+  'source_unreadable',
+  'source_deleted',
+  'retained_not_observed',
+  'checkpoint_unallocated',
+  'request_start_unavailable',
+  'incomplete_tail',
+  'parse_rejected',
+  'unsupported_source',
+  'model_unresolved',
+  'effort_inferred',
+  'counts_unreported',
+  'pricing_conditions_unknown',
+] as const;
+export type UsageQualityCode = (typeof USAGE_QUALITY_CODES)[number];
+export const USAGE_QUALITY_UNITS: Record<UsageQualityCode, string> = {
+  counter_reset: 'checkpoints',
+  session_copy_conflict: 'sessions',
+  source_missing: 'files',
+  source_unreadable: 'files',
+  source_deleted: 'files',
+  retained_not_observed: 'checkpoints',
+  checkpoint_unallocated: 'checkpoints',
+  request_start_unavailable: 'observations',
+  incomplete_tail: 'files',
+  parse_rejected: 'records',
+  unsupported_source: 'records',
+  model_unresolved: 'records',
+  effort_inferred: 'records',
+  counts_unreported: 'records',
+  pricing_conditions_unknown: 'records',
+};
+export interface UsageQuality {
+  state: 'reported' | 'not_reported';
+  reasons: { code: UsageQualityCode; occurrences: string | null }[];
+}
+export interface UsageRowV11 extends UsageRow {
+  quality?: UsageQuality;
+}
+export interface UnallocatedUsageRow extends Omit<UsageRow, 'date' | 'time_basis'> {
+  observed_date: string | null;
+  time_basis: 'usage_observation' | 'response_completion' | 'checkpoint_unknown';
+  quality: UsageQuality;
+}
+export interface UsageSnapshotV11 extends Omit<UsageSnapshotV10, 'schema_version' | 'days' | 'rows'> {
+  schema_version: '1.1';
+  quality?: UsageQuality;
+  days: (UsageSnapshotV10['days'][number] & { quality?: UsageQuality })[];
+  rows: UsageRowV11[];
+  unallocated?: UnallocatedUsageRow[];
+}
+export type UsageSnapshot = UsageSnapshotV10 | UsageSnapshotV11;
 export interface PriceRule {
   provider: UsageProvider;
   model: string;
