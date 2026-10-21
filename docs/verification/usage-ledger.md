@@ -9,7 +9,7 @@
 - D2：`/usage`、三语、人工选取聚合 JSON、数据集/周/价格/汇率/计价策略选择、API 等价值、逐日柱与可访问表格、模型/Token 类别/费用/未计价原因、冻结历史与重计价、导入修订与选用轨迹。沿用当前基线组件，不复制未合并前端或第三方非 MIT 模板。
 - D3：独立功能说明与本证据。未改现有项目状态快照，未替 Morii 验收 P4/P5，未创建 v0.1.0。
 
-## 实际运行
+## 首次 D0–D3 实际运行（fede141）
 
 环境 Node v24.15.0、pnpm 10.33.0、Windows。未新增或升级依赖，使用已有 lockfile 安装依赖。
 
@@ -49,3 +49,27 @@ UI 实测：默认空、无价、部分计价、重复导入、冲突勾选、�
 - Runtime 自动化、真实个人日志读取、机器扫描、后台同步、外部抓价/汇率任务、正式库迁移、真实认证密钥、VPS 部署：**未授权、未启用**。
 
 完成本次 D0–D3 工程交接后停止，不自动进入 Runtime、真实数据采集或部署。
+
+## 1.1 与灰阶尺收尾（2026-10-21）
+
+Morii 继续授权在同一 PR 内补齐协议、消费者与灰阶尺适配。协议独立提交 `6a5140f2a85d5962c1977509c67cb63acf27109f` 已推送至 PR #43；1.1 交换说明见 `packages/protocol/usage/v1.1/README.md`，7 个合法、15 个非法 fixture。Schema SHA-256 为 `fd24d1061fab771c2a8968acd648c5ceac84e1f1cea1d7346d9ff1a6b2b35e2b`；原 1.0 文件和 SHA 未改。Runtime 需要独立检验固定 Git 对象，不能把以下结果称为跨仓库验收。
+
+消费者保留并显示质量原因与完整数据集未分配观测；后者永不参与日/周总量、比率与金额。最新有效显式选择决定观测集，但冻结与重计价保留原 hash。`usage-fixed-v2` 修正无法投影的完整空日假零；保留独立 v1 计算器复核旧账单。数据库仍为结构 11，API 路径不变，仅响应增加可选质量字段。
+
+| 实际命令 | 本轮结果 |
+| --- | --- |
+| `pnpm exec vitest run packages/protocol/test/usage.test.ts packages/protocol/test/usage-v1-1.test.ts apps/server/test/usage.test.ts apps/web/test/usage-format.test.ts` | 4 文件，79 项通过、0 失败；含旧协议/新质量与午夜观测、历史 v1 恢复、v2 修订、周外观测版本保留、不投影空日 |
+| `pnpm verify` | 27 文件，471 项通过、0 失败；类型检查与公开树审计通过；11 条既有警告，无新增警告 |
+| `pnpm build` | 当前功能分支生产构建通过；此分支外壳仍为 main 基线，不声称已包含 PR #41 |
+| `node screenshots/usage-zone-preview/build.mjs` | 被忽略目录中的 PR #41 固定 Git 对象与 Usage 组合构建通过；只读复用已安装依赖，没有更改另一工作树。该临时脚本不是仓库工具或部署产物 |
+| `node apps/server/test/usage-ui.ts --zone-preview` | 组合预览使用合成内存 SQLite、随机回环端口和 Edge；完整生命周期含 1.1 预览/选用/质量/未分配观测；三语 × 两主题 × 1440/375 共 12 组通过 |
+| `pnpm usage:check packages/protocol/usage/v1.1/fixtures/valid-midnight-observation.json` | 原生 CLI 返回 0，UsageSnapshot 1.1 valid |
+| `pnpm usage:check packages/protocol/usage/v1.1/fixtures/invalid-misdated-observation.json` | 按预期返回 1，仅固定码 usage_semantics |
+| `pnpm typecheck` | 最终导出路径/类型导入调整后再次通过；浏览器通过独立常量入口，避免打包服务端校验器 |
+| `git diff --check` | 无空白错误 |
+
+组合截图在被忽略的 `screenshots/usage-zone/`，机器结果为 checks.json。12 组均无整页溢出、外部请求、页面异常或运行动画；逐组核验键盘焦点为 2px solid，窄屏表格能方向键横滚。人工看过中文明色桌面、日文暗色窄屏、英文日图窄屏。所有数据与价格都虚构。
+
+PR #41 固定版本 `144c63a4c3c581a603cb42ee56ff982e6f645d08` 与本功能的组合存在一处 Shell.tsx 导航定义冲突；预览保留 #41 纯文字 NAV，增加 Usage 项，不带回 icon/sub 旧定义。该处理只在临时预览，不代表两个分支已集成或 PR 已合并。正式集成时需按此解决并复核。原工作树、#41、#42、main 均未变。
+
+本轮未运行 Linux 浏览器、读屏器、真实个人账单对账、正式数据库迁移、真实断电恢复或 Runtime conformance。Morii 的产品验收、合并与正式实例更新待其明确授权；不替代 P4/P5 签收。Runtime 自动化、真实日志读取、VPS 部署继续未授权、未启用。

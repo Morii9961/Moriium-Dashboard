@@ -6,7 +6,8 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./usage": "./src/usage.ts"
+    "./usage": "./src/usage.ts",
+    "./usage-types": "./src/usage-types.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

@@ -12,6 +12,7 @@ import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
 import { ApiError, api } from './api.ts';
 import { useInvalidate, useResource } from './data.tsx';
+import { UsageQualityPanel } from './UsageQuality.tsx';
 import { PageHeader } from './ui.tsx';
 import { shanghaiMonday, usageMoney, usageNumber } from './usage-format.ts';
 import './usage.css';
@@ -328,6 +329,12 @@ function UsageReport({ bill }: { bill: UsageWeek }) {
         {bill.diagnostics.missing_fx ? <p>{t('usage.noFx')}</p> : null}
         <p>{t('usage.noSum')}</p>
       </section>
+      <UsageQualityPanel
+        snapshots={bill.snapshot_quality ?? []}
+        days={bill.days}
+        rows={bill.rows}
+        observations={bill.dataset_observations}
+      />
       <section className="usage-section">
         <h2>{t('usage.daily')}</h2>
         <p>{t('usage.chartHelp')}</p>
@@ -347,6 +354,7 @@ function UsageReport({ bill }: { bill: UsageWeek }) {
                 />
               </div>
               <span>{d.date.slice(5)}</span>
+              <span className="usage-chart-value">{n(d.tokens)}</span>
             </div>
           ))}
         </div>
@@ -539,6 +547,18 @@ function UsageImport({
             {preview.range.end_exclusive} · {t(`usage.source.${preview.source}`)}
           </p>
           <p className="usage-hash">SHA-256 {preview.hash}</p>
+          <UsageQualityPanel
+            snapshots={[
+              { import_hash: preview.hash, ...(preview.quality ? { quality: preview.quality } : {}) },
+            ]}
+            days={preview.days}
+            rows={preview.row_quality ?? []}
+            observations={{
+              import_hash: preview.hash,
+              unallocated_state: preview.unallocated === undefined ? 'not_reported' : 'reported',
+              unallocated: preview.unallocated ?? [],
+            }}
+          />
           <table>
             <caption>{t('usage.diff')}</caption>
             <thead>

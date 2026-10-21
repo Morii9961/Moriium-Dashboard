@@ -9,7 +9,8 @@ import { createApp } from '../src/app.ts';
 import { REPO_ROOT } from '../src/config.ts';
 import { applyMigrations, loadMigrations, openDatabase } from '../src/db.ts';
 
-const out = join(REPO_ROOT, 'screenshots/usage');
+const zonePreview = process.argv.includes('--zone-preview');
+const out = join(REPO_ROOT, 'screenshots', zonePreview ? 'usage-zone' : 'usage');
 mkdirSync(out, { recursive: true });
 const db = openDatabase(':memory:');
 applyMigrations(db, loadMigrations(join(REPO_ROOT, 'apps/server/migrations')));
@@ -35,7 +36,7 @@ app = createApp({
   config,
   startedAt: new Date(),
   version: 'synthetic',
-  webDir: join(REPO_ROOT, 'apps/web/dist'),
+  webDir: join(REPO_ROOT, zonePreview ? 'screenshots/usage-zone-preview/apps/web/dist' : 'apps/web/dist'),
 });
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const failures: string[] = [],
@@ -134,6 +135,25 @@ try {
     data: { snapshot: { private_content: 'synthetic-rejected' } },
   });
   expect(rejected.status()).toBe(400);
+  await page
+    .locator('input[type=file]')
+    .nth(0)
+    .setInputFiles(join(REPO_ROOT, 'packages/protocol/usage/v1.1/fixtures/valid-midnight-observation.json'));
+  await expect(page.getByText('导入预览 · 1 行', { exact: false })).toBeVisible();
+  await expect(
+    page.locator('.usage-notice .usage-quality').getByText('缺少请求开始时间', { exact: false }),
+  ).toBeVisible();
+  await page.getByRole('checkbox', { name: '已审核，选用本次覆盖范围（旧版保留）' }).check();
+  await page.getByRole('button', { name: '确认导入', exact: true }).click();
+  await expect(page.getByText('导入完成，已保留历史')).toBeVisible();
+  const fresh = await (
+    await page.request.get(
+      `${base}/api/usage/weeks/2026-10-26?dataset=${fixture.dataset_id}&catalog=synthetic-v1&mode=classified`,
+    )
+  ).json();
+  expect(fresh.totals.measured_tokens).toBe('1100');
+  expect(fresh.dataset_observations.unallocated).toHaveLength(1);
+  await expect(page.locator('.usage-quality').getByText('缺少请求开始时间', { exact: false })).toBeVisible();
   await page.close();
   for (const locale of ['zh-Hans', 'ja', 'en'])
     for (const theme of ['light', 'dark'])
@@ -163,6 +183,7 @@ try {
           .filter({ has: p.locator('option[value="synthetic-v1"]') })
           .selectOption('synthetic-v1');
         await expect(p.locator('.usage-metrics')).toBeVisible();
+        await expect(p.locator('.usage-quality')).toBeVisible();
         await p.evaluate(() => document.fonts.ready);
         const metrics = await p.evaluate(() => ({
           overflow: document.documentElement.scrollWidth - window.innerWidth,
@@ -178,6 +199,11 @@ try {
         await p.keyboard.press('Tab');
         const focus = await p.evaluate(() => document.activeElement?.tagName);
         expect(focus).toBe('BUTTON');
+        const focusRing = await p.evaluate(() => {
+          const style = getComputedStyle(document.activeElement as Element);
+          return { width: style.outlineWidth, style: style.outlineStyle };
+        });
+        expect(focusRing).toEqual({ width: '2px', style: 'solid' });
         await p.evaluate(() => window.scrollTo(0, 0));
         await p.screenshot({ path: join(out, `${locale}-${theme}-${width}.png`) });
         await p.locator('.usage-chart').scrollIntoViewIfNeeded();
@@ -196,7 +222,7 @@ try {
     join(out, 'checks.json'),
     JSON.stringify(
       {
-        flows: 'empty/import/preview/keyboard/duplicate/conflict/freeze/history/reprice',
+        flows: 'empty/import/preview/keyboard/duplicate/conflict/freeze/history/reprice/quality/unallocated',
         views: results,
         errors: failures,
       },
