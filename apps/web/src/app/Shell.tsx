@@ -50,7 +50,13 @@ const NAV: NavItem[] = [
     sub: { to: '/inbox', label: 'nav.inbox' },
   },
   { to: '/projects', label: 'nav.projects', icon: Folders, match: (p) => p.startsWith('/projects') },
-  { to: '/agents', label: 'nav.agents', icon: Robot, match: (p) => p.startsWith('/agents') },
+  {
+    to: '/agents',
+    label: 'nav.agents',
+    icon: Robot,
+    match: (p) => p.startsWith('/agents') || p === '/usage',
+    sub: { to: '/usage', label: 'usage.title' },
+  },
   { to: '/studio', label: 'nav.studio', icon: Sparkle, match: (p) => p.startsWith('/studio') },
   { to: '/planner', label: 'nav.planner', icon: CalendarCheck, match: (p) => p.startsWith('/planner') },
 ];
