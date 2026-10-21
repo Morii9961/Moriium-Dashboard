@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { PriceCatalog, UsageSnapshot } from '@moriium-dashboard/protocol/usage';
+import type { PriceCatalog, UsageSnapshot, UsageSnapshotV11 } from '@moriium-dashboard/protocol/usage';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createApp } from '../src/app.ts';
 import { openAuthDatabase } from '../src/auth/store.ts';
@@ -11,6 +11,7 @@ import { applyMigrations, type Database, loadMigrations, openDatabase } from '..
 import { exportAll } from '../src/export.ts';
 import { buildRestoredDatabase } from '../src/restore/build.ts';
 import { calculateWeek, createBill, readBill } from '../src/usage/bills.ts';
+import { calculateWeekV1 } from '../src/usage/calculator-v1.ts';
 import { nano, priceUsageRow, validateCatalog, validateFx } from '../src/usage/pricing.ts';
 import {
   currentUsageDays,
@@ -515,5 +516,123 @@ it('HTTP APIs inherit Host/Origin/CSRF/session security and reject private paylo
     ).toBe(401);
   } finally {
     authDb.close();
+  }
+});
+
+const qualityFixture = () =>
+  JSON.parse(
+    readFileSync(
+      join(REPO_ROOT, 'packages/protocol/usage/v1.1/fixtures/valid-midnight-observation.json'),
+      'utf8',
+    ),
+  ) as UsageSnapshotV11;
+it.each(['UTC', 'unknown', 'provider_defined'] as const)(
+  'complete empty non-Shanghai days stay unknown (%s)',
+  (timezone) => {
+    const s = usageFixture();
+    s.rows = [];
+    s.source_timezone = timezone;
+    if (timezone === 'provider_defined') s.source = 'account_daily';
+    const preview = previewUsage(db, s);
+    expect(preview.daily_totals.every((d) => d.new_tokens === null)).toBe(true);
+    load(s);
+    const result = week();
+    expect(result.days.every((d) => d.tokens === null)).toBe(true);
+    expect(result.totals.measured_tokens).toBeNull();
+    expect(result.totals.has_unknown_totals).toBe(true);
+    expect(result.diagnostics.partial_coverage).toBe(true);
+  },
+);
+it('1.1 quality survives import, bill and restore; undated observations never enter either week', async () => {
+  const s = qualityFixture();
+  s.quality = { state: 'reported', reasons: [{ code: 'retained_not_observed', occurrences: '2' }] };
+  const firstDay = s.days[0];
+  if (!firstDay) throw new Error('synthetic day missing');
+  firstDay.quality = { state: 'reported', reasons: [{ code: 'source_unreadable', occurrences: null }] };
+  const preview = previewUsage(db, s);
+  expect(preview.quality).toEqual(s.quality);
+  expect(preview.row_quality?.[0]?.quality).toEqual(s.rows[0]?.quality);
+  load(s);
+  const result = week();
+  expect(result.totals.measured_tokens).toBe('1100');
+  expect(result.totals.priced_tokens).toBe('1100');
+  expect(result.rows).toHaveLength(1);
+  expect(result.days[0]?.quality).toEqual(s.days[0]?.quality);
+  expect(result.dataset_observations.unallocated).toEqual(s.unallocated);
+  const adjacent = calculateWeek(db, dataset, '2026-11-02', null, null, 'classified');
+  expect(adjacent.rows).toHaveLength(0);
+  expect(adjacent.totals.measured_tokens).toBeNull();
+  expect(adjacent.totals.usd).toBeNull();
+  expect(adjacent.dataset_observations.unallocated).toEqual(s.unallocated);
+  const bill = createBill(db, dataset, '2026-10-26', 'synthetic-v1', 'synthetic-fx', 'classified', null, now);
+  const restored = await buildRestoredDatabase(exportAll(db, now, 'synthetic'), now);
+  try {
+    expect(readBill(restored.db, bill.id)).toEqual(bill);
+  } finally {
+    restored.db.close();
+  }
+});
+it('dataset observations replace revisions; out-of-week changes cannot alter frozen repricing', () => {
+  const s = qualityFixture(),
+    a = load(s);
+  const first = createBill(
+    db,
+    dataset,
+    '2026-10-26',
+    'synthetic-v1',
+    'synthetic-fx',
+    'classified',
+    null,
+    now,
+  );
+  const next = structuredClone(s);
+  next.revision = '12';
+  next.range = { start: '2026-11-02', end_exclusive: '2026-11-03' };
+  next.days = [{ date: '2026-11-02', state: 'complete' }];
+  next.rows = [];
+  next.unallocated = [];
+  const b = load(next);
+  expect(week().dataset_observations.import_hash).toBe(b.hash);
+  expect(week().dataset_observations.unallocated).toEqual([]);
+  const repriced = createBill(
+    db,
+    dataset,
+    '2026-10-26',
+    'synthetic-v1',
+    'synthetic-fx',
+    'classified',
+    first.id,
+    now,
+  );
+  expect(repriced.bill.dataset_observations).toEqual(first.bill.dataset_observations);
+  expect(readBill(db, first.id)).toEqual(first);
+  selectUsage(db, a.hash, usageHash(currentUsageDays(db, dataset)), false, now);
+  expect(week().dataset_observations.import_hash).toBe(a.hash);
+  expect(week().dataset_observations.unallocated).toEqual(s.unallocated);
+  expect(week().totals.measured_tokens).toBe('1100');
+});
+it('legacy v1 bill restores byte-for-byte while explicit v2 revision fixes empty unprojectable days', async () => {
+  const s = usageFixture();
+  s.rows = [];
+  s.source = 'account_daily';
+  s.source_timezone = 'provider_defined';
+  load(s);
+  const old = calculateWeekV1(db, dataset, '2026-10-26', null, null, 'classified');
+  expect(old.days.every((d) => d.tokens === '0')).toBe(true);
+  db.prepare(
+    'INSERT INTO usage_bills(dataset_id,week_start,revision,previous_id,hash,snapshot,created_at) VALUES(?,?,?,?,?,?,?)',
+  ).run(dataset, '2026-10-26', 1, null, usageHash(old), JSON.stringify(old), now.toISOString());
+  const first = readBill(db, 1);
+  const revised = createBill(db, dataset, '2026-10-26', null, null, 'classified', 1, now);
+  expect(revised.bill.calculator_version).toBe('usage-fixed-v2');
+  expect(revised.bill.days.every((d) => d.tokens === null)).toBe(true);
+  expect(revised.hash).not.toBe(first.hash);
+  expect(readBill(db, 1)).toEqual(first);
+  const restored = await buildRestoredDatabase(exportAll(db, now, 'synthetic'), now);
+  try {
+    expect(readBill(restored.db, 1)).toEqual(first);
+    expect(readBill(restored.db, revised.id)).toEqual(revised);
+  } finally {
+    restored.db.close();
   }
 });

@@ -1,8 +1,12 @@
 import {
   type FxSnapshot,
   type PriceCatalog,
+  type UsageDatasetObservations,
+  type UsageQuality,
   type UsageRow,
+  type UsageRowV11,
   type UsageSnapshot,
+  type UsageWeek,
   usageDays,
   validUsageDate,
 } from '@moriium-dashboard/protocol/usage';
@@ -14,6 +18,7 @@ export function weekEnd(start: string) {
   return new Date(Date.parse(start) + 7 * 86400000).toISOString().slice(0, 10);
 }
 export interface BillRow {
+  quality?: UsageQuality;
   date: string;
   source: string;
   model: string;
@@ -34,14 +39,14 @@ export function calculateWeek(
   fxId: string | null,
   mode: PricingMode,
   frozenSelections?: DaySelection[],
+  frozenObservationHash?: string | null,
 ) {
   const end = weekEnd(start),
     dates = usageDays(start, end);
   requireUsage(mode === 'classified' || mode === 'standard_short');
   requireUsage(db.prepare('SELECT 1 FROM usage_imports WHERE dataset_id=?').get(dataset), 'usage_not_found');
-  const selections = (frozenSelections ?? currentUsageDays(db, dataset)).filter((d) =>
-    dates.includes(d.date),
-  );
+  const allSelections = frozenSelections ?? currentUsageDays(db, dataset);
+  const selections = allSelections.filter((d) => dates.includes(d.date));
   const catalogRecord = catalogId
     ? db.prepare('SELECT catalog FROM price_catalog_versions WHERE id=?').get(catalogId)
     : null;
@@ -59,7 +64,24 @@ export function calculateWeek(
       ]),
   );
   const rows: BillRow[] = [],
-    days: { date: string; state: string; tokens: string | null }[] = [];
+    days: { date: string; state: string; tokens: string | null; quality?: UsageQuality }[] = [];
+  const observationHash =
+    frozenObservationHash === undefined
+      ? ([...allSelections].filter((s) => s.import_hash).sort((a, b) => b.id - a.id)[0]?.import_hash ?? null)
+      : frozenObservationHash;
+  const observation = observationHash
+    ? (JSON.parse(getUsageImport(db, observationHash).snapshot) as UsageSnapshot)
+    : null;
+  requireUsage(!observation || observation.dataset_id === dataset);
+  const dataset_observations: UsageDatasetObservations = {
+    import_hash: observationHash,
+    unallocated_state:
+      observation?.schema_version === '1.1' && observation.unallocated !== undefined
+        ? 'reported'
+        : 'not_reported',
+    ...(observation?.schema_version === '1.1' && observation.quality ? { quality: observation.quality } : {}),
+    unallocated: observation?.schema_version === '1.1' ? (observation.unallocated ?? []) : [],
+  };
   let measured = 0n,
     pricedTokens = 0n,
     unpricedTokens = 0n,
@@ -77,7 +99,10 @@ export function calculateWeek(
       snapshot = selection?.import_hash ? imports.get(selection.import_hash) : undefined;
     const coverage = snapshot?.days.find((d) => d.date === date)?.state ?? 'not_collected';
     let total = 0n,
-      unknown = coverage !== 'complete';
+      unknown =
+        coverage !== 'complete' ||
+        snapshot?.source === 'account_daily' ||
+        snapshot?.source_timezone !== 'Asia/Shanghai';
     const dateRows = snapshot?.rows.filter((r) => r.date === date) ?? [];
     if (
       coverage === 'complete' &&
@@ -115,6 +140,9 @@ export function calculateWeek(
         if (tokens !== null) pricedTokens += tokens;
       } else if (tokens !== null) unpricedTokens += tokens;
       rows.push({
+        ...(snapshot?.schema_version === '1.1' && (row as UsageRowV11).quality
+          ? { quality: (row as UsageRowV11).quality }
+          : {}),
         date,
         source: snapshot?.source ?? 'unknown',
         model: row.model,
@@ -129,11 +157,23 @@ export function calculateWeek(
       });
     }
     if (unknown) unknownTotals = true;
-    days.push({ date, state: coverage, tokens: unknown ? null : total.toString() });
+    const dayQuality =
+      snapshot?.schema_version === '1.1' ? snapshot.days.find((d) => d.date === date)?.quality : undefined;
+    days.push({
+      date,
+      state: coverage,
+      tokens: unknown ? null : total.toString(),
+      ...(dayQuality ? { quality: dayQuality } : {}),
+    });
   }
   const ratio = (a: bigint, b: bigint) => (b === 0n ? null : fixed((a * 10000n) / b, 2));
   return {
-    calculator_version: 'usage-fixed-v1',
+    calculator_version: 'usage-fixed-v2',
+    dataset_observations,
+    snapshot_quality: [...imports].map(([hash, s]) => ({
+      import_hash: hash,
+      ...(s.schema_version === '1.1' && s.quality ? { quality: s.quality } : {}),
+    })),
     dataset_id: dataset,
     week_start: start,
     end_exclusive: end,
@@ -141,7 +181,9 @@ export function calculateWeek(
     mode,
     catalog,
     fx,
-    source_snapshot_hashes: [...imports.keys()].sort(),
+    source_snapshot_hashes: [
+      ...new Set([...imports.keys(), ...(observationHash ? [observationHash] : [])]),
+    ].sort(),
     selections,
     days,
     rows,
@@ -157,7 +199,7 @@ export function calculateWeek(
       xhigh_percent: ratio(xhigh, measured),
     },
     diagnostics: {
-      partial_coverage: days.some((d) => d.state !== 'complete'),
+      partial_coverage: days.some((d) => d.state !== 'complete' || d.tokens === null),
       missing_fx: fx === null,
       unpriced_rows: rows.filter((r) => r.usd === null).length,
       unknown_total_rows: rows.filter((r) => r.tokens === null).length,
@@ -166,7 +208,7 @@ export function calculateWeek(
     },
   };
 }
-export type WeeklyBill = ReturnType<typeof calculateWeek>;
+export type WeeklyBill = UsageWeek;
 export function createBill(
   db: Database,
   dataset: string,
@@ -193,6 +235,7 @@ export function createBill(
       fx,
       mode,
       previous === null ? undefined : readBill(db, previous).bill.selections,
+      previous === null ? undefined : (readBill(db, previous).bill.dataset_observations?.import_hash ?? null),
     );
     const revision = Number(
       db

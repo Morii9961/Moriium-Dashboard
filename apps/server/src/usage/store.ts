@@ -54,6 +54,7 @@ export function previewUsage(db: Database, value: unknown) {
     (d) => d.import_hash && d.date >= s.range.start && d.date < s.range.end_exclusive,
   );
   const totalFor = (snapshot: UsageSnapshot, date: string): string | null => {
+    if (snapshot.source === 'account_daily' || snapshot.source_timezone !== 'Asia/Shanghai') return null;
     if (snapshot.days.find((d) => d.date === date)?.state !== 'complete') return null;
     let total = 0n;
     for (const row of snapshot.rows.filter((r) => r.date === date)) {
@@ -78,6 +79,14 @@ export function previewUsage(db: Database, value: unknown) {
     };
   });
   return {
+    schema_version: s.schema_version,
+    ...(s.schema_version === '1.1'
+      ? {
+          quality: s.quality,
+          unallocated: s.unallocated,
+          row_quality: s.rows.map(({ date, model, effort, quality }) => ({ date, model, effort, quality })),
+        }
+      : {}),
     daily_totals,
     hash,
     duplicate,

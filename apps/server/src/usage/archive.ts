@@ -1,6 +1,7 @@
 import type { UsageSnapshot } from '@moriium-dashboard/protocol/usage';
 import type { Database } from '../db.ts';
 import { calculateWeek, type WeeklyBill } from './bills.ts';
+import { calculateWeekV1 } from './calculator-v1.ts';
 import { exactKeys, requireUsage } from './pricing.ts';
 import { type DaySelection, safeSnapshot, savePricing, usageHash } from './store.ts';
 export function exportUsage(db: Database) {
@@ -139,15 +140,28 @@ export function restoreUsage(db: Database, value: unknown) {
     );
     for (const s of b.selections) requireUsage(usageHash(s) === usageHash(byId.get(s.id) ?? null));
     requireUsage(new Set(b.selections.map((s) => s.date)).size === b.selections.length);
-    const calculated = calculateWeek(
-      db,
-      b.dataset_id,
-      b.week_start,
-      b.catalog?.id ?? null,
-      b.fx?.id ?? null,
-      b.mode,
-      b.selections,
-    );
+    requireUsage(['usage-fixed-v1', 'usage-fixed-v2'].includes(b.calculator_version));
+    const calculated =
+      b.calculator_version === 'usage-fixed-v1'
+        ? calculateWeekV1(
+            db,
+            b.dataset_id,
+            b.week_start,
+            b.catalog?.id ?? null,
+            b.fx?.id ?? null,
+            b.mode,
+            b.selections,
+          )
+        : calculateWeek(
+            db,
+            b.dataset_id,
+            b.week_start,
+            b.catalog?.id ?? null,
+            b.fx?.id ?? null,
+            b.mode,
+            b.selections,
+            b.dataset_observations?.import_hash ?? null,
+          );
     requireUsage(usageHash(calculated) === r.hash && usageHash(b) === r.hash, 'usage_bill_integrity');
     const key = `${r.dataset_id}/${r.week_start}`,
       revision = (revisions.get(key) ?? 0) + 1;

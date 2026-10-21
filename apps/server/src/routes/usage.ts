@@ -107,6 +107,7 @@ export function usageRoutes(app: Hono, ctx: AppContext) {
           q.fx || null,
           (q.mode ?? 'classified') as PricingMode,
           previous?.bill.selections,
+          previous ? (previous.bill.dataset_observations?.import_hash ?? null) : undefined,
         ),
         basis_bill_id: previous?.id ?? null,
       });
