@@ -1,0 +1,10 @@
+{
+  "id": "synthetic-fx",
+  "base": "USD",
+  "quote": "CNY",
+  "rate": "7.123456789",
+  "as_of": "2026-11-01",
+  "source": "manual",
+  "source_url": null,
+  "kind": "manual_assumption"
+}

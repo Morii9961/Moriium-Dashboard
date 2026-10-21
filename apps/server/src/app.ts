@@ -20,6 +20,7 @@ import { localScanRoutes } from './routes/localScan.ts';
 import { projectRoutes } from './routes/projects.ts';
 import { reviewRoutes } from './routes/review.ts';
 import { taskRoutes } from './routes/tasks.ts';
+import { usageRoutes } from './routes/usage.ts';
 import { workRoutes } from './routes/works.ts';
 import { hostCheck, securityHeaders, writeGuard } from './security.ts';
 
@@ -52,6 +53,11 @@ export function createApp(ctx: AppContext) {
   // 普通接口的请求体很小；导入接口另设上限（20 个文件 × 1 MiB，base64 之后约 28 MiB）。
   app.use('/api/*', async (c, next) => {
     if (c.req.path.startsWith('/api/imports')) return next();
+    if (c.req.path.startsWith('/api/usage/'))
+      return bodyLimit({
+        maxSize: 1024 * 1024 + 4096,
+        onError: (c2) => c2.json({ error: 'body_too_large' }, 413),
+      })(c, next);
     if (/^\/api\/works\/\d+\/cover$/.test(c.req.path))
       return bodyLimit({
         maxSize: 5 * 1024 * 1024,
@@ -89,6 +95,7 @@ export function createApp(ctx: AppContext) {
   reviewRoutes(app, ctx);
   focusRoutes(app, ctx);
   taskRoutes(app, ctx);
+  usageRoutes(app, ctx);
   workRoutes(app, ctx);
   importRoutes(app, ctx);
   localScanRoutes(app, ctx);

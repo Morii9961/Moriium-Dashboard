@@ -370,7 +370,11 @@ describe('export', () => {
     const names = zip.map((e) => e.name);
     expect(names.slice(0, 2)).toEqual(['manifest.json', 'data.json']);
     const manifest = JSON.parse(new TextDecoder().decode(zip[0]?.data)) as Record<string, unknown>;
-    expect(manifest).toMatchObject({ app: 'moriium-dashboard', exportFormat: 1, counts: { snapshots: 4 } });
+    expect(manifest).toMatchObject({
+      app: 'moriium-dashboard',
+      exportFormat: 2,
+      counts: { snapshots: 4, usageImports: 0, usageBills: 0 },
+    });
     expect(names.filter((n) => n.startsWith('snapshots/demo.beta/'))).toHaveLength(3);
     expect(names.filter((n) => n.startsWith('snapshots-archive/'))).toHaveLength(1);
     const t0 = zip.find((e) => e.name.startsWith('snapshots/demo.beta/2026-10-01T10-00-00+08-00_'));
