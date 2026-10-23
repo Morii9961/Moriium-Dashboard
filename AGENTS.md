@@ -130,6 +130,7 @@ Skill 给的是建议，不是权威。风格类 Skill 是顾问，不是项目�
 - 技术栈（2026-10-12 定）：前端 React + Vite + TypeScript；服务端单进程 Hono + SQLite，本机阶段只监听 `127.0.0.1`；pnpm workspace（`apps/web`、`apps/server`、`packages/protocol`）。详见 [`docs/planning/05-architecture-and-data.md`](./docs/planning/05-architecture-and-data.md) 第 4、5 节，版本按 `source-driven-development` 核实。
 - 规划（2026-10-12 获批）：[`docs/planning/README.md`](./docs/planning/README.md)。阶段、交付标准和 Morii 的参与点见 [`06-mvp-and-roadmap.md`](./docs/planning/06-mvp-and-roadmap.md)；开发启动提示词见 [`docs/handoff-2026-10-12-development-kickoff.md`](./docs/handoff-2026-10-12-development-kickoff.md)。
 - 当前进度（2026-10-20 核对）：远端 `main` 为 `d0fb1c9`，P1–P3 完成，P4 工程完成，P5 核心与已选可选工程完成；P4 产品验收和 P5 一周真实使用仍按 Morii 先前决定搁置，未获验收不打 `v0.1.0`。P6 恢复、登录底层、口令工具、HTTP、登录页、部署模板及 P7 · L2 本机仓库扫描已合并（PR #31–#40）。PR #41「前端改为『灰阶尺』设计」仍开启，尚未合并。本次部署前修复在 `codex/deploy-preflight`，代码提交 `c15b22f`，说明见 [验证记录](./docs/verification/p6-deploy-preflight.md)：只构建后再激活、启动失败恢复、迁移文件变化时停服保护；392 项现有测试和 11 个虚构发布场景通过，Linux CI 另核对。Morii 已选公网子域名、HTTPS 加登录，并指定沿用 Moriium 的 VPS 资料；实际地址仅保存在本机忽略目录。正式部署、真实数据迁移、登录启用与本次 PR 合并仍需明确授权；口令由 Morii 本人在交互终端设置。旧交接文件为历史记录，不再用其未合并描述判断当前状态。
+- PR #42 评审归属（2026-10-23）：上一条为 10 月 20 日历史记录；本片只评审发布修复，结论见 [评审记录](./docs/verification/pr42-release-review-2026-10-23.md)。保留 `843e7d8` 的按范围验证规则；#41 的设计规范与 UI、以及 #41/#43 共享壳和导航整合由 Claude 后续负责，本片不解决这些归属冲突，也不以 #41 合并为前置。
 - 项目状态快照：[`docs/status/`](./docs/status/)，遵循 Project Status Protocol v1.1，`project_id` 为 `morii.dashboard`。
 - 仓库：`Morii9961/Moriium-Dashboard`，公开，代码 MIT。数据、备份、导出包、令牌永远不进仓库。
 - 界面语言：中文、日文、英文。
