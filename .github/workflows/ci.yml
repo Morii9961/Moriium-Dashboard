@@ -45,5 +45,9 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Deployment release scenarios (Linux)
+        if: runner.os == 'Linux'
+        run: bash scripts/deploy-release.test.sh
+
       - name: Public tree audit
         run: pnpm audit:public

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 退回上一个发布：rollback.sh [提交]。不给提交时退回 releases.log 里的上一条。
 # 旧程序不认识新数据库结构，会拒绝启动；所以新版本带了迁移时，这里拒绝退回，
-# 需要先在授权下用迁移前的备份恢复数据（见 docs/operations/deploy.md 的回滚一节）。
+# 需要另行授权，按 docs/operations/deploy.md 的回滚一节人工恢复数据库及代码。
 set -euo pipefail
 
 APP_ROOT="${APP_ROOT:-/opt/moriium-dashboard}"
@@ -22,7 +22,7 @@ fi
 count() { find "$1/apps/server/migrations" -maxdepth 1 -name '*.sql' | wc -l; }
 if [ "$(count "$target")" -lt "$(count "$current")" ]; then
   echo "当前版本比 $target 多了数据库迁移，旧程序会拒绝打开现在的数据库。" >&2
-  echo "需要退回时，先停服务，用 data/backups 里对应的 pre-migration 备份恢复，再执行本脚本。" >&2
+  echo "需要退回时，另行授权后停服务并保留数据库、WAL/SHM 与代码链接，核对迁移前备份和目标版本后人工恢复数据库及代码；不要重复执行本脚本绕过保护。" >&2
   exit 1
 fi
 

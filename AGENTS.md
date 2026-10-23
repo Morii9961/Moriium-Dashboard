@@ -22,7 +22,7 @@ Skill 给的是建议，不是权威。风格类 Skill 是顾问，不是项目�
 3. **读 `DESIGN.md` 相关章节**，只读用得上的。
 4. **选最少的 Skill**（见第四节），能不用就不用。
 5. **用真实内容做**，不用占位文字。
-6. **验证后再说完成**：桌面和窄屏各看一次、浅色深色各看一次、键盘能不能走通、对比度、中日英三语的长度和换行、减少动画偏好。用 `verification-before-completion`。
+6. 按受影响范围做必要检查：只检查本次涉及的视图、主题、断点、交互和文案；键盘、对比度、多语言换行、减少动画等仅在相关行为被触及时核对。
 
 ## 三、按区域决定风格能不能介入
 
@@ -75,9 +75,7 @@ Skill 给的是建议，不是权威。风格类 Skill 是顾问，不是项目�
 
 | Skill | 何时用 |
 | --- | --- |
-| `systematic-debugging` | 有 bug、失败的测试或构建、无法解释的行为。先复现、找根因，再改 |
-| `verification-before-completion` | 声称较大的工作完成、修好或通过之前 |
-| `code-review-and-quality` | 用户要求审查，或准备提交合并，或有风险的改动 |
+| `systematic-debugging` | 复杂、难定位或多次修复仍失败的问题；跨模块/服务、并发状态，或证据表明需要系统性根因调查。普通局部问题直接使用模型原生调试能力。 |
 
 ### 写作
 
@@ -131,7 +129,8 @@ Skill 给的是建议，不是权威。风格类 Skill 是顾问，不是项目�
 - 项目名称与用途：Moriium Dashboard，一个独立的 Dashboard 项目。与 Moriium 公开站无关，Moriium 的设计规范只作参考，不是约束，后续希望做出更新的设计。
 - 技术栈（2026-10-12 定）：前端 React + Vite + TypeScript；服务端单进程 Hono + SQLite，本机阶段只监听 `127.0.0.1`；pnpm workspace（`apps/web`、`apps/server`、`packages/protocol`）。详见 [`docs/planning/05-architecture-and-data.md`](./docs/planning/05-architecture-and-data.md) 第 4、5 节，版本按 `source-driven-development` 核实。
 - 规划（2026-10-12 获批）：[`docs/planning/README.md`](./docs/planning/README.md)。阶段、交付标准和 Morii 的参与点见 [`06-mvp-and-roadmap.md`](./docs/planning/06-mvp-and-roadmap.md)；开发启动提示词见 [`docs/handoff-2026-10-12-development-kickoff.md`](./docs/handoff-2026-10-12-development-kickoff.md)。
-- 当前进度（2026-10-17）：P1 到 P3 已完成，P4 工程完成待 Morii 产品验收。P5 核心、界面评审、粘贴 JSON / 命令面板均已验证并合并，正式本机前端已更新。原正式库已另获授权备份升级至结构 10 并启动，待一周真实使用。P6.1 PR #31 / #32 双平台 CI 通过，未合并；P6.2a PR #33 双平台 CI 通过，未合并。P6.2b 隐藏口令工具 PR #34（代码 f09b368，377 项测试与一次原生 TTY 检查通过）已由 Claude 推送，堆叠于 #33，未合并，未接入正式服务。接手先读 [Claude 交接](./docs/handoff-2026-10-17-claude-p6.md) 和 [启动提示词](./docs/claude-start-2026-10-17-p6.md)，核对实际 Git / PR 状态。发布收尾已完成，只有 Morii 明确要求才继续 HTTP 接入、登录 UI 与部署准备。2026-10-16 已获准先做 P6 工程准备，真实试用和产品验收仍待完成；未获真实验收前不打 v0.1.0。实际恢复原数据、VPS 部署、访问方式和正式登录启用仍按对应步骤取得授权。P5 的顺序普通合并授权不自动扩展为 P6 合并授权。可选 5.6 未加入。
+- 当前进度（2026-10-20 核对）：远端 `main` 为 `d0fb1c9`，P1–P3 完成，P4 工程完成，P5 核心与已选可选工程完成；P4 产品验收和 P5 一周真实使用仍按 Morii 先前决定搁置，未获验收不打 `v0.1.0`。P6 恢复、登录底层、口令工具、HTTP、登录页、部署模板及 P7 · L2 本机仓库扫描已合并（PR #31–#40）。PR #41「前端改为『灰阶尺』设计」仍开启，尚未合并。本次部署前修复在 `codex/deploy-preflight`，代码提交 `c15b22f`，说明见 [验证记录](./docs/verification/p6-deploy-preflight.md)：只构建后再激活、启动失败恢复、迁移文件变化时停服保护；392 项现有测试和 11 个虚构发布场景通过，Linux CI 另核对。Morii 已选公网子域名、HTTPS 加登录，并指定沿用 Moriium 的 VPS 资料；实际地址仅保存在本机忽略目录。正式部署、真实数据迁移、登录启用与本次 PR 合并仍需明确授权；口令由 Morii 本人在交互终端设置。旧交接文件为历史记录，不再用其未合并描述判断当前状态。
+- PR #42 评审归属（2026-10-23）：上一条为 10 月 20 日历史记录；本片只评审发布修复，结论见 [评审记录](./docs/verification/pr42-release-review-2026-10-23.md)。保留 `843e7d8` 的按范围验证规则；#41 的设计规范与 UI、以及 #41/#43 共享壳和导航整合由 Claude 后续负责，本片不解决这些归属冲突，也不以 #41 合并为前置。
 - 项目状态快照：[`docs/status/`](./docs/status/)，遵循 Project Status Protocol v1.1，`project_id` 为 `morii.dashboard`。
 - 仓库：`Morii9961/Moriium-Dashboard`，公开，代码 MIT。数据、备份、导出包、令牌永远不进仓库。
 - 界面语言：中文、日文、英文。

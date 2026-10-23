@@ -2,10 +2,10 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-17T17:25:01+08:00",
+  "snapshot_at": "2026-10-20T15:09:08+08:00",
   "source": {
-    "branch": "main",
-    "commit_sha": "2f0b0725b3a2b462dae4eeafba85d2b3973547ec",
+    "branch": "codex/deploy-preflight",
+    "commit_sha": "c15b22fef66d9002f5adeb5ba5cdf1f6dacb4fb9",
     "tests_rerun": false,
     "basis": [
       "docs/planning/06-mvp-and-roadmap.md 的 P5 验收与 P6 工程准备边界",
@@ -36,15 +36,19 @@
       "P6.2c / P6.2d 分支本地 pnpm verify：387 项测试 / 22 个文件、类型检查、公开树审计通过；登录页在临时虚构实例实测深浅色、375px、中日英与键盘流程；#35–#37 双平台 CI 通过",
       "部署模板只在仓库内，没有连接任何服务器；访问方式、口令设置、数据迁移和 VPS 变更仍待 Morii",
       "docs/verification/p7-local-scan.md",
-      "2026-10-17 Morii 临时放开权限后，PR #35–#39 按顺序普通合并入 main（c9f684e、fabd679、f1e3591、01db9ca、2f0b072）；合并前各 head 双平台 CI 通过，main 树与 #39 已测 head f5225e5 一致"
+      "2026-10-17 Morii 临时放开权限后，PR #35–#39 按顺序普通合并入 main（c9f684e、fabd679、f1e3591、01db9ca、2f0b072）；合并前各 head 双平台 CI 通过，main 树与 #39 已测 head f5225e5 一致",
+      "docs/verification/p6-deploy-preflight.md",
+      "2026-10-20 核对远端 main 为 d0fb1c9；PR #41 灰阶尺设计仍开启，尚未合并",
+      "本分支部署前修复：pnpm verify 392 项测试通过；11 个虚构发布场景通过；不代表真实 Linux 服务或 VPS 验收",
+      "Morii 2026-10-20 已选公网子域名、HTTPS 加登录；主机与地址仅在本机忽略目录，本次部署和迁移仍待明确授权"
     ]
   },
   "reporter": {
-    "agent": "claude",
-    "note": "P6 工程与 P7 · L2 已合并；部署等待 Morii"
+    "agent": "codex",
+    "note": "部署前核查与修复已提交，公网方案已选定；待 PR 审阅及正式部署授权"
   },
   "stage": "development",
-  "summary": "P6 的工程部分（恢复、登录底层、口令工具、HTTP 接入、登录页、部署模板）与 P7 · L2 本机仓库扫描已合并入 main。实际使用与 P4/P5 验收暂且搁置。剩下的 VPS 部署需要 Morii 授权、选定访问方式并亲自设置口令。",
+  "summary": "P6 工程和 P7 · L2 已在 main；灰阶尺设计 PR #41 仍未合并。本分支修复首次构建与激活顺序、启动失败恢复及迁移保护。Morii 已选公网子域名、HTTPS 加登录；正式部署和迁移待授权，P4/P5 产品验收仍搁置。",
   "overall_progress": null,
   "milestones": [
     {
@@ -153,17 +157,19 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "p6-deploy",
-      "title": "按部署说明在 VPS 上部署并逐项完成 P6.5 验收清单",
+      "id": "review-pending-prs",
+      "title": "审阅灰阶尺设计 PR #41 与部署前修复，确定待部署的合并提交",
       "priority": "P1",
-      "result": "需要 Morii 授权、选定访问方式、本人设置口令；迁移后两边记录数量一致，此后 VPS 为唯一数据源"
+      "result": "分别核实对应 head 的 CI 和人工审阅结果；经 Morii 明确批准后合并"
+    },
+    {
+      "id": "p6-deploy",
+      "title": "按已选公网 HTTPS 加登录方案完成本次 VPS 部署与 P6.5 验收",
+      "priority": "P1",
+      "result": "授权后先现场核对 VPS 和 DNS；只构建、恢复数据、本人设口令、再激活；核对后决定唯一数据源切换"
     }
   ],
   "needs_morii": [
-    {
-      "id": "vps-access",
-      "decision": "正式部署采用私网还是公网子域名？两种 Nginx 模板都已准备，都要求 HTTPS 和登录。"
-    },
     {
       "id": "p6-deploy-authorization",
       "decision": "是否授权在 VPS 上部署、迁移数据并由你本人设置口令？"
