@@ -1,5 +1,9 @@
 # 手动算力账本
 
+> **2026-10-25 起，算力账本页面改为显示 tokens.ci 的数据**（见 `docs/design-decisions.md` 同日条目）。本文描述的手动导入账本，服务端代码、`/api/usage/*` 接口、数据表与迁移都保留，但已经没有前端页面；下面的「使用」步骤只能直接调用接口完成。
+>
+> 新的数据源：服务端 `GET /api/tokens-ci` 代读 `https://tokens.ci/api/users/<用户名>`，缓存 10 分钟（`?refresh=1` 强制刷新），失败时返回上次成功的数据并标 `stale`；`PUT /api/tokens-ci/settings` 保存用户名。用户名与缓存分别在数据目录的 `tokens-ci.json`、`tokens-ci-cache.json`，不进数据库、不进导出包。清空用户名后服务端不再访问 tokens.ci。
+
 入口：Agents 下的「算力账本」、命令面板或设置的数据区。默认没有数据、价格或汇率，不运行网络抓取。功能使用独立 Usage 表，与项目状态导入并存。
 
 ## 使用
@@ -63,6 +67,6 @@
 
 ## 开发验证
 
-`pnpm usage:check <聚合 JSON>` 只读离线。`pnpm verify` 包含静态检查、类型、全套测试、公开树审计；`pnpm build` 构建生产前端。`node apps/server/test/usage-ui.ts` 在内存 SQLite 和随机回环端口上运行合成浏览器流程，结束关闭服务器，不调用 main.ts、无正式数据或备份任务。需要本机 Edge；截图进入被忽略的 screenshots/usage。
+`pnpm usage:check <聚合 JSON>` 只读离线。`pnpm verify` 包含静态检查、类型、全套测试、公开树审计；`pnpm build` 构建生产前端。原来的浏览器脚本 `apps/server/test/usage-ui.ts` 随旧页面在 2026-10-25 移除。
 
 Runtime 自动化、真实个人数据读取、自动价格/汇率、VPS 部署与正式库迁移均**未授权、未启用**。跨仓库测试需 Runtime 之后独立核对冻结 SHA；Dashboard 本地测试不能替代它。

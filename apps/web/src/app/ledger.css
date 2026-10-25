@@ -1,0 +1,306 @@
+/*
+ * 算力账本（Usage.tsx）：主数字、灰阶日历、当日明细、近 30 天、数据来源。
+ * 灰阶尺：零彩色、方格、无圆角无阴影；日历本身就是一把把灰阶尺，越用越黑。
+ */
+
+.ledger-first {
+  margin-left: calc(var(--idx) + var(--gap));
+  padding-bottom: var(--space-8);
+}
+.ledger-first .hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+.ledger-first .hero .unit {
+  margin-left: 0;
+}
+/* 「105亿」比概览的两位数宽，窄屏按视口收小，免得撑出横向滚动 */
+.ledger-first .hero .big {
+  font-size: min(var(--text-hero), 21vw);
+}
+/* 说明行另起一行：中日英三种写法长短差很多，跟在数字后面会撑出横向滚动 */
+.ledger-first .hero .split {
+  flex-basis: 100%;
+  margin: var(--space-4) 0 0;
+  white-space: normal;
+}
+.ledger-estimate {
+  margin: var(--space-5) 0 0;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-stretch: 62%;
+  letter-spacing: 0.1em;
+  color: var(--c-ink2);
+}
+
+/* ---------- 灰阶日历 ---------- */
+
+.heat-wrap {
+  margin: 0;
+  overflow-x: auto;
+}
+.heat {
+  display: grid;
+  grid-template-columns: auto repeat(var(--weeks), minmax(10px, 1fr));
+  grid-template-rows: auto repeat(7, auto);
+  gap: 4px;
+  min-width: calc(var(--weeks) * 14px + 48px);
+  padding: 4px;
+}
+.heat-month,
+.heat-wday,
+.heat-legend,
+.bars-max,
+.bars-axis {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-stretch: 62%;
+  letter-spacing: 0.1em;
+  color: var(--c-ink2);
+  white-space: nowrap;
+}
+.heat-month {
+  grid-row: 1;
+  padding-bottom: 4px;
+}
+.heat-wday {
+  grid-column: 1;
+  align-self: center;
+  padding-right: 8px;
+}
+.heat-cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: var(--zc);
+  cursor: pointer;
+}
+.heat-cell.blank {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--c-border-weak);
+}
+.heat-cell.future {
+  cursor: default;
+}
+.heat-cell[aria-pressed="true"] {
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 0 0 2px var(--c-canvas),
+    0 0 0 4px var(--c-ink1);
+}
+.heat-cell:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 4px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .heat-cell:not(.future):not([aria-pressed="true"]):hover {
+    box-shadow: inset 0 0 0 2px var(--c-accent);
+  }
+}
+.heat-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: var(--space-4);
+}
+.heat-legend span:first-child {
+  margin-right: 4px;
+}
+.heat-legend span:last-child {
+  margin-left: 4px;
+}
+.heat-legend i,
+.ledger-client i,
+.bars-legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: var(--zc);
+}
+
+/* ---------- 选中那天 ---------- */
+
+.ledger-day-total {
+  margin: 0;
+  line-height: 1;
+}
+.ledger-day-total .n {
+  font-size: clamp(56px, 7vw, 104px);
+  font-weight: 100;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+}
+.ledger-day-total .u {
+  margin-left: var(--space-4);
+  font-size: var(--text-2xl);
+  font-weight: 300;
+}
+.ledger-day .kicker {
+  margin-top: var(--space-4);
+}
+.ledger-clients,
+.ledger-models {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ledger-clients {
+  margin-top: var(--space-6);
+}
+.ledger-client,
+.ledger-models li {
+  display: grid;
+  align-items: baseline;
+  column-gap: var(--space-3);
+  font-variant-numeric: tabular-nums;
+}
+.ledger-client {
+  grid-template-columns: 12px minmax(0, 1fr) auto 7em;
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--c-ink1);
+  font-size: var(--text-lg);
+}
+.ledger-client i {
+  align-self: center;
+}
+.ledger-models {
+  padding: var(--space-1) 0 var(--space-4) 24px;
+}
+.ledger-models li {
+  grid-template-columns: minmax(0, 1fr) auto 7em;
+  padding: var(--space-1) 0;
+  font-size: var(--text-sm);
+  color: var(--c-ink2);
+}
+.ledger-client .name,
+.ledger-models .name {
+  overflow-wrap: anywhere;
+}
+.ledger-client .tok,
+.ledger-client .cost,
+.ledger-models .tok,
+.ledger-models .cost {
+  text-align: right;
+}
+.ledger-print {
+  align-self: start;
+}
+.ledger-print .btn {
+  min-height: 56px;
+  padding: 0 var(--space-6);
+  font-size: var(--text-lg);
+}
+
+/* ---------- 近 30 天 ---------- */
+
+.bars-wrap {
+  margin: 0;
+}
+.bars-max {
+  margin: 0 0 var(--space-2);
+}
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 240px;
+  border-top: 1px dashed var(--c-border);
+  border-bottom: 1px solid var(--c-ink1);
+}
+.bar {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.bar-fill {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+}
+.bar-fill > span {
+  flex-basis: 0;
+  min-height: 1px;
+  background: var(--zc);
+}
+.bar.on .bar-fill {
+  box-shadow:
+    0 0 0 2px var(--c-canvas),
+    0 0 0 3px var(--c-ink1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .bar:not(.on):hover .bar-fill {
+    opacity: 0.72;
+  }
+}
+.bars-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.bars-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.bars-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- 数据来源 ---------- */
+
+.ledger-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-5);
+}
+.ledger-source .field {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 220px;
+}
+.ledger-source .field > span {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-stretch: 62%;
+  letter-spacing: 0.1em;
+  color: var(--c-ink2);
+}
+.ledger-source .ix {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+@media (max-width: 819px) {
+  .ledger-client {
+    grid-template-columns: 12px minmax(0, 1fr) auto auto;
+    font-size: var(--text-md);
+  }
+  .ledger-models li {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .bars {
+    gap: 2px;
+    height: 180px;
+  }
+  .bars-legend {
+    display: none;
+  }
+}

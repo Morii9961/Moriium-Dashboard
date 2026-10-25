@@ -59,7 +59,7 @@ export function BandHead({
   title: ReactNode;
   level: 1 | 2;
   id: string;
-  numbers: [ReactNode, number][];
+  numbers: [ReactNode, ReactNode][];
   children?: ReactNode;
 }) {
   const H = level === 1 ? 'h1' : 'h2';

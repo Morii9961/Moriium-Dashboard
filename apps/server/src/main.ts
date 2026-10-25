@@ -89,6 +89,7 @@ async function main() {
     startedAt: new Date(),
     version: VERSION,
     webDir: join(REPO_ROOT, 'apps', 'web', 'dist'),
+    tokensCi: { dir: config.dataDir },
     ...(authDb && config.auth.mode === 'required'
       ? { auth: { db: authDb, trustProxy: config.auth.trustProxy } }
       : { localScan: { file: join(config.dataDir, SCAN_FILE) } }),
