@@ -37,6 +37,31 @@ interface AgentData {
     assignments: { projectId: string; scope: string }[];
   }[];
 }
+type AgentCard = AgentData['agents'][number];
+
+/** 把「未注明」并进 Codex：计数、证据相加，负责范围合并，最近报告取更新的一份；去掉「其他 Agent」。 */
+function mergeUnstated(agents: AgentCard[]): AgentCard[] {
+  const unstated = agents.find((a) => a.agent === null);
+  const rest = agents.filter((a) => a.agent !== null && a.agent !== 'other');
+  if (!unstated) return rest;
+  const codex = rest.find((a) => a.agent === 'codex');
+  if (!codex) return [{ ...unstated, agent: 'codex' }, ...rest];
+  const newer = (x: Report | null, y: Report | null) => (!x ? y : !y ? x : y.utcMs > x.utcMs ? y : x);
+  const evidence = { ...codex.evidence };
+  for (const k of Object.keys(evidence) as (keyof typeof evidence)[]) evidence[k] += unstated.evidence[k];
+  const merged: AgentCard = {
+    agent: 'codex',
+    latest: newer(codex.latest, unstated.latest),
+    count30: codex.count30 + unstated.count30,
+    pending: codex.pending + unstated.pending,
+    evidence,
+    assignments: [...codex.assignments, ...unstated.assignments].filter(
+      (p, i, all) => all.findIndex((q) => q.projectId === p.projectId && q.scope === p.scope) === i,
+    ),
+  };
+  return rest.map((a) => (a === codex ? merged : a));
+}
+
 export function AgentsPage({ agent }: { agent?: string }) {
   const { t, locale, snapshotTime } = useI18n();
   const { data, error } = useResource<AgentData>('/api/agents');
@@ -45,8 +70,13 @@ export function AgentsPage({ agent }: { agent?: string }) {
     return p ? localizedName(p, locale) : id;
   };
   const label = (a: ReporterAgent | null) => t(a ? `agent.${a}` : 'agent.unknown');
-  const cards = data?.agents.filter((a) => !agent || (a.agent ?? 'unknown') === agent) ?? [];
-  const reports = data?.reports.filter((r) => !agent || (r.reporter.agent ?? 'unknown') === agent) ?? [];
+  // 没写 Agent 的报告都是 Codex 的，并进 Codex；「其他 Agent」不单列（Morii，2026-10-25）。
+  const focus = agent === 'unknown' ? 'codex' : agent;
+  const cards = mergeUnstated(data?.agents ?? []).filter((a) => !focus || a.agent === focus);
+  const reports =
+    data?.reports.filter(
+      (r) => r.reporter.agent !== 'other' && (!focus || (r.reporter.agent ?? 'codex') === focus),
+    ) ?? [];
   if (!data)
     return (
       <>

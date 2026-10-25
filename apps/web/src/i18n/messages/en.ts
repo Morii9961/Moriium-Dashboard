@@ -195,7 +195,8 @@ export const en: Messages = {
   'agent.claude': 'Claude',
   'agent.codex': 'Codex',
   'agent.other': 'Another agent',
-  'agent.unknown': 'Not stated',
+  // 没写 Agent 的快照都是 Codex 生成的（Morii，2026-10-25）。
+  'agent.unknown': 'Codex',
   'agent.inferred': '{agent} (inferred from branch)',
   'origin.real': 'Real snapshot (this computer)',
   'origin.self': "Dashboard's own snapshot",

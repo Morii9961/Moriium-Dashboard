@@ -194,7 +194,8 @@ export const ja: Messages = {
   'agent.claude': 'Claude',
   'agent.codex': 'Codex',
   'agent.other': 'その他のエージェント',
-  'agent.unknown': '未記載',
+  // 没写 Agent 的快照都是 Codex 生成的（Morii，2026-10-25）。
+  'agent.unknown': 'Codex',
   'agent.inferred': '{agent}（ブランチから推定）',
   'origin.real': '実際のスナップショット（このパソコン）',
   'origin.self': 'Dashboard 自身のスナップショット',

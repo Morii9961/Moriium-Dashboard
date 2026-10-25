@@ -193,7 +193,8 @@ export const zhHans = {
   'agent.claude': 'Claude',
   'agent.codex': 'Codex',
   'agent.other': '其他 Agent',
-  'agent.unknown': '未注明',
+  // 没写 Agent 的快照都是 Codex 生成的（Morii，2026-10-25）。
+  'agent.unknown': 'Codex',
   'agent.inferred': '{agent}（据分支推断）',
   'origin.real': '真实快照（本机）',
   'origin.self': 'Dashboard 自己的快照',

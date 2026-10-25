@@ -8,6 +8,8 @@
 
 :root {
   interpolate-size: allow-keywords;
+  /* 页面变长变短时滚动条出现、消失不再把整页左右挤动 */
+  scrollbar-gutter: stable;
 }
 
 @keyframes develop {
@@ -30,24 +32,35 @@
 
 /* ---------- 换页：每个页面的内容从纸色里显影 ---------- */
 
-.app-main > :is(.page, .page-head, .loading-line, .empty, p, .usage-page),
+.app-main > :is(.page, .page-head, .empty, .usage-page),
 .app-main > .first > :is(.dateline, h1),
 .auth-panel,
 .tab-body,
 .project-detail {
-  animation: develop var(--dur-base) var(--ease) both;
+  animation: develop var(--dur-base) var(--ease) backwards;
 }
 .app-main > .first + .page {
   animation-delay: 60ms;
 }
 
+/*
+ * 加载态（页头 + 测光中、懒加载占位）：先等 300ms 再淡入。本机数据通常在这之前就到了，
+ * 加载态根本不出现，页面只显影一次；真慢的时候才看得到它。位置与正文的起点对齐，换成正文时标题不横跳。
+ */
+.app-main > .page-head:has(+ .loading-line),
+.app-main > .loading-line,
+.app-main > p {
+  margin-left: calc(var(--idx) + var(--gap));
+  animation: expose var(--dur-fast) ease 300ms backwards;
+}
+
 /* 概览首屏的招牌：十一格从左到右依次曝光，项目随后吊上来 */
 .first .cell {
-  animation: expose var(--dur-slow) var(--ease) both;
+  animation: expose var(--dur-slow) var(--ease) backwards;
   animation-delay: calc(120ms + var(--i, 0) * 30ms);
 }
 .first .hanger {
-  animation: develop var(--dur-base) var(--ease) both;
+  animation: develop var(--dur-base) var(--ease) backwards;
   animation-delay: calc(420ms + (var(--rows, 6) - var(--k, 0)) * 40ms);
 }
 
@@ -144,7 +157,7 @@ textarea {
   background-size: calc(100% - 16px) 1px;
 }
 .nav-link.is-active::before {
-  animation: mark-in var(--dur-base) var(--ease) both;
+  animation: mark-in var(--dur-base) var(--ease) backwards;
 }
 
 /* 一直带下划线的链接与文字按钮：悬停时下划线贴近文字 */
@@ -256,7 +269,7 @@ details[open]::details-content {
 /* ---------- 减少动画：只留淡入淡出 ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .app-main > :is(.page, .page-head, .loading-line, .empty, p, .usage-page),
+  .app-main > :is(.page, .page-head, .empty, .usage-page),
   .app-main > .first > :is(.dateline, h1),
   .auth-panel,
   .tab-body,
