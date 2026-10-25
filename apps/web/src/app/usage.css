@@ -11,7 +11,7 @@
   filter: grayscale(1);
 }
 .usage-page .page-head,
-.usage-controls,
+.usage-page > .usage-controls,
 :where(.usage-page) > .usage-notice,
 .usage-page > .page-actions,
 .usage-page > p,
@@ -51,6 +51,39 @@
   border-radius: 0;
   box-shadow: none;
 }
+/* 页头下的通用 .page-actions 带负的上边距，这里按钮跟在状态文字后面，不能往上收 */
+.usage-page > .page-actions {
+  margin-block: 24px 0;
+}
+.usage-page input[type="file"] {
+  min-height: 44px;
+  padding: 0;
+  border-bottom: 0;
+  font: inherit;
+  color: var(--c-ink2);
+}
+.usage-page input[type="file"]::file-selector-button {
+  font: inherit;
+  margin-right: 16px;
+  padding: 9px 16px;
+  line-height: 24px;
+  vertical-align: middle;
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 1px var(--c-ink1);
+  background: transparent;
+  color: var(--c-ink1);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .usage-page input[type="file"]:not(:disabled)::file-selector-button:hover {
+    background: var(--c-ink1);
+    color: var(--c-canvas);
+  }
+}
 .usage-page input[type="checkbox"] {
   min-height: 16px;
   accent-color: var(--c-ink1);
@@ -64,7 +97,6 @@
   color: var(--c-ink1);
   font-size: 15px;
   padding: 8px 16px;
-  transition: none;
 }
 .usage-page .btn:hover:not(:disabled) {
   background: var(--c-ink1);
@@ -271,7 +303,7 @@
     font-size: 19px;
   }
   .usage-page .page-head,
-  .usage-controls,
+  .usage-page > .usage-controls,
   :where(.usage-page) > .usage-notice,
   .usage-page > .page-actions,
   .usage-page > p,

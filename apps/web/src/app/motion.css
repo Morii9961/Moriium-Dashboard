@@ -30,7 +30,7 @@
 
 /* ---------- 换页：每个页面的内容从纸色里显影 ---------- */
 
-.app-main > :is(.page, .page-head, .loading-line, .empty, p),
+.app-main > :is(.page, .page-head, .loading-line, .empty, p, .usage-page),
 .app-main > .first > :is(.dateline, h1),
 .auth-panel,
 .tab-body,
@@ -256,7 +256,7 @@ details[open]::details-content {
 /* ---------- 减少动画：只留淡入淡出 ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .app-main > :is(.page, .page-head, .loading-line, .empty, p),
+  .app-main > :is(.page, .page-head, .loading-line, .empty, p, .usage-page),
   .app-main > .first > :is(.dateline, h1),
   .auth-panel,
   .tab-body,
