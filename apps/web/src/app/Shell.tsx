@@ -27,6 +27,7 @@ const NAV: NavItem[] = [
   { to: '/inbox', label: 'nav.inbox', match: (p) => p === '/inbox' },
   { to: '/projects', label: 'nav.projects', match: (p) => p.startsWith('/projects') },
   { to: '/agents', label: 'nav.agents', match: (p) => p.startsWith('/agents') },
+  { to: '/usage', label: 'usage.title', match: (p) => p === '/usage' },
   { to: '/studio', label: 'nav.studio', match: (p) => p.startsWith('/studio') },
   { to: '/planner', label: 'nav.planner', match: (p) => p.startsWith('/planner') },
 ];

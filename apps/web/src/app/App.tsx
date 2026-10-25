@@ -12,6 +12,7 @@ import { type Route, resolveRoute, usePath } from './router.tsx';
 import { Shell } from './Shell.tsx';
 
 const StudioPage = lazy(() => import('./Works.tsx').then((m) => ({ default: m.StudioPage })));
+const UsagePage = lazy(() => import('./Usage.tsx').then((m) => ({ default: m.UsagePage })));
 
 type RouteName =
   | 'overview'
@@ -24,8 +25,9 @@ type RouteName =
   | 'planner'
   | 'imports'
   | 'settings';
+type AppRouteName = RouteName | 'usage';
 
-export const ROUTES: readonly Route<RouteName>[] = [
+export const ROUTES: readonly Route<AppRouteName>[] = [
   { name: 'overview', pattern: '/' },
   { name: 'inbox', pattern: '/inbox' },
   { name: 'projects', pattern: '/projects' },
@@ -36,9 +38,10 @@ export const ROUTES: readonly Route<RouteName>[] = [
   { name: 'planner', pattern: '/planner' },
   { name: 'imports', pattern: '/imports' },
   { name: 'settings', pattern: '/settings' },
+  { name: 'usage', pattern: '/usage' },
 ];
 
-const TITLE: Record<RouteName, MessageKey> = {
+const TITLE: Record<AppRouteName, MessageKey> = {
   overview: 'nav.overview',
   inbox: 'nav.inbox',
   projects: 'nav.projects',
@@ -49,6 +52,7 @@ const TITLE: Record<RouteName, MessageKey> = {
   planner: 'nav.planner',
   imports: 'imports.title',
   settings: 'nav.settings',
+  usage: 'usage.title',
 };
 
 export function App() {
@@ -92,6 +96,9 @@ export function App() {
       break;
     case 'settings':
       page = <SettingsPage />;
+      break;
+    case 'usage':
+      page = <UsagePage />;
       break;
     default:
       page = <NotFoundPage path={path} />;

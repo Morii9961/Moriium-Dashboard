@@ -10,7 +10,7 @@
 | `nginx/private.conf` | 私网（例如 Tailscale）+ HTTPS + 登录 |
 | `nginx/moriium-dashboard-proxy.conf` | 两种方式共用的转发设置，放进 `/etc/nginx/snippets/` |
 | `fail2ban/` | 按服务日志里的登录失败来源封禁 |
-| `scripts/release.sh` | 在服务器上发布指定提交，健康检查失败自动退回 |
+| `scripts/release.sh` | `--prepare` 只构建；发布失败时迁移文件相同可自动退回，迁移变化则停服等待人工恢复 |
 | `scripts/rollback.sh` | 退回上一个发布；跨数据库迁移时拒绝并说明 |
 | `scripts/pull-backups.sh` | 在本机把服务器上的备份拉回 |
 

@@ -89,6 +89,7 @@ export function CommandProvider({ children }: { children: ReactNode }) {
         ['/studio', 'nav.studio'],
         ['/planner', 'nav.planner'],
         ['/settings', 'nav.settings'],
+        ['/usage', 'usage.title'],
       ] as const
     ).map(([to, label]) => ({
       id: to,

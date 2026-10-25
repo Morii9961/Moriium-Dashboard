@@ -73,7 +73,7 @@ export function readArchive(zip: Uint8Array): Map<string, Uint8Array> {
     );
     names.add(name.toLowerCase());
     const limit =
-      name === 'data.json'
+      name === 'data.json' || name === 'usage.json'
         ? 32 * 1024 * 1024
         : name === 'manifest.json'
           ? 64 * 1024

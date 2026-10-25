@@ -78,6 +78,9 @@ export function SettingsPage() {
           {t('settings.data')}
         </h2>
         <div className="page-actions settings-actions">
+          <Link className="btn" to="/usage">
+            {t('usage.title')}
+          </Link>
           <a className="btn" href="/api/export" download>
             {t('export.all')}
           </a>
