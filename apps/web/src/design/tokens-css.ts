@@ -22,7 +22,10 @@ function scaleVars(indent: string): string {
   for (const [k, v] of Object.entries(RADIUS)) lines.push(`${indent}--radius-${k}: ${v}px;`);
   for (const [k, v] of Object.entries(TYPE)) lines.push(`${indent}--text-${k}: ${v};`);
   lines.push(`${indent}--ease: ${MOTION.ease};`);
-  for (const k of ['fast', 'base', 'slow'] as const) lines.push(`${indent}--dur-${k}: ${MOTION[k]};`);
+  lines.push(`${indent}--ease-in-out: ${MOTION.easeInOut};`);
+  lines.push(`${indent}--ease-drawer: ${MOTION.easeDrawer};`);
+  for (const k of ['press', 'fast', 'base', 'slow'] as const)
+    lines.push(`${indent}--dur-${k}: ${MOTION[k]};`);
   return lines.join('\n');
 }
 

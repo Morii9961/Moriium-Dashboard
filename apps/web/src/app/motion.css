@@ -1,0 +1,315 @@
+/*
+ * 动效（DESIGN.md 第 7 节，2026-10-19）：像显影，内容从纸色里出现。
+ * 只动 opacity 与 transform（展开收起用 block-size，这是唯一的例外）；曲线与时长都取自 tokens.css 的
+ * --ease / --ease-in-out / --ease-drawer 与 --dur-press / fast / base / slow。
+ * 命令面板的打开、关闭不加动画：它主要用 Ctrl / ⌘ K 呼出，一天上百次，动画只会拖慢。
+ * 减少动画偏好下：保留淡入淡出，去掉位移、缩放和错开。
+ */
+
+:root {
+  interpolate-size: allow-keywords;
+}
+
+@keyframes develop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes expose {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+/* ---------- 换页：每个页面的内容从纸色里显影 ---------- */
+
+.app-main > :is(.page, .page-head, .loading-line, .empty, p),
+.app-main > .first > :is(.dateline, h1),
+.auth-panel,
+.tab-body,
+.project-detail {
+  animation: develop var(--dur-base) var(--ease) both;
+}
+.app-main > .first + .page {
+  animation-delay: 60ms;
+}
+
+/* 概览首屏的招牌：十一格从左到右依次曝光，项目随后吊上来 */
+.first .cell {
+  animation: expose var(--dur-slow) var(--ease) both;
+  animation-delay: calc(120ms + var(--i, 0) * 30ms);
+}
+.first .hanger {
+  animation: develop var(--dur-base) var(--ease) both;
+  animation-delay: calc(420ms + (var(--rows, 6) - var(--k, 0)) * 40ms);
+}
+
+/* ---------- 按钮与可按的东西：按下缩一点，填墨有过渡 ---------- */
+
+.btn,
+.icon-btn,
+.copyline-btn,
+.seg-option span,
+.command-results button,
+.nav-toggle {
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-press) var(--ease);
+}
+.btn:not(:disabled):active,
+.icon-btn:active,
+.copyline-btn:active,
+.nav-toggle:active,
+.seg-option:active span,
+.command-results button:active {
+  transform: scale(0.97);
+}
+
+/* 方块复选：填墨有过渡，按下缩一点 */
+input[type="checkbox"],
+input[type="radio"] {
+  transition:
+    background-color var(--dur-press) ease,
+    box-shadow var(--dur-press) ease,
+    transform var(--dur-press) var(--ease);
+}
+input[type="checkbox"]:not(:disabled):active,
+input[type="radio"]:not(:disabled):active {
+  transform: scale(0.88);
+}
+
+/* 输入与选择：聚焦时下划线加深，用阴影代替加粗边框，不挤动版面 */
+:is(select, input, textarea):focus {
+  border-bottom-width: 1px;
+  box-shadow: 0 1px 0 var(--c-ink1);
+}
+select,
+input:is(
+  [type="text"],
+  [type="search"],
+  [type="date"],
+  [type="number"],
+  [type="url"],
+  [type="password"],
+  :not([type])
+),
+textarea {
+  transition: box-shadow var(--dur-fast) ease;
+}
+
+/* 导航与文字链接：下划线从左边画出来 */
+.nav-link,
+.hanger a .hname,
+.bname a,
+.pname2 a,
+.reports a,
+.agent-latest a,
+.report-log a,
+.agent-assign a,
+.acc a {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat left bottom / 0 1px;
+  transition: background-size var(--dur-fast) var(--ease);
+}
+.nav-link {
+  background-position: 16px calc(100% - 3px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover {
+    text-decoration: none;
+    background-size: calc(100% - 16px) 1px;
+  }
+  .hanger a:hover .hname,
+  .bname a:hover,
+  .pname2 a:hover,
+  .reports a:hover,
+  .agent-latest a:hover,
+  .report-log a:hover,
+  .agent-assign a:hover,
+  .acc a:hover {
+    text-decoration: none;
+    background-size: 100% 1px;
+  }
+}
+.nav-link:focus-visible {
+  background-size: calc(100% - 16px) 1px;
+}
+.nav-link.is-active::before {
+  animation: mark-in var(--dur-base) var(--ease) both;
+}
+
+/* 一直带下划线的链接与文字按钮：悬停时下划线贴近文字 */
+.go a,
+.text-btn,
+.acceptance-cell > details > summary {
+  transition:
+    text-underline-offset var(--dur-fast) var(--ease),
+    color var(--dur-fast) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  :is(.go a, .text-btn, .acceptance-cell > details > summary):hover {
+    text-underline-offset: 2px;
+  }
+}
+
+/* 分布条的段、尺上的格：描框有过渡 */
+.spread-seg {
+  transition: box-shadow var(--dur-fast) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .spread-seg:hover {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--c-accent);
+  }
+}
+.cell {
+  transition: box-shadow var(--dur-fast) ease;
+}
+
+/* ---------- 展开与收起（处理状态、依据、记录验收、暂停的项目……） ---------- */
+
+details::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition:
+    block-size var(--dur-base) var(--ease),
+    content-visibility var(--dur-base) allow-discrete;
+}
+details[open]::details-content {
+  block-size: auto;
+}
+
+/* ---------- 对话框与抽屉 ---------- */
+
+.idialog {
+  opacity: 0;
+  transform: scale(0.97);
+  transition:
+    opacity var(--dur-base) var(--ease),
+    transform var(--dur-base) var(--ease),
+    overlay var(--dur-base) allow-discrete,
+    display var(--dur-base) allow-discrete;
+}
+.idialog[open] {
+  opacity: 1;
+  transform: none;
+}
+@starting-style {
+  .idialog[open] {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.drawer {
+  transform: translateX(-100%);
+  transition:
+    transform var(--dur-slow) var(--ease-drawer),
+    overlay var(--dur-slow) allow-discrete,
+    display var(--dur-slow) allow-discrete;
+}
+.drawer[open] {
+  transform: none;
+}
+@starting-style {
+  .drawer[open] {
+    transform: translateX(-100%);
+  }
+}
+
+.idialog::backdrop,
+.drawer::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--dur-base) ease,
+    overlay var(--dur-base) allow-discrete,
+    display var(--dur-base) allow-discrete;
+}
+.idialog[open]::backdrop,
+.drawer[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .idialog[open]::backdrop,
+  .drawer[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* ---------- 主题切换：正片与负片交叉淡入 ---------- */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: ease;
+}
+
+/* ---------- 减少动画：只留淡入淡出 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .app-main > :is(.page, .page-head, .loading-line, .empty, p),
+  .app-main > .first > :is(.dateline, h1),
+  .auth-panel,
+  .tab-body,
+  .project-detail,
+  .first .hanger {
+    animation-name: expose;
+  }
+  .app-main > .first + .page,
+  .first .cell,
+  .first .hanger {
+    animation-delay: 0ms;
+  }
+  .nav-link.is-active::before {
+    animation-name: expose;
+  }
+  .btn:not(:disabled):active,
+  .icon-btn:active,
+  .copyline-btn:active,
+  .nav-toggle:active,
+  .seg-option:active span,
+  .command-results button:active,
+  input[type="checkbox"]:not(:disabled):active,
+  input[type="radio"]:not(:disabled):active {
+    transform: none;
+  }
+  .idialog,
+  .drawer,
+  .idialog[open],
+  .drawer[open] {
+    transform: none;
+  }
+  @starting-style {
+    .idialog[open],
+    .drawer[open] {
+      transform: none;
+    }
+  }
+  .drawer {
+    opacity: 0;
+    transition:
+      opacity var(--dur-base) ease,
+      overlay var(--dur-base) allow-discrete,
+      display var(--dur-base) allow-discrete;
+  }
+  .drawer[open] {
+    opacity: 1;
+  }
+  @starting-style {
+    .drawer[open] {
+      opacity: 0;
+    }
+  }
+  details::details-content {
+    transition: none;
+  }
+}

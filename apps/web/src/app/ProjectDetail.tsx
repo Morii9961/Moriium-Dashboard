@@ -459,7 +459,7 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
         </fieldset>
       </div>
       {section !== 'summary' || p.tracking === 'manual' ? (
-        <div className="g tab-body">
+        <div className="g tab-body" key={section}>
           <div className="main wide">
             {section === 'works' ? (
               <WorksPanel projectId={p.id} />

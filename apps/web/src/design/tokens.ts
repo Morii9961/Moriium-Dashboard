@@ -193,12 +193,19 @@ export const TYPE = {
   hero: 'clamp(168px, 22vw, 320px)',
 } as const;
 
-/** 动效：灰阶尺几乎不动，没有过渡（DESIGN.md 第 7 节）。名字保留，值为 0。 */
+/**
+ * 动效（DESIGN.md 第 7 节，2026-10-19 起）：像显影一样，从纸色里出现，只用 opacity 与 transform。
+ * ease 进出场用强 ease-out；inOut 给屏幕内的移动；drawer 给抽屉。时长：按压 120 · 悬停与小件 150 ·
+ * 换页与标签 220 · 对话框与抽屉 300。曲线来自 animate skill 的表，不手调。
+ */
 export const MOTION = {
-  ease: 'linear',
-  fast: '0ms',
-  base: '0ms',
-  slow: '0ms',
+  ease: 'cubic-bezier(0.23, 1, 0.32, 1)',
+  easeInOut: 'cubic-bezier(0.77, 0, 0.175, 1)',
+  easeDrawer: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  press: '120ms',
+  fast: '150ms',
+  base: '220ms',
+  slow: '300ms',
 } as const;
 
 /** 需要检查对比度的组合：[前景, 背景, 最低比值, 说明]。 */

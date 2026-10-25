@@ -109,7 +109,7 @@ export function RulerCells({ blank = false, hot }: { blank?: boolean; hot?: numb
             key={z}
             className={`cell${hot === z ? ' hot' : ''}`}
             data-zone={z}
-            style={blank ? undefined : zoneStyle(z)}
+            style={{ ...(blank ? {} : zoneStyle(z)), '--i': col } as CSSProperties}
           >
             <span className="roman">{ROMAN[z]}</span>
             {stage && !blank ? <span className="cstage">{t(`station.${stage}`)}</span> : null}

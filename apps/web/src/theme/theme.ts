@@ -43,8 +43,18 @@ function applyThemePref(pref: ThemePref): void {
   else root.dataset.theme = pref;
 }
 
-/** 切换主题。灰阶尺没有过渡动画（DESIGN.md 第 7 节），直接换。 */
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * 切换主题：正片与负片之间交叉淡入（DESIGN.md 第 7 节，时长见 base.css 的 ::view-transition 规则）。
+ * 颜色没变、浏览器不支持 View Transitions、或要求减少动画时直接换。
+ */
 export function setThemePref(pref: ThemePref): void {
+  const before = resolveTheme(readThemePref());
   writeThemePref(pref);
-  applyThemePref(pref);
+  if (before === resolveTheme(pref) || reducedMotion() || !('startViewTransition' in document)) {
+    applyThemePref(pref);
+    return;
+  }
+  document.startViewTransition(() => applyThemePref(pref));
 }
