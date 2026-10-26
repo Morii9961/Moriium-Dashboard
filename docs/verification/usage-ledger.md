@@ -18,7 +18,7 @@
 | `pnpm verify` | 26 个文件、442 项测试全部通过，0 失败；类型检查与公开树审计通过。11 条既有 Biome 警告，均在未修改的原有文件 |
 | `pnpm build` | 生产前端构建通过，Usage 独立懒加载 chunk；后续仅新增截图/键盘检查脚本与样式验证，没有改计价算法 |
 | `pnpm usage:check packages/protocol/usage/fixtures/valid-week.json` | 原生 Node CLI 合法返回 0；反例返回 1 也在自动测试内验证 |
-| `node apps/server/test/usage-ui.ts` | 独立内存库、随机回环端口、Edge 无头模式；完整合成生命周期与 12 组视图通过，结束自动关闭 |
+| `node apps/server/test/usage-ui.ts`（2026-10-25 随旧页面移除） | 独立内存库、随机回环端口、Edge 无头模式；完整合成生命周期与 12 组视图通过，结束自动关闭 |
 | `git diff --check` | 无空白错误 |
 
 Vitest 在受限沙箱临时目录中曾报 ENOENT，既有模块也同样受影响；正常本机权限下复核通过。最初的 Host 测试预期码误写为 403，已按既有 421 修正；生成校验器曾残留 CJS require，按项目已有 ESM helper 模式修正，并加入原生 CLI 回归。以上早期失败均已处理，不将它们记为通过证据。

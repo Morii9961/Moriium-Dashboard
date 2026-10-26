@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./usage": "./src/usage.ts",
-    "./usage-types": "./src/usage-types.ts"
+    "./usage-types": "./src/usage-types.ts",
+    "./tokens-ci-types": "./src/tokens-ci-types.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

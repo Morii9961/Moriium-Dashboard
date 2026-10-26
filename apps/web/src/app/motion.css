@@ -32,14 +32,14 @@
 
 /* ---------- 换页：每个页面的内容从纸色里显影 ---------- */
 
-.app-main > :is(.page, .page-head, .empty, .usage-page),
+.app-main > :is(.page, .page-head, .empty, .ledger-first),
 .app-main > .first > :is(.dateline, h1),
 .auth-panel,
 .tab-body,
 .project-detail {
   animation: develop var(--dur-base) var(--ease) backwards;
 }
-.app-main > .first + .page {
+.app-main > :is(.first, .ledger-first) + .page {
   animation-delay: 60ms;
 }
 
@@ -269,7 +269,7 @@ details[open]::details-content {
 /* ---------- 减少动画：只留淡入淡出 ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .app-main > :is(.page, .page-head, .empty, .usage-page),
+  .app-main > :is(.page, .page-head, .empty, .ledger-first),
   .app-main > .first > :is(.dateline, h1),
   .auth-panel,
   .tab-body,
@@ -277,7 +277,7 @@ details[open]::details-content {
   .first .hanger {
     animation-name: expose;
   }
-  .app-main > .first + .page,
+  .app-main > :is(.first, .ledger-first) + .page,
   .first .cell,
   .first .hanger {
     animation-delay: 0ms;

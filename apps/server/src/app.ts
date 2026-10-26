@@ -20,9 +20,11 @@ import { localScanRoutes } from './routes/localScan.ts';
 import { projectRoutes } from './routes/projects.ts';
 import { reviewRoutes } from './routes/review.ts';
 import { taskRoutes } from './routes/tasks.ts';
+import { tokensCiRoutes } from './routes/tokensci.ts';
 import { usageRoutes } from './routes/usage.ts';
 import { workRoutes } from './routes/works.ts';
 import { hostCheck, securityHeaders, writeGuard } from './security.ts';
+import type { TokensCiStore } from './tokensci.ts';
 
 export interface AppContext {
   db: Database;
@@ -37,6 +39,8 @@ export interface AppContext {
   auth?: HttpAuth;
   /** 本机仓库扫描的目录记录文件。只在本机实例（未开启认证）提供。 */
   localScan?: { file: string };
+  /** 算力账本的 tokens.ci 数据（用户名与缓存放在这个目录）。不传时不挂载 /api/tokens-ci。 */
+  tokensCi?: TokensCiStore;
 }
 
 export function createApp(ctx: AppContext) {
@@ -96,6 +100,7 @@ export function createApp(ctx: AppContext) {
   focusRoutes(app, ctx);
   taskRoutes(app, ctx);
   usageRoutes(app, ctx);
+  tokensCiRoutes(app, ctx);
   workRoutes(app, ctx);
   importRoutes(app, ctx);
   localScanRoutes(app, ctx);
