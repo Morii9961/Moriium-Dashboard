@@ -4,12 +4,12 @@ Claude 的周额度随时可能用完，这份文档每做完一个阶段就更�
 
 ## 当前位置
 
-仓库 `Morii9961/Moriium-Dashboard`。灰阶尺已经进了 `main`，进行中的只剩算力账本一条：
+仓库 `Morii9961/Moriium-Dashboard`。灰阶尺和算力账本都已经进了 `main`（`db85979`），**没有进行中的功能分支**：
 
 | 分支 | 最后推送的提交 | 状态 |
 | --- | --- | --- |
 | `redesign/final` | `07d6f4c` | [PR #41](https://github.com/Morii9961/Moriium-Dashboard/pull/41) **已合并**（Morii 2026-10-26 授权 Claude 合并）：合并提交 `b11d765`，普通合并、锁定在 CI 通过的 `07d6f4c`。远端分支被仓库的「合并后自动删除」设置删掉了，提交都在 `main` 里，需要时可在 PR 页面恢复。 |
-| `feat/usage-tokens-ci` | 见 `git log -1 origin/feat/usage-tokens-ci` | #41 合并后已把 `main` 合进来（`23e38a9`，没有文件变化），[PR #44](https://github.com/Morii9961/Moriium-Dashboard/pull/44) 开放，基准 `main`，**未合并**；CI 以 PR 页面为准。 |
+| `feat/usage-tokens-ci` | `25ec2a0` | [PR #44](https://github.com/Morii9961/Moriium-Dashboard/pull/44) **已合并**（Morii 2026-10-26 授权 Claude 合并）：合并提交 `db85979`，普通合并、锁定在 Ubuntu 与 Windows CI 都通过的 `25ec2a0`。远端分支同样被自动删除。 |
 
 Claude 的工作目录是本机上的一个 git worktree（目录名 `moriium-dashboard-redesign-16cd0f`），目前停在 `feat/usage-tokens-ci`。
 
@@ -34,8 +34,8 @@ Claude 的工作目录是本机上的一个 git worktree（目录名 `moriium-da
 ## 未完成与待定
 
 - **Morii 的产品验收**：灰阶尺整体、动效、算力账本与账单都还没有在真实浏览器里验收。
-- **PR #44**：等 CI 与 Morii 验收后再合并；合并方式照 #41（普通合并、锁定已通过 CI 的提交）。
-- **正式本机实例**：`main` 已经是新前端，但正式实例要 Morii 用 `main` 重新 `pnpm build` 后才会换上；#44 合并前，正式实例的算力账本仍是旧的手动导入页。
+- **正式本机实例**：`main` 已经包含新前端和新算力账本，但正式实例要 Morii 用 `main` 重新 `pnpm build` 并重启后才会换上。换上后要在算力账本页底部填一次 tokens.ci 用户名，服务端才开始读取；正式库里旧手动账本的数据保留，只是没有界面。
+- **撤回方式**：两次合并都是普通合并提交，需要时用 `git revert -m 1 b11d765` / `git revert -m 1 db85979` 开 PR 撤回，不需要强推。
 - **数据源风险**：`tokens.ci/api/users/<name>` 是 tokens.ci 文档里提到、第三方客户端在用的公开接口，但没有正式版本承诺；字段变了时 `normalizeProfile` 返回 `invalid_response`，页面会显示错误并保留上次缓存。
 - **已知问题**：页面加载后焦点还在 body 时，第一次按 Tab 进正文而不是「跳到正文」（旧版同样）；`docs/status/` 快照没有更新到这些分支的进展。
 - **图标**是示意画法，不是官方标志文件。
