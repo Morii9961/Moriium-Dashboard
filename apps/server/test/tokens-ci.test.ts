@@ -88,6 +88,7 @@ describe('normalizeProfile', () => {
     expect(p?.days.map((d) => d.date)).toEqual(['2026-10-20', '2026-10-25']);
     const day = p?.days[1];
     expect(day?.messages).toBe(100);
+    expect(day?.cacheRead).toBe(1_999_700);
     expect(day?.clients.map((c) => c.client)).toEqual(['claude', 'codex']);
     expect(day?.clients[1]?.models.map((m) => m.model)).toEqual(['model-a', 'model-b']);
     expect(day?.clients[1]?.tokens).toBe(500_000);

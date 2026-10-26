@@ -139,6 +139,8 @@ function normalizeDay(raw: unknown): TokensCiDay | null {
     messages,
     input: num(breakdown.input),
     output: num(breakdown.output),
+    cacheRead: num(breakdown.cacheRead),
+    cacheWrite: num(breakdown.cacheWrite),
     clients,
   };
 }

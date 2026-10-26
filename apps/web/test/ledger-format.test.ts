@@ -18,6 +18,8 @@ const day = (date: string, tokens: number, cost = tokens / 1e6): TokensCiDay => 
   messages: 1,
   input: 0,
   output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
   clients: [],
 });
 

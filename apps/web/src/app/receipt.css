@@ -59,8 +59,14 @@
   /* 只裁掉槽口以上 */
   clip-path: inset(0 -100vw -200vh -100vw);
 }
+/* 撕下以后纸条离开出纸口，不再裁掉槽口以上 */
+.printer-feed.is-torn {
+  clip-path: none;
+}
 .paper {
+  z-index: 2;
   transform-origin: 50% 0;
+  will-change: transform;
   touch-action: none;
   user-select: none;
   cursor: grab;

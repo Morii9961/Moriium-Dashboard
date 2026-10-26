@@ -188,7 +188,6 @@ function Ledger({ data, busy, onRefresh }: { data: TokensCiResponse; busy: boole
           day={day}
           days={days}
           rank={profile.rank}
-          username={profile.username}
           dateText={dateText(selected)}
           average={average}
           onClose={() => setPrinting(0)}
@@ -485,7 +484,6 @@ function ReceiptFor({
   day,
   days,
   rank,
-  username,
   dateText,
   average,
   onClose,
@@ -493,7 +491,6 @@ function ReceiptFor({
   day: TokensCiDay;
   days: TokensCiDay[];
   rank: number | null;
-  username: string;
   dateText: string;
   average: { tokens: number; cost: number };
   onClose: () => void;
@@ -501,16 +498,20 @@ function ReceiptFor({
   const { t, locale } = useI18n();
   const issued = useMemo(() => new Date(), []);
   const issuedText = new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
+    dateStyle: 'long',
     timeStyle: 'short',
     hourCycle: 'h23',
   }).format(issued);
   const streak = streakEnding(days, day.date);
+  // 小票上的日期不带星期，和出单时间同一种写法。
+  const billDate = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
+    new Date(`${day.date}T12:00:00Z`),
+  );
   const rowsFor = useCallback(
     (mode: ReceiptMode) => {
       const labels: ReceiptLabels = {
         title: t('receipt.title'),
-        brand: 'MORIIUM DASHBOARD',
+        tagline: t('receipt.tagline'),
         rank: t('receipt.rank'),
         date: t('receipt.date'),
         issued: t('receipt.issued'),
@@ -531,14 +532,15 @@ function ReceiptFor({
         total: t('receipt.total'),
         input: t('receipt.input'),
         output: t('receipt.output'),
-        source: `tokens.ci/u/${username}`,
-        keep: t('receipt.keep'),
+        cacheRate: t('receipt.cacheRate'),
+        footer: 'moriium.com/dashboard',
+        footerSub: t('receipt.footerSub'),
       };
       return receiptRows(
         {
           day,
           rank,
-          dateText,
+          dateText: billDate,
           issuedText,
           ratio: ratio(
             mode === 'cost' ? day.cost : day.tokens,
@@ -550,7 +552,7 @@ function ReceiptFor({
         locale,
       );
     },
-    [t, locale, day, rank, dateText, issuedText, streak, username, average],
+    [t, locale, day, rank, billDate, issuedText, streak, average],
   );
   return (
     <ReceiptDialog

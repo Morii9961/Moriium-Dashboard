@@ -30,6 +30,8 @@ export interface TokensCiDay {
   messages: number;
   input: number;
   output: number;
+  cacheRead: number;
+  cacheWrite: number;
   /** 按费用从高到低。 */
   clients: TokensCiClient[];
 }
