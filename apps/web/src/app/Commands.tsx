@@ -1,4 +1,3 @@
-import { MagnifyingGlass, X } from '@phosphor-icons/react';
 import {
   createContext,
   type KeyboardEvent,
@@ -31,20 +30,13 @@ interface Command {
 const CommandContext = createContext<(() => void) | null>(null);
 const normalized = (text: string) => text.normalize('NFKC').toLowerCase();
 
-export function CommandButton({
-  compact = false,
-  beforeOpen,
-}: {
-  compact?: boolean;
-  beforeOpen?: (() => void) | undefined;
-}) {
+export function CommandButton({ beforeOpen }: { beforeOpen?: (() => void) | undefined }) {
   const { t } = useI18n();
   const open = useContext(CommandContext);
   return (
     <button
       type="button"
-      className={compact ? 'icon-btn' : 'side-action'}
-      aria-label={t('commands.open')}
+      className="nav-link"
       aria-keyshortcuts="Control+k Meta+k"
       title={`${t('commands.open')} (Ctrl / ⌘ K)`}
       onClick={() => {
@@ -52,8 +44,7 @@ export function CommandButton({
         open?.();
       }}
     >
-      <MagnifyingGlass size={20} aria-hidden="true" />
-      {!compact ? <span className="rail-label">{t('commands.open')}</span> : null}
+      {t('commands.open')}
     </button>
   );
 }
@@ -173,13 +164,8 @@ export function CommandProvider({ children }: { children: ReactNode }) {
         <div className="command-inner">
           <header className="command-heading">
             <h2 id="command-title">{t('commands.open')}</h2>
-            <button
-              type="button"
-              className="icon-btn"
-              aria-label={t('nav.close')}
-              onClick={() => dialog.current?.close()}
-            >
-              <X size={18} aria-hidden="true" />
+            <button type="button" className="btn btn-quiet" onClick={() => dialog.current?.close()}>
+              {t('common.close')}
             </button>
           </header>
           <label htmlFor="command-search">{t('commands.search')}</label>

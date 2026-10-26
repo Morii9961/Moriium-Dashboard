@@ -1,28 +1,11 @@
 /**
- * 应用外壳：导航、服务横幅、页面区域（02 第 2、3 节）。
+ * 应用外壳：导航、服务横幅、页面区域（02 第 2、3 节；外观见 DESIGN.md 第 5、10 节）。
  *
- * 导航随宽度变化：
- * - ≥ 1280：左侧 224px。导航画成一条竖线上的几个站，当前页是雾蓝的站点，和阶段轴同一种语言。
- * - 1024 到 1279：收成 64px 图标栏，图标聚焦或悬停时显示文字。
- * - 768 到 1023：顶栏加抽屉（原生 <dialog>，自带焦点锁定和 Esc 关闭）。
- * - < 768：底部五个标签，顶栏放导入和设置。
+ * 灰阶尺的导航是一列竖排小字，没有图标、没有侧栏底色：
+ * - ≥ 820：固定在左边距，当前页前面一个 8px 方块。
+ * - < 820：左上角「目录」按钮，打开原生 <dialog> 抽屉（自带焦点锁定和 Esc 关闭）。
  */
-import {
-  CalendarCheck,
-  DownloadSimple,
-  Folders,
-  GearSix,
-  House,
-  type Icon,
-  List,
-  Monitor,
-  Moon,
-  Robot,
-  Sparkle,
-  Sun,
-  X,
-} from '@phosphor-icons/react';
-import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
@@ -35,33 +18,19 @@ import { useService } from './service.tsx';
 interface NavItem {
   to: string;
   label: MessageKey;
-  icon: Icon;
-  /** 子页面也算在这一站里，例如 /projects/x 属于「项目」。 */
+  /** 子页面也算在这一项里，例如 /projects/x 属于「项目」。 */
   match: (path: string) => boolean;
-  sub?: { to: string; label: MessageKey };
 }
 
 const NAV: NavItem[] = [
-  {
-    to: '/',
-    label: 'nav.overview',
-    icon: House,
-    match: (p) => p === '/' || p === '/inbox',
-    sub: { to: '/inbox', label: 'nav.inbox' },
-  },
-  { to: '/projects', label: 'nav.projects', icon: Folders, match: (p) => p.startsWith('/projects') },
-  {
-    to: '/agents',
-    label: 'nav.agents',
-    icon: Robot,
-    match: (p) => p.startsWith('/agents') || p === '/usage',
-    sub: { to: '/usage', label: 'usage.title' },
-  },
-  { to: '/studio', label: 'nav.studio', icon: Sparkle, match: (p) => p.startsWith('/studio') },
-  { to: '/planner', label: 'nav.planner', icon: CalendarCheck, match: (p) => p.startsWith('/planner') },
+  { to: '/', label: 'nav.overview', match: (p) => p === '/' },
+  { to: '/inbox', label: 'nav.inbox', match: (p) => p === '/inbox' },
+  { to: '/projects', label: 'nav.projects', match: (p) => p.startsWith('/projects') },
+  { to: '/agents', label: 'nav.agents', match: (p) => p.startsWith('/agents') },
+  { to: '/usage', label: 'usage.title', match: (p) => p === '/usage' },
+  { to: '/studio', label: 'nav.studio', match: (p) => p.startsWith('/studio') },
+  { to: '/planner', label: 'nav.planner', match: (p) => p.startsWith('/planner') },
 ];
-
-const THEME_ICON: Record<ThemePref, Icon> = { system: Monitor, light: Sun, dark: Moon };
 
 function Brand() {
   return (
@@ -72,44 +41,55 @@ function Brand() {
   );
 }
 
-/** 侧栏和抽屉里的线路导航。 */
-function RailNav({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
+function NavList({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
   const { t } = useI18n();
+  const { open: openImport } = useImport();
   return (
-    <nav className="rail" aria-label={t('nav.label')}>
-      <ol className="rail-list">
-        {NAV.map((item) => {
-          const active = item.match(path);
-          const exact = path === item.to;
-          const ItemIcon = item.icon;
-          return (
-            <li key={item.to} className={`rail-item${active ? ' is-active' : ''}`}>
+    <>
+      <nav className="nav" aria-label={t('nav.label')}>
+        <ul className="nav-list">
+          {NAV.map((item) => (
+            <li key={item.to}>
               <Link
                 to={item.to}
-                className="rail-link"
-                aria-current={exact ? 'page' : undefined}
+                className={`nav-link${item.match(path) ? ' is-active' : ''}`}
+                aria-current={path === item.to ? 'page' : undefined}
                 onClick={onNavigate}
               >
-                <span className="rail-dot" aria-hidden="true" />
-                <ItemIcon className="rail-icon" size={20} aria-hidden="true" />
-                <span className="rail-label">{t(item.label)}</span>
+                {t(item.label)}
               </Link>
-              {item.sub ? (
-                <Link
-                  to={item.sub.to}
-                  className="rail-sub"
-                  aria-current={path === item.sub.to ? 'page' : undefined}
-                  onClick={onNavigate}
-                >
-                  <span className="rail-subdot" aria-hidden="true" />
-                  <span className="rail-label">{t(item.sub.label)}</span>
-                </Link>
-              ) : null}
             </li>
-          );
-        })}
-      </ol>
-    </nav>
+          ))}
+        </ul>
+      </nav>
+      <ul className="nav-list nav-actions">
+        <li>
+          <CommandButton beforeOpen={onNavigate} />
+        </li>
+        <li>
+          <button
+            type="button"
+            className="nav-link"
+            onClick={() => {
+              onNavigate?.();
+              openImport();
+            }}
+          >
+            {t('nav.import')}
+          </button>
+        </li>
+        <li>
+          <Link
+            to="/settings"
+            className={`nav-link${path === '/settings' ? ' is-active' : ''}`}
+            aria-current={path === '/settings' ? 'page' : undefined}
+            onClick={onNavigate}
+          >
+            {t('nav.settings')}
+          </Link>
+        </li>
+      </ul>
+    </>
   );
 }
 
@@ -117,21 +97,17 @@ function ThemeButton() {
   const { t } = useI18n();
   const [pref, setPref] = useState<ThemePref>(readThemePref);
   const next = THEME_PREFS[(THEME_PREFS.indexOf(pref) + 1) % THEME_PREFS.length] ?? 'system';
-  const ThemeIcon = THEME_ICON[pref];
-  const onClick = (e: MouseEvent<HTMLButtonElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    setThemePref(next, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
-    setPref(next);
-  };
   return (
     <button
       type="button"
-      className="icon-btn"
-      onClick={onClick}
+      className="nav-link nav-small"
+      onClick={() => {
+        setThemePref(next);
+        setPref(next);
+      }}
       aria-label={`${t('theme.legend')}：${t(`theme.${pref}`)}`}
-      title={`${t('theme.legend')}：${t(`theme.${pref}`)}`}
     >
-      <ThemeIcon size={18} aria-hidden="true" />
+      {t(`theme.${pref}`)}
     </button>
   );
 }
@@ -152,32 +128,11 @@ function LocaleSelect() {
   );
 }
 
-function SideActions({ path, onNavigate }: { path: string; onNavigate?: () => void }) {
-  const { t } = useI18n();
-  const { open: openImport } = useImport();
+function SideFoot() {
   return (
-    <div className="side-actions">
-      <CommandButton beforeOpen={onNavigate} />
-      <button
-        type="button"
-        className="side-action side-action-primary"
-        onClick={() => {
-          onNavigate?.();
-          openImport();
-        }}
-      >
-        <DownloadSimple size={18} aria-hidden="true" />
-        <span className="rail-label">{t('nav.import')}</span>
-      </button>
-      <Link
-        to="/settings"
-        className="side-action"
-        aria-current={path === '/settings' ? 'page' : undefined}
-        onClick={onNavigate}
-      >
-        <GearSix size={18} aria-hidden="true" />
-        <span className="rail-label">{t('nav.settings')}</span>
-      </Link>
+    <div className="side-foot">
+      <ThemeButton />
+      <LocaleSelect />
     </div>
   );
 }
@@ -191,7 +146,7 @@ function ServiceBanner() {
       <p className="banner-text">
         <strong>{t('banner.down')}</strong> <span>{t('banner.how', { command: 'pnpm server' })}</span>
       </p>
-      <button type="button" className="btn btn-quiet" onClick={retry}>
+      <button type="button" className="btn" onClick={retry}>
         {t('banner.retry')}
       </button>
     </div>
@@ -200,7 +155,6 @@ function ServiceBanner() {
 
 export function Shell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
-  const { open: openImport } = useImport();
   const path = usePath();
   const drawer = useRef<HTMLDialogElement>(null);
   const first = useRef(true);
@@ -228,38 +182,21 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <aside className="sidebar">
         <Brand />
-        <RailNav path={path} />
-        <SideActions path={path} />
-        <div className="side-foot">
-          <ThemeButton />
-          <LocaleSelect />
-        </div>
+        <NavList path={path} />
+        <SideFoot />
       </aside>
 
       <header className="mobilebar">
         <button
           type="button"
-          className="icon-btn mobilebar-menu"
+          className="nav-toggle"
           aria-label={t('nav.menu')}
+          aria-haspopup="dialog"
           onClick={() => drawer.current?.showModal()}
         >
-          <List size={22} aria-hidden="true" />
+          {t('nav.contents')}
         </button>
         <Brand />
-        <div className="mobilebar-actions">
-          <CommandButton compact />
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label={t('nav.import')}
-            onClick={() => openImport()}
-          >
-            <DownloadSimple size={20} aria-hidden="true" />
-          </button>
-          <Link to="/settings" className="icon-btn" aria-label={t('nav.settings')}>
-            <GearSix size={20} aria-hidden="true" />
-          </Link>
-        </div>
       </header>
 
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: 点遮罩关闭只是鼠标的快捷方式；键盘用 Esc 关闭（原生 dialog）。 */}
@@ -275,43 +212,21 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="drawer-inner">
           <div className="drawer-head">
             <Brand />
-            <button type="button" className="icon-btn" aria-label={t('nav.close')} onClick={closeDrawer}>
-              <X size={20} aria-hidden="true" />
+            <button type="button" className="btn btn-quiet" onClick={closeDrawer}>
+              {t('nav.close')}
             </button>
           </div>
-          <RailNav path={path} onNavigate={closeDrawer} />
-          <SideActions path={path} onNavigate={closeDrawer} />
-          <div className="side-foot">
-            <ThemeButton />
-            <LocaleSelect />
-          </div>
+          <NavList path={path} onNavigate={closeDrawer} />
+          <SideFoot />
         </div>
       </dialog>
 
       <div className="main-col">
         <ServiceBanner />
-        <main id="main" className="main">
+        <main id="main" className="app-main">
           {children}
         </main>
       </div>
-
-      <nav className="tabbar" aria-label={t('nav.label')}>
-        {NAV.map((item) => {
-          const ItemIcon = item.icon;
-          const active = item.match(path);
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`tab${active ? ' is-active' : ''}`}
-              aria-current={path === item.to ? 'page' : undefined}
-            >
-              <ItemIcon size={22} weight={active ? 'fill' : 'regular'} aria-hidden="true" />
-              <span>{t(item.label)}</span>
-            </Link>
-          );
-        })}
-      </nav>
     </div>
   );
 }

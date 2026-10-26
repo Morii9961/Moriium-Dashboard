@@ -2,7 +2,7 @@
  * 页面。P2.3 先把骨架和空状态做对（02 第 12 节）；P3 起项目登记表从服务端读取，
  * 快照导入后概览和项目页显示真实状态。
  */
-import { type ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import { Segmented } from '../components/Segmented.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
 import { LOCALE_NAMES, LOCALES, type Locale } from '../i18n/locale.ts';
@@ -29,9 +29,8 @@ export function SettingsPage() {
   const { state } = useService();
   const { account, logout } = useAuth();
   const [pref, setPref] = useState<ThemePref>(readThemePref);
-  const onTheme = (p: ThemePref, e: ChangeEvent<HTMLInputElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    setThemePref(p, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  const onTheme = (p: ThemePref) => {
+    setThemePref(p);
     setPref(p);
   };
   const health = state.kind === 'up' ? state.health : null;

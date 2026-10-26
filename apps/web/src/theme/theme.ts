@@ -1,5 +1,5 @@
 /**
- * 主题：跟随系统、浅色「雾」、深色「夜」。
+ * 主题：跟随系统、浅色「正片」、深色「负片」。
  *
  * 选择记在 localStorage（只是这台浏览器的偏好；以后可以改存服务端设置）。读写都包 try/catch：
  * 隐私窗口或禁用存储时照样能用，只是不记住。public/theme-init.js 在首帧前按同样的规则设置
@@ -46,39 +46,15 @@ function applyThemePref(pref: ThemePref): void {
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
- * 切换主题。实际颜色变了、浏览器支持 View Transitions、且没有要求减少动画时，
- * 新主题从按下的按钮处以圆形揭开（520ms）；否则直接切换。
+ * 切换主题：正片与负片之间交叉淡入（DESIGN.md 第 7 节，时长见 base.css 的 ::view-transition 规则）。
+ * 颜色没变、浏览器不支持 View Transitions、或要求减少动画时直接换。
  */
-export function setThemePref(pref: ThemePref, origin?: { x: number; y: number }): void {
+export function setThemePref(pref: ThemePref): void {
   const before = resolveTheme(readThemePref());
   writeThemePref(pref);
-  const after = resolveTheme(pref);
-  if (before === after || !origin || reducedMotion() || !('startViewTransition' in document)) {
+  if (before === resolveTheme(pref) || reducedMotion() || !('startViewTransition' in document)) {
     applyThemePref(pref);
     return;
   }
-  const transition = document.startViewTransition(() => applyThemePref(pref));
-  const radius = Math.hypot(
-    Math.max(origin.x, window.innerWidth - origin.x),
-    Math.max(origin.y, window.innerHeight - origin.y),
-  );
-  transition.ready
-    .then(() => {
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${origin.x}px ${origin.y}px)`,
-            `circle(${radius}px at ${origin.x}px ${origin.y}px)`,
-          ],
-        },
-        {
-          duration: 520,
-          easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-          pseudoElement: '::view-transition-new(root)',
-        },
-      );
-    })
-    .catch(() => {
-      // 过渡被跳过时主题已经切好，不需要处理。
-    });
+  document.startViewTransition(() => applyThemePref(pref));
 }

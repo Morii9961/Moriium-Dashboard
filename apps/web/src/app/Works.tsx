@@ -485,9 +485,13 @@ export function WorksPanel({ projectId }: { projectId?: string }) {
 export function StudioPage() {
   const { t } = useI18n();
   return (
-    <>
+    <div className="page">
       <PageHeader title={t('nav.studio')} />
-      <WorksPanel />
-    </>
+      <div className="g">
+        <div className="main wide">
+          <WorksPanel />
+        </div>
+      </div>
+    </div>
   );
 }

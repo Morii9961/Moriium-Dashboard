@@ -6,14 +6,18 @@ export function PlannerPage() {
   const { t } = useI18n();
   const { data, error } = useToday();
   return (
-    <>
+    <div className="page">
       <PageHeader title={t('nav.planner')} />
       {data ? (
         <TodayPanel key={data.date} day={data} />
       ) : (
-        <p>{t(error ? 'projects.loadFailed' : 'common.loading')}</p>
+        <p className="loading-line">{t(error ? 'projects.loadFailed' : 'common.loading')}</p>
       )}
-      <TasksPanel />
-    </>
+      <div className="g planner-tasks">
+        <div className="main wide">
+          <TasksPanel />
+        </div>
+      </div>
+    </div>
   );
 }

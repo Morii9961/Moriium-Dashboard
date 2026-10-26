@@ -130,7 +130,10 @@ export function TodayPanel({ day: reportedDay }: { day: FocusDay }) {
   return (
     <section className="today-panel" aria-labelledby="today-title">
       <h2 id="today-title">
-        {t('today.title')} · <time dateTime={day.date}>{calendarDate(day.date)}</time> (UTC+8)
+        {t('today.title')}{' '}
+        <span className="h-meta">
+          <time dateTime={day.date}>{calendarDate(day.date)}</time> (UTC+8)
+        </span>
       </h2>
       <Segmented
         name="energy"

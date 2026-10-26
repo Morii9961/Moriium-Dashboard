@@ -5,6 +5,8 @@ import '../components/components.css';
 import './app.css';
 import './projects.css';
 import './personal.css';
+import './zone.css';
+import './motion.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nProvider } from '../i18n/i18n.tsx';

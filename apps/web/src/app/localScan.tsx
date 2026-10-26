@@ -2,7 +2,6 @@
  * 设置 → 本机仓库（P7 · L2）。登记几个目录，导入时在这些目录和它们的下一层子目录里
  * 找 docs/status/project-status.json。只在本机实例出现：开启登录的实例没有这个接口。
  */
-import { X } from '@phosphor-icons/react';
 import { type FormEvent, useState } from 'react';
 import { useI18n } from '../i18n/i18n.tsx';
 import type { MessageKey } from '../i18n/messages/zh-Hans.ts';
@@ -73,7 +72,7 @@ export function LocalRepositories() {
                 aria-label={t('localScan.remove', { path: root })}
                 onClick={() => void save(roots.filter((r) => r !== root))}
               >
-                <X size={16} aria-hidden="true" />
+                <span aria-hidden="true">×</span>
               </button>
             </li>
           ))}

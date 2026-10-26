@@ -1,268 +1,215 @@
+/**
+ * 概览（DESIGN.md 第 5、6 节）：单栏长卷。首屏只有日期、待确认的主数字和横贯全宽的灰阶尺；
+ * 往下依次是今天、需要你决定、项目、最近交付与最近报告。
+ * 精力为「休息」时只留今天；为「低」时先列有截止日期的待决定，其余收起（P5 决定，不变）。
+ */
 import { type ReactNode, useMemo } from 'react';
-import { figureOf, ProjectStrip, type StripItem } from '../components/ProjectStrip.tsx';
-import { type MapLine, TransitMap } from '../components/TransitMap.tsx';
+import { inkStyle, type RulerItem, ZoneRuler, zoneOf } from '../components/Zone.tsx';
 import { useI18n } from '../i18n/i18n.tsx';
-import { freshness } from '../progress.ts';
 import { RecentDeliveries } from './Deliveries.tsx';
 import { useResource } from './data.tsx';
-import { useImport } from './ImportDialog.tsx';
-import { ItemReview } from './ItemReview.tsx';
-import { ManualSummary } from './ManualProject.tsx';
-import { projectPath, ReportAge } from './ProjectList.tsx';
+import { projectPath } from './ProjectList.tsx';
 import { Link } from './router.tsx';
 import { TodayPanel, useToday } from './Today.tsx';
-import type { OverviewData, ProjectWithCurrent } from './types.ts';
+import type { OverviewData } from './types.ts';
 import { localizedName } from './types.ts';
 import { PageHeader, SnapshotSteps } from './ui.tsx';
+import {
+  BandHead,
+  byRuler,
+  DecisionBands,
+  LabeledRow,
+  ProjectRows,
+  pendingByProject,
+} from './ZoneSections.tsx';
 
-function projectLabel(data: OverviewData, id: string, locale: string, fallback: string) {
-  const p = data.projects.find((p) => p.id === id);
-  return p ? localizedName(p, locale) : fallback;
-}
-
-function itemOf(p: ProjectWithCurrent, locale: string): StripItem | null {
-  const c = p.current;
-  if (!c) return null;
-  return {
-    anchor: `p-${p.id.replace(/[^a-z0-9]+/g, '-')}`,
-    name: localizedName(p, locale),
-    snapshot: c.snapshot,
-    utcMs: c.utcMs,
-    offsetMinutes: c.offsetMinutes,
-    agent: c.reporter.agent,
-    agentInferred: c.reporter.source === 'branch',
-    staleAfterDays: p.freshnessDays,
-    projectPaused: p.attention === 'paused',
-    acceptances: p.acceptances,
-    coreMilestones: p.coreMilestones,
-    href: projectPath(p.id),
-    pendingDecisions: p.reviewItems.filter((i) => i.kind === 'needs_morii' && i.pending && !i.gone).length,
-  };
-}
-
-export function PendingList({ data, limit }: { data: OverviewData; limit?: number }) {
-  const { t, locale } = useI18n();
-  const entries = limit ? data.pending.slice(0, limit) : data.pending;
-  if (!entries.length) return <p>{t('inbox.empty')}</p>;
-  return (
-    <ol className="overview-pending">
-      {entries.map((i) => (
-        <li key={`${i.projectId}:${i.kind}:${i.key}`}>
-          <Link to={projectPath(i.projectId)} className="pending-project">
-            {projectLabel(data, i.projectId, locale, i.projectName)}
-          </Link>
-          {i.kind === 'acceptance' ? (
-            <Link to={`${projectPath(i.projectId)}#milestone-${encodeURIComponent(i.milestoneId ?? '')}`}>
-              {t('detail.acceptMilestone', { title: i.title })}
-            </Link>
-          ) : i.item ? (
-            <ul className="pending-decision">
-              <ItemReview item={i.item} projectId={i.projectId} snapshotId={i.snapshotId} />
-            </ul>
-          ) : null}
-        </li>
-      ))}
-    </ol>
-  );
+function isoWeek(d: Date): number {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t.getTime() - y0.getTime()) / 86_400_000 + 1) / 7);
 }
 
 export function InboxPage() {
   const { t } = useI18n();
+  const now = useMemo(() => new Date(), []);
   const { data, error } = useResource<OverviewData>('/api/overview');
+  if (!data)
+    return (
+      <>
+        <PageHeader title={t('nav.inbox')} />
+        <p className="loading-line">{t(error ? 'projects.loadFailed' : 'common.loading')}</p>
+      </>
+    );
   return (
-    <>
-      <PageHeader title={t('nav.inbox')} />
-      {data ? <PendingList data={data} /> : <p>{t(error ? 'projects.loadFailed' : 'common.loading')}</p>}
-    </>
+    <div className="page">
+      <DecisionBands data={data} now={now} level={1} />
+    </div>
+  );
+}
+
+function FirstScreen({ data, now, rest }: { data: OverviewData; now: Date; rest: boolean }) {
+  const { t, locale, fullDate, relative } = useI18n();
+  const by = pendingByProject(data);
+  const decisions = data.pending.filter((x) => x.kind === 'decision').length;
+  const tracked = data.projects.filter((p) => p.attention === 'active' || p.attention === 'waiting');
+  const items: RulerItem[] = [];
+  const off: string[] = [];
+  for (const p of byRuler(tracked)) {
+    const c = p.current;
+    const z = zoneOf(c?.snapshot.stage);
+    const name = localizedName(p, locale);
+    if (!c || z == null) {
+      if (p.tracking === 'protocol') off.push(name);
+      continue;
+    }
+    const age = relative(c.utcMs, now);
+    items.push({
+      key: p.id,
+      zone: z,
+      name,
+      href: projectPath(p.id),
+      meta: age,
+      label: t('zone.hanger', {
+        name,
+        stage: t(`stage.${c.snapshot.stage}`),
+        age,
+        pending: by.get(p.id)?.length ?? 0,
+      }),
+      ink: inkStyle(c.utcMs, now),
+    });
+  }
+  return (
+    <section className="first" aria-labelledby="h-first">
+      <p className="dateline">
+        <time dateTime={now.toISOString()}>{fullDate(now)}</time> · {t('zone.week', { n: isoWeek(now) })}
+      </p>
+      {rest ? (
+        <h1 className="ptitle page-title" id="h-first" tabIndex={-1}>
+          {t('nav.overview')}
+        </h1>
+      ) : (
+        <h1 className="hero page-title" id="h-first" tabIndex={-1}>
+          <span className="big">{data.pending.length}</span>
+          <span className="unit">{t('hero.unit')}</span>
+          <span className="split">
+            {t('hero.split', { decisions, acceptances: data.pending.length - decisions })}
+          </span>
+        </h1>
+      )}
+      {!rest && items.length ? (
+        <ZoneRuler
+          items={items}
+          label={t('zone.ruler')}
+          off={off.length ? t('zone.offRuler', { names: off.join('、') }) : null}
+        />
+      ) : null}
+    </section>
   );
 }
 
 export function OverviewPage() {
-  const { open } = useImport();
-  const { t, locale, fullDate, relative } = useI18n();
+  const { t, locale, relative } = useI18n();
   const now = useMemo(() => new Date(), []);
   const { data, error } = useResource<OverviewData>('/api/overview');
   const today = useToday();
-  const projects = [
-    ...(data?.projects.filter((p) => p.attention === 'active' || p.attention === 'waiting') ?? []),
-  ].sort(
-    (a, b) =>
-      ['focus', 'normal', 'later'].indexOf(a.priority) - ['focus', 'normal', 'later'].indexOf(b.priority) ||
-      Number(a.attention === 'waiting') - Number(b.attention === 'waiting') ||
-      a.sortOrder - b.sortOrder,
-  );
-  const items = projects.map((p) => itemOf(p, locale)).filter((i): i is StripItem => !!i);
-  const lines: MapLine[] = projects
-    .filter((p) => p.tracking === 'protocol')
-    .map((p) => {
-      const item = itemOf(p, locale);
-      if (!item)
-        return {
-          href: projectPath(p.id),
-          name: localizedName(p, locale),
-          stage: null,
-          progress: '',
-          progressLabel: '',
-          pending: 0,
-        };
-      const f = figureOf(item.snapshot, t, item.acceptances, item.pendingDecisions);
-      return {
-        href: `#${item.anchor}`,
-        name: localizedName(p, locale),
-        stage: item.snapshot.stage,
-        progress: f.text,
-        progressLabel: f.label,
-        pending: f.p.decisions + f.p.awaitingAcceptance,
-      };
-    });
-  const ageRank = (p: ProjectWithCurrent) =>
-    !p.current
-      ? 3
-      : { stale: 3, aging: 2, fresh: 1, not_counted: 0 }[
-          freshness(p.current.utcMs, now, p.current.snapshot.stage, {
-            staleAfterDays: p.freshnessDays,
-            projectPaused: p.attention === 'paused',
-          })
-        ];
+  const energy = today.data?.energy ?? null;
+
+  if (!data)
+    return (
+      <>
+        <PageHeader title={t('nav.overview')} />
+        <p className="loading-line">{t(error ? 'projects.loadFailed' : 'common.loading')}</p>
+      </>
+    );
+
+  const tracked = data.projects.filter((p) => p.attention === 'active' || p.attention === 'waiting');
+  const paused = data.projects.filter((p) => p.attention === 'paused');
+  const empty = !tracked.some((p) => p.current) && !tracked.some((p) => p.tracking === 'manual');
+  const urgent = { ...data, pending: data.pending.filter((i) => i.item?.state?.dueDate) };
+
   return (
     <>
-      <PageHeader
-        meta={<time dateTime={now.toISOString()}>{fullDate(now)}</time>}
-        title={
-          today.data?.energy === 'rest' ? (
-            t('nav.overview')
-          ) : data ? (
-            items.length || projects.some((p) => p.tracking === 'manual') ? (
-              <>
-                <span>{t('hero.projects', { projects: projects.length })}</span>
-                <span className="title-second">{t('hero.pending', { pending: data.pending.length })}</span>
-              </>
-            ) : (
-              t('overview.emptyTitle', { count: projects.length })
-            )
-          ) : (
-            t('nav.overview')
-          )
-        }
-      />
-      {!data ? (
-        <p>{t(error ? 'projects.loadFailed' : 'common.loading')}</p>
-      ) : (
-        <>
+      <FirstScreen data={data} now={now} rest={energy === 'rest'} />
+      <div className="page">
+        <section className="block" id="today" aria-labelledby="today-title">
           {today.data ? (
             <TodayPanel key={today.data.date} day={today.data} />
           ) : (
-            <p>{t(today.error ? 'projects.loadFailed' : 'common.loading')}</p>
+            <p className="loading-line">{t(today.error ? 'projects.loadFailed' : 'common.loading')}</p>
           )}
-          {today.data?.energy === 'low' ? (
-            <section className="overview-section">
-              <h2>{t('today.urgent')}</h2>
-              <PendingList data={{ ...data, pending: data.pending.filter((i) => i.item?.state?.dueDate) }} />
-            </section>
-          ) : null}
-          <EnergyContent energy={today.data?.energy ?? null}>
-            <TransitMap lines={lines} />
-            {items.length === 0 && !projects.some((p) => p.tracking === 'manual') ? <SnapshotSteps /> : null}
-            <div className="overview-layout">
-              <div>
-                <section className="overview-section">
-                  <div className="section-heading">
-                    <h2>
-                      {t('nav.inbox')} · {data.pending.length}
-                    </h2>
-                    <Link to="/inbox">{t('overview.all')}</Link>
-                  </div>
-                  <PendingList data={data} limit={5} />
-                </section>
-                <section className="overview-section">
-                  <div className="section-heading">
-                    <h2>{t('nav.projects')}</h2>
-                    <Link to="/projects">{t('overview.all')}</Link>
-                  </div>
-                  <div className="strips">
-                    {items.map((item) => (
-                      <ProjectStrip key={item.anchor} item={item} now={now} />
-                    ))}
-                  </div>
-                  {projects
-                    .filter((p) => p.tracking === 'manual')
-                    .map((p) => (
-                      <article className="manual-overview" key={p.id}>
-                        <h3>
-                          <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
-                        </h3>
-                        <ManualSummary project={p} />
-                      </article>
-                    ))}
-                  {projects
-                    .filter((p) => !p.current && p.tracking === 'protocol')
-                    .map((p) => (
-                      <p key={p.id}>
-                        <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link> · {t('map.noSnapshot')}
-                      </p>
-                    ))}
-                  {data.projects.some((p) => p.attention === 'paused') ? (
-                    <details className="resting-projects">
-                      <summary>
-                        {t('overview.paused', {
-                          n: data.projects.filter((p) => p.attention === 'paused').length,
-                        })}
-                      </summary>
-                      {data.projects
-                        .filter((p) => p.attention === 'paused')
-                        .map((p) => (
-                          <p key={p.id}>
-                            <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
-                          </p>
-                        ))}
-                    </details>
-                  ) : null}
-                </section>
-                <RecentDeliveries data={data} />
+        </section>
+        {energy === 'low' ? (
+          <section className="block" aria-labelledby="h-urgent">
+            <BandHead
+              title={t('today.urgent')}
+              level={2}
+              id="h-urgent"
+              numbers={[[t('more.pending'), urgent.pending.length]]}
+            />
+            {urgent.pending.length ? (
+              <DecisionBands data={urgent} now={now} level={2} />
+            ) : (
+              <div className="g">
+                <p className="main empty-line">{t('inbox.empty')}</p>
               </div>
-              <aside className="overview-side">
-                <section className="overview-section">
-                  <h2>{t('overview.freshness')}</h2>
-                  <ul className="age-list">
-                    {[...projects]
-                      .filter((p) => p.tracking === 'protocol')
-                      .sort((a, b) => ageRank(b) - ageRank(a))
-                      .map((p) => (
-                        <li key={p.id}>
-                          <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
-                          <ReportAge project={p} now={now} />
-                          <button type="button" className="btn" onClick={() => open(p.id)}>
-                            {t('overview.update')}
-                          </button>
-                        </li>
-                      ))}
-                  </ul>
-                </section>
-                <section className="overview-section">
-                  <h2>{t('overview.reports')}</h2>
-                  <ul className="age-list">
-                    {data.latestReports.map((r) => (
-                      <li key={r.agent ?? 'unknown'}>
-                        <strong>{t(r.agent ? `agent.${r.agent}` : 'agent.unknown')}</strong>
-                        <Link to={projectPath(r.projectId)}>
-                          {projectLabel(data, r.projectId, locale, r.projectName)}
-                        </Link>
-                        <span>
-                          {t('more.snapshot')} · {relative(r.utcMs, now)}
-                        </span>
-                        <time dateTime={r.importedAt}>
-                          {t('detail.imported')} · {relative(Date.parse(r.importedAt), now)}
+            )}
+          </section>
+        ) : null}
+        <EnergyContent energy={energy}>
+          {empty ? <SnapshotSteps /> : null}
+          <DecisionBands data={data} now={now} level={2} limit={5} />
+          <ProjectRows data={data} now={now} level={2} projects={tracked} />
+          {paused.length ? (
+            <details className="g resting-projects">
+              <summary className="main">{t('overview.paused', { n: paused.length })}</summary>
+              <ul className="main">
+                {paused.map((p) => (
+                  <li key={p.id}>
+                    <Link to={projectPath(p.id)}>{localizedName(p, locale)}</Link>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+          <section className="block" aria-labelledby="h-recent">
+            <BandHead
+              title={t('zone.recent')}
+              level={2}
+              id="h-recent"
+              numbers={[
+                [t('zone.deliveries'), data.recentDelivery.length + data.recentWorks.length],
+                [t('zone.reports'), data.latestReports.length],
+              ]}
+            />
+            <LabeledRow label={t('overview.delivery')}>
+              <RecentDeliveries data={data} />
+            </LabeledRow>
+            <LabeledRow label={t('overview.reports')}>
+              <ul className="reports">
+                {data.latestReports.map((r) => {
+                  const p = data.projects.find((x) => x.id === r.projectId);
+                  return (
+                    <li key={r.agent ?? 'unknown'}>
+                      <span className="meta">{t(r.agent ? `agent.${r.agent}` : 'agent.unknown')}</span>
+                      <Link to={projectPath(r.projectId)} style={inkStyle(r.utcMs, now)}>
+                        {p ? localizedName(p, locale) : r.projectName}
+                      </Link>
+                      <span className="when">
+                        {t('more.snapshot')} {relative(r.utcMs, now)} · {t('detail.imported')}{' '}
+                        <time dateTime={r.importedAt} title={t('detail.notOnline')}>
+                          {relative(Date.parse(r.importedAt), now)}
                         </time>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="source-note">{t('detail.notOnline')}</p>
-                </section>
-              </aside>
-            </div>
-          </EnergyContent>
-        </>
-      )}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </LabeledRow>
+          </section>
+        </EnergyContent>
+      </div>
     </>
   );
 }
