@@ -9,7 +9,7 @@ Claude 的周额度随时可能用完，这份文档每做完一个阶段就更�
 | 分支 | 最后推送的提交 | 状态 |
 | --- | --- | --- |
 | `redesign/final` | `07d6f4c` | [PR #41](https://github.com/Morii9961/Moriium-Dashboard/pull/41) 开放，基准 `main`，开着 Auto-fix，**未合并**。已在 `3c46c93` 合入当时最新的 `main`（含 #42、#43）。 |
-| `feat/usage-tokens-ci` | 见 `git log -1 origin/feat/usage-tokens-ci` | 从 `redesign/final` 的 `07d6f4c` 切出，**还没开 PR**。Morii 还没决定是现在开（基准 `main`）还是等 #41 合并后再开。 |
+| `feat/usage-tokens-ci` | 见 `git log -1 origin/feat/usage-tokens-ci` | 从 `redesign/final` 的 `07d6f4c` 切出，**故意没开 PR**：Morii（2026-10-26）决定等 #41 合并后，再以 `main` 为基准开。到时先把最新 `main` 合进这条分支（merge，不 rebase），确认冲突与检查，再开 PR。 |
 
 Claude 的工作目录是本机上的一个 git worktree（目录名 `moriium-dashboard-redesign-16cd0f`），目前停在 `feat/usage-tokens-ci`。#41 再有 Auto-fix 事件时，要先切回 `redesign/final` 再改。
 
@@ -34,7 +34,7 @@ Claude 的工作目录是本机上的一个 git worktree（目录名 `moriium-da
 ## 未完成与待定
 
 - **Morii 的产品验收**：灰阶尺整体、动效、算力账本与账单都还没有在真实浏览器里验收。
-- **PR**：`feat/usage-tokens-ci` 要不要现在开 PR 由 Morii 决定。#41 的合并也由 Morii 决定（Claude 的自动审批不允许合并自己的 PR）。
+- **PR**：`feat/usage-tokens-ci` 等 #41 合并后再开（Morii 已定，见上表）。#41 的合并由 Morii 决定（Claude 的自动审批不允许合并自己的 PR）。
 - **数据源风险**：`tokens.ci/api/users/<name>` 是 tokens.ci 文档里提到、第三方客户端在用的公开接口，但没有正式版本承诺；字段变了时 `normalizeProfile` 返回 `invalid_response`，页面会显示错误并保留上次缓存。
 - **已知问题**：页面加载后焦点还在 body 时，第一次按 Tab 进正文而不是「跳到正文」（旧版同样）；`docs/status/` 快照没有更新到这些分支的进展。
 - **图标**是示意画法，不是官方标志文件。
