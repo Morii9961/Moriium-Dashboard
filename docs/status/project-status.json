@@ -2,53 +2,26 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-10-20T15:09:08+08:00",
+  "snapshot_at": "2026-11-07T13:26:23+08:00",
   "source": {
-    "branch": "codex/deploy-preflight",
-    "commit_sha": "c15b22fef66d9002f5adeb5ba5cdf1f6dacb4fb9",
+    "branch": "main",
+    "commit_sha": "9ccb07b48375c6cf583030388597960f626389c0",
     "tests_rerun": false,
     "basis": [
-      "docs/planning/06-mvp-and-roadmap.md 的 P5 验收与 P6 工程准备边界",
-      "docs/design-decisions.md",
-      "docs/handoff-2026-10-15-p5-extras.md",
-      "docs/handoff-2026-10-17-claude-p6.md",
-      "docs/verification/p5-paste-json.md",
-      "docs/verification/p5-command-palette.md",
-      "docs/verification/p6-1a-archive.md",
-      "docs/verification/p6-1b-restore.md",
-      "docs/verification/p6-2a-auth-core.md",
-      "docs/verification/p6-2b-auth-setup.md",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/30",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/31",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/32",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/33",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/34",
-      "PR #31–#34 于 2026-10-17 经 Morii 批准按依赖顺序普通合并入 main（2b0c4df、29b23e9、405e3f5、bd4d9ed）；合并前各 head 双平台 CI 通过，main 树与 #34 已测 head a3da2d3 一致",
-      "开发阶段 pnpm verify：377 项测试 / 21 个文件、类型检查及当时公开树审计通过；一次 Windows 原生 TTY 虚构账户创建与登录通过",
-      "2026-10-17 Morii 决定暂且搁置实际使用：P4 产品验收与 P5 一周真实使用推迟，不代填、不打 v0.1.0",
-      "docs/verification/p6-2c-http-auth.md",
-      "docs/verification/p6-2d-login-ui.md",
-      "docs/verification/p6-3-deploy-templates.md",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/35",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/36",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/37",
-      "https://github.com/Morii9961/Moriium-Dashboard/pull/38",
-      "P6.2c / P6.2d 分支本地 pnpm verify：387 项测试 / 22 个文件、类型检查、公开树审计通过；登录页在临时虚构实例实测深浅色、375px、中日英与键盘流程；#35–#37 双平台 CI 通过",
-      "部署模板只在仓库内，没有连接任何服务器；访问方式、口令设置、数据迁移和 VPS 变更仍待 Morii",
-      "docs/verification/p7-local-scan.md",
-      "2026-10-17 Morii 临时放开权限后，PR #35–#39 按顺序普通合并入 main（c9f684e、fabd679、f1e3591、01db9ca、2f0b072）；合并前各 head 双平台 CI 通过，main 树与 #39 已测 head f5225e5 一致",
-      "docs/verification/p6-deploy-preflight.md",
-      "2026-10-20 核对远端 main 为 d0fb1c9；PR #41 灰阶尺设计仍开启，尚未合并",
-      "本分支部署前修复：pnpm verify 392 项测试通过；11 个虚构发布场景通过；不代表真实 Linux 服务或 VPS 验收",
-      "Morii 2026-10-20 已选公网子域名、HTTPS 加登录；主机与地址仅在本机忽略目录，本次部署和迁移仍待明确授权"
+      "2026-11-07 生成快照：只读 Git、GitHub PR 和仓库文档；不重跑测试、构建或真实验收",
+      "main@9ccb07b（PR #45 合并提交），与 origin/main 一致；10-26 之后主线无新提交，GitHub 无开启 PR",
+      "docs/handoff-2026-10-26-claude-redesign-ledger.md",
+      "docs/operations/deploy-checklist.md",
+      "2026-11-07 本机用开发服务（Vite 5173 + 正式数据目录的服务端 5180）预览灰阶尺；正式实例的 apps/web/dist 尚未用 main 重新构建",
+      "2026-11-07 导入批次 3：六个项目的新快照，并登记 enouia.wechat"
     ]
   },
   "reporter": {
-    "agent": "codex",
-    "note": "部署前核查与修复已提交，公网方案已选定；待 PR 审阅及正式部署授权"
+    "agent": "claude",
+    "note": "Claude Opus 5.5"
   },
-  "stage": "development",
-  "summary": "P6 工程和 P7 · L2 已在 main；灰阶尺设计 PR #41 仍未合并。本分支修复首次构建与激活顺序、启动失败恢复及迁移保护。Morii 已选公网子域名、HTTPS 加登录；正式部署和迁移待授权，P4/P5 产品验收仍搁置。",
+  "stage": "acceptance",
+  "summary": "灰阶尺、部署修复、tokens.ci 算力日历和每日小票都已在主线，10-26 后无新提交，也没有开启的 PR。剩下的是 Morii 的新版体验和账单验收、P4/P5 真实使用，以及正式实例重新构建、VPS 部署与 P6.5。",
   "overall_progress": null,
   "milestones": [
     {
@@ -79,7 +52,7 @@
         "https://github.com/Morii9961/Moriium-Dashboard/pull/10",
         "docs/design-decisions.md"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "not_required"
     },
     {
       "id": "p3-import-history",
@@ -152,35 +125,101 @@
         "docs/operations/deploy-checklist.md"
       ],
       "human_acceptance": "pending"
+    },
+    {
+      "id": "p7-local-scan",
+      "title": "P7 · L2 本机仓库扫描（既有工程成果）",
+      "status": "done",
+      "evidence_level": "existing_test",
+      "evidence_refs": ["docs/verification/p7-local-scan.md"],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "grey-ruler-redesign",
+      "title": "灰阶尺整站、动效与文字导航（#41 已合并）",
+      "status": "done",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/blob/9ccb07b48375c6cf583030388597960f626389c0/docs/handoff-2026-10-26-claude-redesign-ledger.md"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "deploy-preflight",
+      "title": "首次部署顺序、失败回退与迁移保护（#42 已合并）",
+      "status": "done",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/42",
+        "https://github.com/Morii9961/Moriium-Dashboard/blob/9ccb07b48375c6cf583030388597960f626389c0/docs/verification/pr42-release-review-2026-10-23.md"
+      ],
+      "human_acceptance": "not_required"
+    },
+    {
+      "id": "usage-ledger",
+      "title": "历史手动算力账本（#43）：后端/数据保留，前端已由 #44 替换",
+      "status": "done",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/blob/9ccb07b48375c6cf583030388597960f626389c0/docs/operations/usage-ledger.md",
+        "https://github.com/Morii9961/Moriium-Dashboard/pull/43"
+      ],
+      "human_acceptance": "not_required"
+    },
+    {
+      "id": "tokens_ci_ledger",
+      "title": "tokens.ci 算力日历与每日小票（#44 已合并）",
+      "status": "done",
+      "evidence_refs": [
+        "https://github.com/Morii9961/Moriium-Dashboard/blob/9ccb07b48375c6cf583030388597960f626389c0/docs/handoff-2026-10-26-claude-redesign-ledger.md"
+      ],
+      "evidence_level": "existing_test",
+      "human_acceptance": "pending"
     }
   ],
-  "blockers": [],
+  "blockers": [
+    {
+      "id": "release-acceptance-pending",
+      "title": "产品和生产验收仍未闭环",
+      "impact": "已无未合并 PR；新版界面、账单与 P4/P5 真实使用仍待 Morii 验收，VPS 部署与 P6.5 不能用本机运行代替。"
+    }
+  ],
   "next_actions": [
     {
-      "id": "review-pending-prs",
-      "title": "审阅灰阶尺设计 PR #41 与部署前修复，确定待部署的合并提交",
+      "id": "rebuild-local-instance",
+      "title": "用 main 重新构建正式本机实例",
       "priority": "P1",
-      "result": "分别核实对应 head 的 CI 和人工审阅结果；经 Morii 明确批准后合并"
+      "result": "正式实例换上灰阶尺和 tokens.ci 账本，在算力账本页填一次 tokens.ci 用户名。"
+    },
+    {
+      "id": "product-acceptance",
+      "title": "验收本机新版与算力小票",
+      "priority": "P1",
+      "result": "记录灰阶尺、动效、账本及 P4/P5 真实使用结果。"
     },
     {
       "id": "p6-deploy",
-      "title": "按已选公网 HTTPS 加登录方案完成本次 VPS 部署与 P6.5 验收",
+      "title": "按已选公网方案安排部署与 P6.5",
       "priority": "P1",
-      "result": "授权后先现场核对 VPS 和 DNS；只构建、恢复数据、本人设口令、再激活；核对后决定唯一数据源切换"
+      "result": "另行授权后迁移、本人设置口令、核对唯一数据源与恢复演练。"
     }
   ],
   "needs_morii": [
     {
-      "id": "p6-deploy-authorization",
-      "decision": "是否授权在 VPS 上部署、迁移数据并由你本人设置口令？"
-    },
-    {
       "id": "p4-acceptance",
-      "decision": "P4 产品验收：已暂且搁置，恢复使用后由 Morii 记录。"
+      "decision": "灰阶尺、动效与 P4 产品体验何时验收？"
     },
     {
       "id": "p5-week-trial",
-      "decision": "P5 一周真实使用与 MVP 验收：已暂且搁置，恢复后记录。"
+      "decision": "何时开始 P5 一周真实使用及 MVP 验收？"
+    },
+    {
+      "id": "usage-acceptance",
+      "decision": "tokens.ci 算力日历和每日小票的产品验收结论是什么？"
+    },
+    {
+      "id": "p6-deploy-authorization",
+      "decision": "何时授权 VPS 部署、真实数据迁移和本人设置口令？"
     }
   ]
 }
