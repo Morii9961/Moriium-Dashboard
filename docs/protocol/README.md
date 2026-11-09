@@ -268,6 +268,7 @@ Schema 是给生产者的严格标准。Dashboard 接收时更宽一点：能安
 | `enouia.runtime` | Enouia Runtime |
 | `morii.dashboard` | Moriium Dashboard |
 
+- 之后登记的项目：`enouia.wechat`（Enouia WeChat，2026-11-07 在正式实例的「设置 → 项目登记」登记）。`pnpm status:check` 默认只认首批六个，检查它的文件要加 `--register enouia.wechat`。
 - ID 一经登记不改名。项目改名只改显示名称。
 - 未登记的 ID 导入时报错，并给出「去登记」入口。不自动创建项目，防止拼错的 ID 生出一个幽灵项目。
 

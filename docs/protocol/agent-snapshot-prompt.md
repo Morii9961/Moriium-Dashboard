@@ -84,6 +84,7 @@
 | Enouia Memory | `enouia.memory` |
 | Enouia Runtime | `enouia.runtime` |
 | Moriium Dashboard | `morii.dashboard` |
+| Enouia WeChat | `enouia.wechat` |
 
 ---
 
