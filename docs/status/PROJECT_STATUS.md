@@ -1,10 +1,10 @@
 # Moriium Dashboard 项目状态
 
-快照时间：2026-11-07T13:26:23+08:00 · 协议 1.1 · 项目 ID `morii.dashboard` · 报告：Claude
+快照时间：2026-11-09T11:41:35+08:00 · 协议 1.1 · 项目 ID `morii.dashboard` · 报告：Claude
 
-代码基线：`main@9ccb07b`。阶段：验收中（`acceptance`）。整体进度不估算。
+代码基线：`main@51382cd`。阶段：验收中（`acceptance`）。整体进度不估算。
 
-灰阶尺、部署修复、tokens.ci 算力日历和每日小票都已在主线，10-26 后无新提交，也没有开启的 PR。剩下的是 Morii 的新版体验和账单验收、P4/P5 真实使用，以及正式实例重新构建、VPS 部署与 P6.5。
+灰阶尺、部署修复、tokens.ci 算力日历和每日小票都已在主线，没有开启的 PR；11 月 7 日已导入七个项目的新快照。剩下的是正式实例重新构建、Morii 的新版体验和账单验收、P4/P5 真实使用，以及 VPS 部署与 P6.5。
 
 ## 里程碑
 
@@ -42,11 +42,11 @@
 
 ## 依据与验证范围
 
-- 2026-11-07 生成快照：只读 Git、GitHub PR 和仓库文档；不重跑测试、构建或真实验收
-- main@9ccb07b（PR #45 合并提交），与 origin/main 一致；10-26 之后主线无新提交，GitHub 无开启 PR
+- 2026-11-09 生成快照：只读 Git、GitHub PR 和仓库文档；不重跑测试、构建或真实验收
+- main@51382cd（PR #46 合并提交），与 origin/main 一致；GitHub 无开启 PR
 - docs/handoff-2026-10-26-claude-redesign-ledger.md
 - docs/operations/deploy-checklist.md
-- 2026-11-07 本机用开发服务（Vite 5173 + 正式数据目录的服务端 5180）预览灰阶尺；正式实例的 apps/web/dist 尚未用 main 重新构建
-- 2026-11-07 导入批次 3：六个项目的新快照，并登记 enouia.wechat
+- 2026-11-07 正式实例导入批次 3～5（七个项目新快照），登记 enouia.wechat；P1、P3 已记录验收
+- 本机 apps/web/dist 不存在：正式实例尚未用 main 重新构建
 
 证据位置见 [project-status.json](./project-status.json) 的 `evidence_refs`。本次只整理已有记录，`tests_rerun=false`；人工验收只转述有记录的结论，不把合并、分支或 CI 当作通过。
