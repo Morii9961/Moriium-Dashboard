@@ -85,6 +85,7 @@
 | Enouia Runtime | `enouia.runtime` |
 | Moriium Dashboard | `morii.dashboard` |
 | Enouia WeChat | `enouia.wechat` |
+| SENKIRO | `senkiro.main` |
 
 ---
 

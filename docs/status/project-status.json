@@ -2,17 +2,17 @@
   "schema_version": "1.1",
   "project_id": "morii.dashboard",
   "project_name": "Moriium Dashboard",
-  "snapshot_at": "2026-11-09T11:41:35+08:00",
+  "snapshot_at": "2026-11-21T10:40:20+08:00",
   "source": {
     "branch": "main",
-    "commit_sha": "51382cd64526a79d3f1871550df3db6fabbc9a2d",
+    "commit_sha": "119146868903d8ced409ef4acd98387200e1fd39",
     "tests_rerun": false,
     "basis": [
-      "2026-11-09 生成快照：只读 Git、GitHub PR 和仓库文档；不重跑测试、构建或真实验收",
-      "main@51382cd（PR #46 合并提交），与 origin/main 一致；GitHub 无开启 PR",
+      "2026-11-21 生成快照：只读 Git、GitHub PR 和仓库文档；不重跑测试、构建或真实验收",
+      "main@1191468（PR #47 合并提交），与 origin/main 一致；GitHub 无开启 PR",
       "docs/handoff-2026-10-26-claude-redesign-ledger.md",
       "docs/operations/deploy-checklist.md",
-      "2026-11-07 正式实例导入批次 3～5（七个项目新快照），登记 enouia.wechat；P1、P3 已记录验收",
+      "正式实例导入批次 3～7：八个项目都有快照；2026-11-07 登记 enouia.wechat，2026-11-21 登记 senkiro.main；P1、P3 已记录验收",
       "本机 apps/web/dist 不存在：正式实例尚未用 main 重新构建"
     ]
   },
@@ -21,7 +21,7 @@
     "note": "Claude Opus 5.5"
   },
   "stage": "acceptance",
-  "summary": "灰阶尺、部署修复、tokens.ci 算力日历和每日小票都已在主线，没有开启的 PR；11 月 7 日已导入七个项目的新快照。剩下的是正式实例重新构建、Morii 的新版体验和账单验收、P4/P5 真实使用，以及 VPS 部署与 P6.5。",
+  "summary": "灰阶尺、部署修复、tokens.ci 算力日历和每日小票都已在主线，没有开启的 PR；正式实例已收齐八个项目的快照（含新登记的 SENKIRO）。剩下的是正式实例重新构建、Morii 的新版体验和账单验收、P4/P5 真实使用，以及 VPS 部署与 P6.5。",
   "overall_progress": null,
   "milestones": [
     {
